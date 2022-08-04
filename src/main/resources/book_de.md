@@ -248,15 +248,56 @@ private fun fromDouble(d: Double) = Complex.ofCartesian(d, 0.0)
 ```
 
 Wie man sieht, erlauben Erweiterungsmethoden, die gleichzeitig Operator-Überladungen
-sind, eine sehr direkte und kompakte Umsetzung. Man kann diskutieren, ob man eine 
-Vergleichsmethode implementieren sollte, es ist aber nicht unüblich, komplexe Zahlen
-anhand ihres Absolutwertes zu ordnen.
-
-Die DSL kann wie erwartet verwendet werden, es werden Ausdrücke wie `x + y` oder
-`-2.0*(3.0 + x) - y*y` für zwei komplexe Zahlen `x` und `y` korrekt ausgewertet.
+sind, eine sehr direkte und kompakte Umsetzung. Die DSL kann wie erwartet verwendet
+werden, so können damit Ausdrücke wie `x + y` oder `-2.0*(3.0 + x) - y*y` für 
+komplexe Zahlen `x` und `y` ausgewertet werden.
 
 Für eine Übersicht der für eine Überladung verfügbaren Operatoren sei auf
 https://kotlinlang.org/docs/operator-overloading.html
 verwiesen.
+
+## Builderartige DSLs
+
+Eine häufige Aufgabe ist die Initialisierung eines komplexen, mitunter 
+verschachtelten Objekts. Die klassische Lösung in Java ist ein mutabler
+Builder, der Methodenverkettung (a.k.a. "Fluent Interfaces") benutzt, um
+das Setzen der Werte zu vereinfachen, und dann mittels einer terminalen
+build-Methode ein oft vollständig oder teilweise immutables Fachobjekt
+konstruiert.
+
+In Kotlin kann man sich einen Builder oft sparen, in dem man ausnutzt, 
+dass die Sprache benannte und Default-Argumente kennt.
+
+Als einfaches Beispiel kann `java.net.http.HttpRequest` dienen, dessen
+Aufruf etwa so aussehen kann:
+
+```kotlin
+val request = HttpRequest.newBuilder(URI.create("https://acme.com:9876/products"))
+    .GET()
+    .header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
+    .header("Accept-Encoding", "gzip, deflate")    
+    .timeout(Duration.ofSeconds(5L))
+    .build()
+```
+Das sieht schon nicht schlecht aus, aber es gibt immer noch die störenden Aufrufe
+von newBuilder() und build(), und in der Syntax wird nicht deutlich, dass die
+Methodenaufrufe eigentlich nur Wertzuweisungen sind. Die Frage ist, ob wir es in
+Kotlin besser machen können.
+
+Wenn wir uns an den Prozess zum DSL-Design erinnern, folgt auf die Anforderungsanalyse
+(hier wäre das einfach, `HttpRequest` komfortabler zu konstruieren) das Brainstorming
+für eine ideale Syntax. Natürlich ist das immer subjektiv, aber ich hoffe, 
+dass der folgende Vorschlag als Verbesserung angesehen werden kann:
+
+```kotlin
+val request = httpRequest(URI.create("https://acme.com:9876/products")) {
+      method = GET
+      headers {
+        "Content-Type" .. "application/x-www-form-urlencoded; charset=UTF-8"
+        "Accept-Encoding" .. "gzip, deflate"
+      }
+      timeout = Duration.ofSeconds(5L)
+    }
+```
 
 
