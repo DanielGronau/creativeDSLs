@@ -4,6 +4,8 @@ import java.net.URI
 import java.net.http.HttpRequest
 import java.net.http.HttpRequest.BodyPublisher
 import java.time.Duration
+import java.time.temporal.ChronoUnit.SECONDS
+import java.time.temporal.TemporalUnit
 
 fun main() {
     val r1 = HttpRequest.newBuilder(URI.create("https://acme.com:9876/products"))
@@ -15,14 +17,14 @@ fun main() {
     val r2 = httpRequest(URI.create("https://acme.com:9876/products")) {
         method = GET
         headers {
-            "Content-Type" .. "application/x-www-form-urlencoded; charset=UTF-8"
-            "Accept-Encoding" .. "gzip, deflate"
+            "Content-Type".."application/x-www-form-urlencoded; charset=UTF-8"
+            "Accept-Encoding".."gzip, deflate"
         }
-        timeout = Duration.ofSeconds(5L)
+        timeout = 5 * SECONDS
     }
 }
 
-fun httpRequest(uri: URI, block: HttpRequestBuilder.() -> Unit) : HttpRequest =
+fun httpRequest(uri: URI, block: HttpRequestBuilder.() -> Unit): HttpRequest =
     HttpRequestBuilder(uri).apply(block).build()
 
 typealias HttpMethod = Pair<String, BodyPublisher?>
@@ -35,23 +37,23 @@ class HttpRequestBuilder(uri: URI) {
     val DELETE: Pair<String, BodyPublisher?> = "DELETE" to null
 
     var method: HttpMethod? = null
-      set(value) {
-          when(value) {
-              GET -> peer.GET()
-              DELETE -> peer.DELETE()
-              else -> peer.method(value!!.first, value.second)
-          }
-          field = value
-      }
+        set(value) {
+            when (value) {
+                GET -> peer.GET()
+                DELETE -> peer.DELETE()
+                else -> peer.method(value!!.first, value.second)
+            }
+            field = value
+        }
 
     var timeout: Duration? = null
-      set(value) {
-          peer.timeout(value)
-          field = value
-      }
+        set(value) {
+            peer.timeout(value)
+            field = value
+        }
 
     fun headers(block: Headers.() -> Unit) {
-       Headers().apply(block)
+        Headers().apply(block)
     }
 
     fun build() = peer.build()
@@ -61,5 +63,8 @@ class HttpRequestBuilder(uri: URI) {
             peer.header(this@rangeTo, value)
         }
     }
+
+    operator fun Long.times(unit: TemporalUnit): Duration = Duration.of(this, unit)
+    operator fun Int.times(unit: TemporalUnit): Duration = Duration.of(this.toLong(), unit)
 }
 
