@@ -17,7 +17,7 @@ Kotlin umsetzen lassen. Aber die Problembereiche, für die es einfach ist, DSLs 
 schreiben, sind eben in der Praxis in der Minderheit - und es gibt gute Chancen,
 dass es gerade dafür schon fertige Bibliotheken gibt. DSL-Design ist ein kreativer
 Prozess, und dieses Buch möchte Beispiele präsentieren, die etwas mehr Arbeit
-und “out of the box”-Denken erfordern, aber dafür eben auch praxisrelevanter sind.
+und "out of the box"-Denken erfordern, aber dafür eben auch praxisrelevanter sind.
 
 Dieses Buch möchte diese beiden Lücken schließen. Zum einen enthält es eine
 Checkliste an Anforderungen, die auch weniger offensichtliche, aber wichtige
@@ -31,3 +31,10 @@ vorzustellen, sondern Typen von DSLs zu klassifizieren. So wie Design-Patterns
 eine gemeinsame Sprache für erprobte Code-Konstrukte etabliert haben,
 ist es an der Zeit, auch für DSLs allgemein akzeptierte Kategorien einzuführen,
 wozu dieses Buch einen Beitrag leisten möchte.
+
+## Voraussetzungen
+//TODO
+
+## Konventionen
+//TODO
+

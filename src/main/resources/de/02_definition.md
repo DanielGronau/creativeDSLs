@@ -14,11 +14,15 @@ Dazu liefert Wikipedia eine gute, wenn auch etwas hochgestochene Antwort:
 
 (aus: https://de.wikipedia.org/wiki/Dom%C3%A4nenspezifische_Sprache)
 
-Dieses Buch behandelt DSLs, die in Kotlin eingebettet sind und sich nur der bereits 
-in Kotlin vorhandenen Ausdrucksmöglichkeiten bedienen können. Es handelt sich also
-um __interne DSLs__ (auch "eingebettete DSLs"). Der große Vorteil ist natürlich, dass
-sich solche DSLs nahtlos in den Rest des Programms einfügen, es müssen z.B. keine 
-Dateien eingelesen und geparst werden.
+## Interne und Externe DSLs
+
+Dieses Buch behandelt hauptsächlich DSLs, die in Kotlin eingebettet sind und sich nur
+der bereits in Kotlin vorhandenen Ausdrucksmöglichkeiten bedienen können. Es handelt
+sich also um __interne DSLs__ (auch "eingebettete DSLs"). Der große Vorteil ist 
+natürlich, dass sich solche DSLs nahtlos in den Rest des Programms einfügen, es 
+müssen z.B. keine Dateien eingelesen und geparst werden. Ein Grenzfall stellen DSLs
+dar, bei der die DSL-Syntax hauptsächlich in Strings abgebildet ist, wie es z.B.
+bei regulären Ausdrücken der Fall ist.
 
 Der Nachteil interner DSLs ist die Beschränkung der Syntax durch die Möglichkeiten
 der "Wirtssprache". Kotlin gibt beim DSL-Design einen enormen Freiraum, vor allem

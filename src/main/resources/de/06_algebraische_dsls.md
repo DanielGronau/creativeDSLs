@@ -25,6 +25,8 @@ Hier eine mögliche Implementierung:
 ```kotlin
 import org.apache.commons.numbers.complex.Complex
 
+val i = Complex.I
+
 operator fun Complex.unaryPlus(): Complex = this
 
 operator fun Complex.unaryMinus(): Complex = this.negate()
@@ -53,7 +55,9 @@ private fun fromDouble(d: Double) = Complex.ofCartesian(d, 0.0)
 Wie man sieht, erlauben Erweiterungsmethoden, die gleichzeitig Operator-Überladungen
 sind, eine sehr direkte und kompakte Umsetzung. Die DSL kann wie erwartet verwendet
 werden, so können damit Ausdrücke wie `x + y` oder `-2.0*(3.0 + x) - y*y` für
-komplexe Zahlen `x` und `y` ausgewertet werden.
+komplexe Zahlen `x` und `y` ausgewertet werden. Im Zusammenhang mit
+der Definition von `i` kann man komplexe Zahlen auch in der Form `3.0 + 4.0 * i`
+konstruieren.
 
 Kotlin selbst enthält übrigens ähnliche DSLs für `BigInteger` und `BigDecimal`.
 

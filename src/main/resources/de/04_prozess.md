@@ -1,11 +1,10 @@
 # Ein Prozess zum DSL-Design
 
-Eine DSL zu designen ist eine spannende Herausforderung, viele Programmierer macht
+Eine DSL zu designen ist eine spannende Herausforderung, vielen Programmierer macht
 es Spaß, ihrer Kreativität freien Lauf zu lassen zu können. Das ist auch gut so,
 und kann ein DSL nur besser machen. Allerdings darf es dabei nicht dazu kommen,
 dass man Anforderungen übersieht oder Best Practices verletzt. Es ist deshalb wichtig,
-etwas Struktur in den Design-Prozess zu bringen.
-
+Struktur in den Design-Prozess zu bringen.
 
 ## Anforderungen erheben
 

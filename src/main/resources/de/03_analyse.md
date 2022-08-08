@@ -1,12 +1,36 @@
 # Anforderungsanalyse
 
-## Komfortabilität
+## Problembereich bestimmen
+
+Zuerst muss natürlich die Frage beantwortet werden, für welche Domäne die DSL
+implementiert werden soll. Für kleinere DSLs ist diese Frage meist leicht zu
+beantworten. Bei größeren Domänen besteht jedoch die Gefahr, zu pauschalisieren.
+Die Entscheidung, selten genutzte und gleichzeitig schwer zu implementierende 
+Teilbereiche von vornherein wegzulassen, kann eine DSL sehr viel schlanker
+und flexibler machen.
+
+Ein weiterer Gesichtspunkt sollte die Vermeidung von Überlappungen mit anderen
+DSLs sein. Die parallele Verwendung mehrerer DSLs kann sehr verwirrend sein, und
+sollte möglichst vermieden werden.
+
+## Typ der DSL auswählen
+
+Meist wird es schon eine grobe Vorstellung davon geben, in welche Klasse
+die DSL fallen soll. Trotzdem lohnt es sich, einen Überblick zu verschaffen -
+zum Beispiel durch einen Blick auf die in diesem Buch vorgestellten DSLs -
+ob auch andere Typen infrage kommen. Insbesondere wenn man neu in Kotlin ist,
+oder nur DSLs z.B. aus Java kennt, kann es sein, dass man interessante
+Alternativen übersieht.
+
+## Grad der Lesbarkeit
 
 Die offensichtliche Anforderung an eine DSL, ja ihr eigentlicher Kern, ist die
-verbesserte Lesbarkeit und die vereinfachte Erstellung von Fachklassen eines klar
-abgegrenzten Problembereichs. Dabei gibt es die Versuchung, dieser Anforderung
-alles andere unterzuordnen. Aber wenn man der Ästhetik andere Aspekte unterordnet,
-sollte das immer eine bewusste Entscheidung sein.
+verbesserte Lesbarkeit und die vereinfachte Erstellung von Fachklassen.
+Dabei gibt es die Versuchung, dieser Anforderung alles andere unterzuordnen,
+und die DSL so "schön" und lesbar wie möglich zu machen. Doch alles hat 
+seinen Preis, und oft ist es besser, hier Kompromisse einzugehen, als
+später Probleme mit der Größe und Wartbarkeit des Codes, Geschwindigkeit und
+Erweiterbarkeit zu bekommen.
 
 ## Bedienungssicherheit
 
@@ -38,7 +62,6 @@ kann das ein DSL unbrauchbar machen. Deshalb sollte man schon im Vorfeld grob
 abschätzen, in welche Richtung sich die DSL nach der ersten Version entwickeln
 könnte, und gegebenenfalls flexiblere Techniken wählen, selbst wenn das mit
 etwas mehr Aufwand oder auch einer nicht ganz so "schönen" DSL verbunden ist.
-
 
 ## Performance
 

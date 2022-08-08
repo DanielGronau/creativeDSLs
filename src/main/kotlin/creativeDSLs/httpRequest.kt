@@ -1,70 +1,64 @@
 package creativeDSLs
 
 import java.net.URI
+import java.net.http.HttpClient
 import java.net.http.HttpRequest
 import java.net.http.HttpRequest.BodyPublisher
 import java.time.Duration
-import java.time.temporal.ChronoUnit.SECONDS
 import java.time.temporal.TemporalUnit
-
-fun main() {
-    val r1 = HttpRequest.newBuilder(URI.create("https://acme.com:9876/products"))
-        .GET()
-        .header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
-        .timeout(Duration.ofSeconds(5L))
-        .build()
-
-    val r2 = httpRequest(URI.create("https://acme.com:9876/products")) {
-        method = GET
-        headers {
-            "Content-Type".."application/x-www-form-urlencoded; charset=UTF-8"
-            "Accept-Encoding".."gzip, deflate"
-        }
-        timeout = 5 * SECONDS
-    }
-}
 
 fun httpRequest(uri: URI, block: HttpRequestBuilder.() -> Unit): HttpRequest =
     HttpRequestBuilder(uri).apply(block).build()
 
 typealias HttpMethod = Pair<String, BodyPublisher?>
 
-class HttpRequestBuilder(uri: URI) {
+@DslMarker
+annotation class HttpRequestDsl
 
-    private val peer = HttpRequest.newBuilder(uri)
-
-    val GET: Pair<String, BodyPublisher?> = "GET" to null
-    val DELETE: Pair<String, BodyPublisher?> = "DELETE" to null
+@HttpRequestDsl
+class HttpRequestBuilder(var uri: URI) {
 
     var method: HttpMethod? = null
-        set(value) {
-            when (value) {
-                GET -> peer.GET()
-                DELETE -> peer.DELETE()
-                else -> peer.method(value!!.first, value.second)
-            }
-            field = value
-        }
-
     var timeout: Duration? = null
-        set(value) {
-            peer.timeout(value)
-            field = value
-        }
+    var expectContinue: Boolean? = null
+    var version: HttpClient.Version? = null
+    private val headers = mutableMapOf<String, String>()
+
+    val GET: HttpMethod = "GET" to null
+    val DELETE: HttpMethod = "DELETE" to null
+    fun PUT(bp: BodyPublisher): HttpMethod = "PUT" to bp
+    fun POST(bp: BodyPublisher): HttpMethod = "POST" to bp
 
     fun headers(block: Headers.() -> Unit) {
         Headers().apply(block)
     }
 
-    fun build() = peer.build()
+    fun build(): HttpRequest =
+        with(HttpRequest.newBuilder(uri)) {
+            headers.forEach { (key, value) -> header(key, value) }
+            timeout?.let { timeout(it) }
+            expectContinue?.let { expectContinue(it) }
+            version?.let { version(it) }
+            method?.let {
+                when (method) {
+                    GET -> GET()
+                    DELETE -> DELETE()
+                    else -> method(method!!.first, method!!.second)
+                }
+            }
+            this.build()
+        }
 
+    @HttpRequestDsl
     inner class Headers {
         operator fun String.rangeTo(value: String) {
-            peer.header(this@rangeTo, value)
+            this@HttpRequestBuilder.headers[this@rangeTo] = value
         }
     }
 
-    operator fun Long.times(unit: TemporalUnit): Duration = Duration.of(this, unit)
-    operator fun Int.times(unit: TemporalUnit): Duration = Duration.of(this.toLong(), unit)
-}
+    operator fun Long.times(unit: TemporalUnit): Duration =
+        Duration.of(this, unit)
 
+    operator fun Int.times(unit: TemporalUnit): Duration =
+        Duration.of(this.toLong(), unit)
+}

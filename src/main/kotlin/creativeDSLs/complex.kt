@@ -2,6 +2,8 @@ package creativeDSLs
 
 import org.apache.commons.numbers.complex.Complex
 
+val i = Complex.I
+
 operator fun Complex.unaryPlus(): Complex = this
 
 operator fun Complex.unaryMinus(): Complex = this.negate()
