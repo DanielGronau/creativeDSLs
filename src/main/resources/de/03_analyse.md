@@ -104,3 +104,12 @@ Natürlich gibt es auch Ausnahmen von dieser Regel. Wenn man neue Klassen schrei
 die bestimmte Operationen unterstützen, die sich ganz natürlich als Operationen
 wie "Addition" auffassen lassen, kann es sinnvoll sein, dies gleich in der Klasse
 zu implementieren.
+
+### Code Conventions
+
+Ein Punkt, bei dem man bei der DSL-Implementierung oft Abstriche machen muss,
+ist die Einhaltung von Code Conventions, etwa Regeln zur Groß- und Kleinschreibung.
+Natürlich sollte man Implementierungen bevorzugen, die Code-Konventionen möglichst
+wenig verletzen, aber im Kontext einer DSL-Implementierung sind Abweichungen 
+davon prinzipiell akzeptabel. In diesen Fällen sollte z.B. mittels Kommentaren
+dokumentiert werden, dass es sich dabei um eine bewusste Entscheidung gehandelt hat.
