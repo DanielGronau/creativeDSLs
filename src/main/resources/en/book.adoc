@@ -1,0 +1,52 @@
+= Creative DSLs in Kotlin
+:book-title: Creative DSLs in Kotlin
+:author: Daniel Gronau
+:email: daniel.gronau@gmx.de
+:revnumber: 1.0
+:revdate: {docdate}
+:revyear: 2022
+:subject: Writing Creative DSLs in Kotlin
+:keywords: Kotlin, DSL
+:doctype: book
+:media: screen
+ifeval::["{media}" != "prepress"]
+:coverfilesuffix: .png
+ifdef::backend-pdf[:coverfilesuffix: .jpg]
+:front-cover-image: image:cover{coverfilesuffix}[Front Cover,fit=fill]
+endif::[]
+:toc:
+:icons: font
+:lang: en
+:language: kotlin
+:source-highlighter: rouge
+:experimental:
+:pdf-fontsdir: {docdir}/styles/pdf/fonts
+:pdf-themesdir: {docdir}/styles/pdf
+:pdf-theme: screen
+ifndef::ebook-format[:leveloffset: 1]
+
+[colophon#colophon%nonfacing]
+include::pages/colophon.adoc[]
+
+[dedication]
+include::pages/dedication.adoc[]
+
+[%nonfacing]
+include::pages/acknowledgments.adoc[]
+
+[preface]
+include::pages/preface.adoc[]
+
+include::pages/introduction.adoc[]
+
+include::pages/chapter1.adoc[]
+
+include::pages/chapter2.adoc[]
+
+include::pages/chapter3.adoc[]
+
+include::pages/action.adoc[]
+
+include::pages/about.adoc[]
+
+Steal from https://github.com/mraible/infoq-mini-book
