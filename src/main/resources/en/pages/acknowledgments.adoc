@@ -1,7 +1,0 @@
-= Acknowledgements
-
-Writing a book is easy. Becoming a person able to write a book is the hard thing. That's why I want to thank my parents Eva and Wolfgang Gronau, together with all the excellent teachers I had.
-
-I also want to thank my friends Ernst Salzmann and Falk Wallis, and the members of the Byte-Welt forum, whose feedback was invaluable for this book.
-
-And last but not least, I want to thank all the heros who provide free knowledge and awesome open source tools like the Kotlin language itself, making the world a better place.

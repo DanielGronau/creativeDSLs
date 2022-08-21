@@ -1,0 +1,20 @@
+== Introduction
+
+=== What is a DSL?
+
+> A Domain-Specific Language (DSL) is a computer language that's targeted to a particular kind of problem, rather than a general purpose language that's aimed at any kind of software problem.
+-- Martin Fowler, Domain-Specific Languages Guide
+
+The intention of a DSL is to make a certain domain more accessible, to make it easier to read and write, to avoid mistakes, and sometimes to follow established standards (e.g. SQL for database access).
+
+Typical examples include DSLs modelling business logic, e.g. trades for a financial company, and DSLs at the boundaries of the system, which simplify things like database access, serialization, web connectivity, UI. Another common application for DSLs is testing.
+
+=== Internal and External DSLs
+
+This books discusses DSLs which are embedded into Kotlin, and are therefore limited to the existing expressions of the language. These are _internal DSLs_ (or "embedded DSLs). One major advantage is that these DSL don't need special treatment, there are no extra steps like reading and parsing files, so they fit seamless with the rest of the code. An edge case are DSLs where the DSL is realized entirely inside Strings, like regular expressions: While they are  technically internal DSLs, they feel and behave more like external DSLs, because the "embedding" in the language is very shallow, and therefore they don't benefit from compile-time type checks or code completion like other internal DSLs do.
+
+One disadvantage of internal DSLs is the limitation of the syntax inherited by the host language. Kotlin allows great freedom for DSL design, especially compared to Java. Nevertheless it is still possible that the language is not expressive enough to design the DSL you need. In this case _external DSLs_ are an option: They have their own rules and syntax, and requiring a parser etc. leads to a larger overhead. However, writing external DSLs has become much easier in the last years by new libraries and frameworks, and improved tooling.
+
+=== Code Generation for Internal DSLs
+
+A common problem in DSL design is combinatical explosion: Take for example a DSL for physical units, and all the possible results when multiplying or dividing them. In order to achieve a pleasing syntax, but avoid illegal conversions you might have to write lots of boilerplate code. In these cases, code generation can help to get the job done, even if it seemed hopeless at the first glance.
