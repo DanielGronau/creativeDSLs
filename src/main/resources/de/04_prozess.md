@@ -74,3 +74,60 @@ Konsistenz-Checks eingebaut werden.
 
 Falls sich noch kleinere Abweichungen von der Dokumentation ergeben haben, sind
 diese nachzupflegen.
+
+
+--> checkliste
+
+Vollständigkeit
+
+Besonderes Augenmerk sollte darauf gelegt werden, dass auch wirklich alle
+erlaubten Konfigurationen mit der DSL ausgedrückt werden können. Dabei gibt
+es zwei Fallstricke, nämlich dass Randfälle übersehen wurden, und dass die
+Syntax für bestimmte Features nicht orthogonal ist. Ein Beispiel für letzteres
+wäre, wenn eine Syntax nicht erlaubt "ist Säugetier" und gleichzeitig "legt Eier"
+auszuwählen, obwohl diese Kombination existiert.
+
+## Einhaltung von Best Coding Practices
+
+### Vermeidung von Namensraum-Verschmutzung
+
+DSLs können oft in großen Teilen der Code-Basis verwendet werden, und es ist
+großartig, wenn sie stark genutzt werden. Aber mit jeder Verwendung steigt
+die Gefahr, dass es zu Name-Clashes kommt. Wenn das DSL z.B. Erweiterungsmethoden
+für oft verwendete Klassen wie Strings verwendet, werden solche Probleme
+faktisch herausgefordert. Manchmal kommt es auch zu Clashes zwischen zwei
+verschiedenen DSLs, die z.B. beide denselben Operator für eine Klasse definieren
+möchten. Wenn möglich, sollten DSLs also auf eigenen oder zumindest spezifischen
+Datentypen operieren.
+
+### Entkopplung von Fachklassen
+
+Beim Schreiben einer DSL kann man den Eindruck gewinnen, dass es ganz
+offensichtlich der beste Weg ist, um mit den entsprechenden Entitäten zu
+arbeiten. Man beginnt, DSL und unterliegende Fachklassen stark miteinander
+zu koppeln. Meiner Meinung nach ist das eine schlechte Idee. Wo immer möglich
+sollten die Fachklassen unabhängig von "ihrer" DSL sein. Insbesondere sollte
+es stets möglich sein, die Fachklassen auch ohne DSL zu konstruieren. Dafür
+gibt es mehrere Gründe:
+
+* Fachlogik wird mit DSL-Code vermischt
+* die API und Gesamtumfang der Fachklasse wird aufgebläht
+* das Design der Fachklasse wird durch Rücksicht auf das DSL-Design inflexibel
+* die DSL kann zu einem späteren Zeitpunkt obsolet werden
+* Codeanalyse- und Codegenerierungs-Tools können Probleme mit einem DSL haben
+* die DSL kann für Massendaten "zu langsam" sein
+
+Natürlich gibt es auch Ausnahmen von dieser Regel. Wenn man neue Klassen schreibt,
+die bestimmte Operationen unterstützen, die sich ganz natürlich als Operationen
+wie "Addition" auffassen lassen, kann es sinnvoll sein, dies gleich in der Klasse
+zu implementieren.
+
+### Code Conventions
+
+Ein Punkt, bei dem man bei der DSL-Implementierung oft Abstriche machen muss,
+ist die Einhaltung von Code Conventions, etwa Regeln zur Groß- und Kleinschreibung.
+Natürlich sollte man Implementierungen bevorzugen, die Code-Konventionen möglichst
+wenig verletzen, aber im Kontext einer DSL-Implementierung sind Abweichungen
+davon prinzipiell akzeptabel. In diesen Fällen sollte z.B. mittels Kommentaren
+dokumentiert werden, dass es sich dabei um eine bewusste Entscheidung gehandelt hat.
+

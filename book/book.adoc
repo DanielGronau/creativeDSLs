@@ -3,11 +3,12 @@ Author Name
 :doctype: book
 :encoding: utf-8
 :lang: en
-:toc: left
+:toc:
 :toclevels: 2
 :numbered:
 :showtitle: Creative DSLs in Kotlin
 :revyear: 2022
+:revnumber: 0.1
 :author: Daniel Gronau
 
 include::colophon.adoc[]

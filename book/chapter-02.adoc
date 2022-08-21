@@ -1,25 +1,45 @@
-== Source Codes
+== Requirements Analysis
 
-1500'lerden beri kullanılmakta olan standard Lorem Ipsum metinleri ilgilenenler için yeniden üretilmiştir. Çiçero tarafından yazılan 1.10.32 ve 1.10.33 bölümleri de 1914 H. (((Rackham)))Rackham çevirisinden alınan İngilizce sürümleri eşliğinde özgün biçiminden yeniden üretilmiştir.
+For a software engineer, writing DSLs often feels exciting and fun, and it is easy to get carried away. In the end, it turns out that the DSL misses some important parts, shows unexpected behavior, and is neither maintainable nor extendable. It pays off to contain the excitement for a moment, and lay down some cornerstones. This doesn't have to be a long-winded and boring process, but you should ensure that everyone is on the same page, and that no significant detail is overlooked. This chapter gives you basically a check-list of decisions to make before you start implementing.
 
-.Editable.java
-[source,java]
-----
-public interface Editable{
+=== Defining the Problem Domain
 
-    void useAsciidocFX();
+The first question to answer is obviously which domain to tackle. For small domains and areas with existing standards, this question is usually easy to answer. For larger domains it can be tempting to over-generalize. Try to be specific. Sometimes, the deliberate decision to drop some lesser used and harder to implement parts of the problem domain can make the DSL more flexible and lean.
 
-}
-----
+When the system already employs other DSLs, it should be considered whether a parallel use could be confusing or yield unexpected results.
 
-[source,ruby]  
-.app.rb 
----- 
-require 'sinatra'
+After the specification of the problem domain, it might be advisable to look for existing DSLs. You might be surprised by the plethora of existing solutions, and of course it makes no sense to reinvent the wheel. Even if the results don't fit your use case perfectly, they might serve as a base implementation, or as a source of inspiration.
 
-get '/hi' do # <1>
-  "Hello World!" # <2>
-end
-----
-<1> Hooks `/hi` path when get request
-<2> Returns "Hello World!"
+=== Specifying the Results
+
+In most cases it is rather obvious which kind of output is expected. However, sometimes there is a choice of doing some action directly, or to create classes being able to perform that action instead. In this case creating classes should be preferred, if there are no strong reasons against it. Usually this approach is easier to test and to debug, and sometimes it is convenient to be able to create these classes by other means.
+
+Another question may be whether to generate directly the target entities of an external API, or to follow the Adapter Pattern or similar approaches. In this case the answer really comes down to the intended architecture of your application, but generally you should try to use non-essential external APIs only at the boundaries of the application, and DSLs should follow this guideline as well.
+
+=== Narrowing the DSL Type down
+
+Often there is already a general picture which kind of DSL could be used. Even so, it might be a good idea to learn about alternatives, e.g. by flipping through the chapters of this book. Especially when coming from Java with its low DSL affinity, it is easy to overlook interesting approaches.
+
+=== Level of Syntactical Fidelity
+
+Usually, an internal DSL can only get close to the syntax we really wish for. I will call the closeness of a DSL to this ideal syntax its "fidelity". It is tempting to subordinate everything else to neglect other requirements in order to get the highest possible fidelity. But of course beauty has its price, and pushing the limits of the host language's syntax can be problematic.
+
+That's why it is important to have already from the very beginning a rough idea how high the fidelity needs to be, and when to start compromising. One relevant question in this context is how "tech-savvy" users of the DSL are. Generally, people without coding experience need "better" DSLs as software engineers, who will often tolerate a few warts in the DSL syntax.
+
+=== Safety of Use Requirements
+
+An often overlooked requirement is how and how well the user has to be protected against pitfalls and misuses of the DSL. This includes questions like whether misuses should cause compile time or only runtime errors, or whether it is acceptable that the DSL can express some states that shouldn't be allowed.
+
+Reasons for unsafe behavior can be e.g. an overly flexible syntax, missing sanity checks or mistakes stemming from operator priorities. In some cases the safety of use requirement is conflicting with the pursuit for syntactical fidelity, and then you need to find a compromise between a beauty and safety.
+
+Some level of unsafe behaviour might be acceptable for tech-savvy or experienced users.
+
+=== Ensuring Extensibility
+
+Insufficient extensibility is a common pitfall when designing internal DSLs, which usually operate with quite specialized techniques and language features. Sometimes new DSL requirement can't be properly integrated with the initially selected means, which may render the whole DSL useless.
+
+Therefore, it makes sense to get upfront a rough idea which extensions could be requested after the first version of the DSL. In the implementation phase, this knowledge helps to avoid techniques that are not flexible enough to handle future requirements.
+
+=== Performance and Memory Requirements
+
+Often performance considerations get not much attention. However, in most cases DSLs invoke additional operations, instantiate objects and may trigger garbage collections. When working with big data, or having a wasteful DSL, you might run in performance and memory problems. That's why it is relevant to estimate performance requirements.
