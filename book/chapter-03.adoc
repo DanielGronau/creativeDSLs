@@ -1,12 +1,110 @@
-== Asciidoc Table
+== A DSL Writing Process
 
-Lorem Ipsum pasajlarının birçok çeşitlemesi vardır. Ancak bunların büyük bir çoğunluğu mizah katılarak veya rastgele sözcükler eklenerek değiştirilmişlerdir. Eğer bir Lorem Ipsum (((pasaj)))pasajı kullanacaksanız, metin aralarına utandırıcı sözcükler gizlenmediğinden emin olmanız gerekir. İnternet'teki tüm Lorem Ipsum üreteçleri önceden belirlenmiş metin bloklarını yineler.
+So, we defined the requirements, and want finally dive into designing and implementing the DSL. I totally get the excitement, but I can tell from experience that it still makes a lot of sense to give this process a little structure. The process outlined here is very simple, but it works for me.
 
+=== Dream up the Ideal Syntax
 
-.Table Title (Optional)
-[width="100%",options="header"]
-|====================
-|abcdefq |abcdefq |abcdefq |abcdefq
-|abcdefq |abcdefq |abcdefq |abcdefq 
-|abcdefq |abcdefq |abcdefq |abcdefq 
-|====================
+This might sound weird, especially if you come from Java, where your options are quite limited. And after the requirement analysis, we should have already a pretty clear picture of how the syntax should look like, right? Yes, in some cases, the ideal syntax is pretty much given, e.g. if there is already an established standard for it. But in cases where you have some creative freedom, I would recommend to give this step a try.
+
+Thinking about implementation details limits your creativity. Try to put off your programming glasses. If possible, invite domain experts. Get some brainstorming vibes going. The goal is to sketch how an ideal DSL syntax could look like, without any thought about how to get there. If you can't agree on one syntax, it might be okay to have two candidates, but probably not more.
+
+Usually it isn't necessary to specify a formal grammar. Instead, write lots of examples, comment those, and make sure that there are no inconsistencies or gaps. A crucial part of information is how the output for the respective example should look like.
+
+If you have the chance, get feedback from domain experts or future users.
+
+=== Prototyping
+
+Jetzt ist endlich der Zeitpunkt gekommen zu programmieren. Da für eine Umsetzung
+meist viel experimentiert werden muss, und nicht immer klar ist, welche Lösungen wirklich
+tragfähig sind, bietet es sich an, mit einem Prototyp zu beginnen. Der Prototyp
+kann dabei von mehreren ähnlichen Features nur eines enthalten
+(Spike-Implementierung), Tests und Sicherheitsabfragen weglassen, und auf eine
+vollständige Übersetzung in Fachklassen verzichten.
+
+In regelmäßigen Abständen sollte geprüft werden, ob die Syntax des Prototyps
+akzeptabel ist, und auch hier ist Feedback von poteziellen Nutzern wertvoll.
+Natürlich ist es auch gut, mehrere konkurrierende Prototypen präsentieren zu können.
+
+=== Formalisation and Documentation
+
+Hat der Prototyp gezeigt, wie eine realisierbare Syntax aussehen könnte, und
+gibt es Übereinstimmung, dass deren Qualität ausreichend ist, kann man damit
+beginnen, diese Syntax zu formalisieren. Dabei hängt es ganz von der
+Aufgabenstellung ab, wie detailliert die Syntax dokumentiert werden muss -
+von einer Wiki-Seite bis zu einer formalen Grammatik. Noch wichtiger als bei der
+idealisierten Syntax ist, wie die Übersetzung in Fachklassen zu erfolgen hat.
+
+Es wird davon abgeraten, diesen Schritt zu überspringen: Ein Prototyp ist
+keine Dokumentation, und eine adäquate Dokumentation für ein DSL ist in der
+Praxis unverzichtbar.
+
+=== Implementation
+
+Der letzte Schritt ist natürlich die eigentliche Implementierung. Oft lassen sich
+Teile des Prototyps wiederverwenden, aber man sollte sich nicht scheuen, von
+diesem abzuweichen und flexibleren oder effizienteren Code zu schreiben.
+Eventuell können auch Quellcode-Generatoren hilfreich sein, um repetitiven
+Code erzeugen zu lassen. Natürlich sollten jetzt im Gegensatz zum Prototypen
+allen Best Coding Practices gefolgt werden, also z.B. Tests geschrieben und
+Konsistenz-Checks eingebaut werden.
+
+Falls sich noch kleinere Abweichungen von der Dokumentation ergeben haben, sind
+diese nachzupflegen.
+
+==== Checklist
+
+--> checkliste
+
+Vollständigkeit
+
+Besonderes Augenmerk sollte darauf gelegt werden, dass auch wirklich alle
+erlaubten Konfigurationen mit der DSL ausgedrückt werden können. Dabei gibt
+es zwei Fallstricke, nämlich dass Randfälle übersehen wurden, und dass die
+Syntax für bestimmte Features nicht orthogonal ist. Ein Beispiel für letzteres
+wäre, wenn eine Syntax nicht erlaubt "ist Säugetier" und gleichzeitig "legt Eier"
+auszuwählen, obwohl diese Kombination existiert.
+
+## Einhaltung von Best Coding Practices
+
+### Vermeidung von Namensraum-Verschmutzung
+
+DSLs können oft in großen Teilen der Code-Basis verwendet werden, und es ist
+großartig, wenn sie stark genutzt werden. Aber mit jeder Verwendung steigt
+die Gefahr, dass es zu Name-Clashes kommt. Wenn das DSL z.B. Erweiterungsmethoden
+für oft verwendete Klassen wie Strings verwendet, werden solche Probleme
+faktisch herausgefordert. Manchmal kommt es auch zu Clashes zwischen zwei
+verschiedenen DSLs, die z.B. beide denselben Operator für eine Klasse definieren
+möchten. Wenn möglich, sollten DSLs also auf eigenen oder zumindest spezifischen
+Datentypen operieren.
+
+### Entkopplung von Fachklassen
+
+Beim Schreiben einer DSL kann man den Eindruck gewinnen, dass es ganz
+offensichtlich der beste Weg ist, um mit den entsprechenden Entitäten zu
+arbeiten. Man beginnt, DSL und unterliegende Fachklassen stark miteinander
+zu koppeln. Meiner Meinung nach ist das eine schlechte Idee. Wo immer möglich
+sollten die Fachklassen unabhängig von "ihrer" DSL sein. Insbesondere sollte
+es stets möglich sein, die Fachklassen auch ohne DSL zu konstruieren. Dafür
+gibt es mehrere Gründe:
+
+* Fachlogik wird mit DSL-Code vermischt
+* die API und Gesamtumfang der Fachklasse wird aufgebläht
+* das Design der Fachklasse wird durch Rücksicht auf das DSL-Design inflexibel
+* die DSL kann zu einem späteren Zeitpunkt obsolet werden
+* Codeanalyse- und Codegenerierungs-Tools können Probleme mit einem DSL haben
+* die DSL kann für Massendaten "zu langsam" sein
+
+Natürlich gibt es auch Ausnahmen von dieser Regel. Wenn man neue Klassen schreibt,
+die bestimmte Operationen unterstützen, die sich ganz natürlich als Operationen
+wie "Addition" auffassen lassen, kann es sinnvoll sein, dies gleich in der Klasse
+zu implementieren.
+
+### Code Conventions
+
+Ein Punkt, bei dem man bei der DSL-Implementierung oft Abstriche machen muss,
+ist die Einhaltung von Code Conventions, etwa Regeln zur Groß- und Kleinschreibung.
+Natürlich sollte man Implementierungen bevorzugen, die Code-Konventionen möglichst
+wenig verletzen, aber im Kontext einer DSL-Implementierung sind Abweichungen
+davon prinzipiell akzeptabel. In diesen Fällen sollte z.B. mittels Kommentaren
+dokumentiert werden, dass es sich dabei um eine bewusste Entscheidung gehandelt hat.
+

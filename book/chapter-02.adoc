@@ -16,10 +16,6 @@ In most cases it is rather obvious which kind of output is expected. However, so
 
 Another question may be whether to generate directly the target entities of an external API, or to follow the Adapter Pattern or similar approaches. In this case the answer really comes down to the intended architecture of your application, but generally you should try to use non-essential external APIs only at the boundaries of the application, and DSLs should follow this guideline as well.
 
-=== Narrowing the DSL Type down
-
-Often there is already a general picture which kind of DSL could be used. Even so, it might be a good idea to learn about alternatives, e.g. by flipping through the chapters of this book. Especially when coming from Java with its low DSL affinity, it is easy to overlook interesting approaches.
-
 === Level of Syntactical Fidelity
 
 Usually, an internal DSL can only get close to the syntax we really wish for. I will call the closeness of a DSL to this ideal syntax its "fidelity". It is tempting to subordinate everything else to neglect other requirements in order to get the highest possible fidelity. But of course beauty has its price, and pushing the limits of the host language's syntax can be problematic.
