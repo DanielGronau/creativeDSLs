@@ -14,70 +14,29 @@ If you have the chance, get feedback from domain experts or future users.
 
 === Prototyping
 
-Jetzt ist endlich der Zeitpunkt gekommen zu programmieren. Da für eine Umsetzung
-meist viel experimentiert werden muss, und nicht immer klar ist, welche Lösungen wirklich
-tragfähig sind, bietet es sich an, mit einem Prototyp zu beginnen. Der Prototyp
-kann dabei von mehreren ähnlichen Features nur eines enthalten
-(Spike-Implementierung), Tests und Sicherheitsabfragen weglassen, und auf eine
-vollständige Übersetzung in Fachklassen verzichten.
+Now finally the time for coding has come. Usually you have to experiment a lot to get the syntax right, and it's not always clear which solutions will work for the whole problem domain. That's why I would suggest to start with a prototype: If you have multiple similar features, you implement only one of them (a.k.a. "Spike implementation"), and you can skip extensive testing or sanity checks. Sometimes you don't even need to generate the expected output, but write just an empty shell to show the syntax.
 
-In regelmäßigen Abständen sollte geprüft werden, ob die Syntax des Prototyps
-akzeptabel ist, und auch hier ist Feedback von poteziellen Nutzern wertvoll.
-Natürlich ist es auch gut, mehrere konkurrierende Prototypen präsentieren zu können.
+You should check regularly whether the syntax of the prototype is acceptable, and again feedback from experts or potential users is invaluable. One advantage of the prototyping approach is that you can easily present different versions.
 
-=== Formalisation and Documentation
+=== Formalization and Documentation
 
-Hat der Prototyp gezeigt, wie eine realisierbare Syntax aussehen könnte, und
-gibt es Übereinstimmung, dass deren Qualität ausreichend ist, kann man damit
-beginnen, diese Syntax zu formalisieren. Dabei hängt es ganz von der
-Aufgabenstellung ab, wie detailliert die Syntax dokumentiert werden muss -
-von einer Wiki-Seite bis zu einer formalen Grammatik. Noch wichtiger als bei der
-idealisierten Syntax ist, wie die Übersetzung in Fachklassen zu erfolgen hat.
+Once a prototype has shown how a realistic syntax meeting the requirements could look like, you should formalize the syntax. This doesn't have to be a big process, it really depends on the scope of the project. Sometimes a simple wiki page might be enough, sometimes you have to define a formal grammar. Even more important as in case of the ideal syntax is the documentation of the output mapping.
 
-Es wird davon abgeraten, diesen Schritt zu überspringen: Ein Prototyp ist
-keine Dokumentation, und eine adäquate Dokumentation für ein DSL ist in der
-Praxis unverzichtbar.
+This step shouldn't be skipped: A prototype is no documentation, the real implementation needs exact specifications, and later users will need a documentation anyway.
+
+One aspect deserving special attention is completeness. You should ensure that the DSL can actually express all "allowed" configurations. Sometimes rare cases are simply overlooked, or some features are not orthogonal. An example for the latter case would be a syntax that doesn't allow to choose both "mammal" and "lays eggs" at the same time, even though animals with this combination of properties exist (like the platypus).
 
 === Implementation
 
-Der letzte Schritt ist natürlich die eigentliche Implementierung. Oft lassen sich
-Teile des Prototyps wiederverwenden, aber man sollte sich nicht scheuen, von
-diesem abzuweichen und flexibleren oder effizienteren Code zu schreiben.
-Eventuell können auch Quellcode-Generatoren hilfreich sein, um repetitiven
-Code erzeugen zu lassen. Natürlich sollten jetzt im Gegensatz zum Prototypen
-allen Best Coding Practices gefolgt werden, also z.B. Tests geschrieben und
-Konsistenz-Checks eingebaut werden.
+The last step is of course the implementation. Often parts of the prototype can be reused, but don't be afraid to throw it away, and to write better structured, more flexible or faster code instead. If you encounter a lot of boilerplate, you might consider using a source code generator. In contrast to the prototype, now is the time to shine and to follow all the best practices, e.g. writing tests and sanity checks.
 
-Falls sich noch kleinere Abweichungen von der Dokumentation ergeben haben, sind
-diese nachzupflegen.
+The implementation of a DSL can be quite different from "normal" programming, and comes with its own problems and pitfalls, therefore I'll list some points where you might want to pay special attention.
 
-==== Checklist
+==== Name Clashes
 
---> checkliste
+A good DSL can be widely used in a code base, and of course that's a great thing. However, this also increases the possibility of name clashes. That's why it might be e.g. problematic to add extension methods to often used classes like `Int` or `String`. Sometimes to DSLs clash, e.g. when trying to define the same operator.
 
-Vollständigkeit
-
-Besonderes Augenmerk sollte darauf gelegt werden, dass auch wirklich alle
-erlaubten Konfigurationen mit der DSL ausgedrückt werden können. Dabei gibt
-es zwei Fallstricke, nämlich dass Randfälle übersehen wurden, und dass die
-Syntax für bestimmte Features nicht orthogonal ist. Ein Beispiel für letzteres
-wäre, wenn eine Syntax nicht erlaubt "ist Säugetier" und gleichzeitig "legt Eier"
-auszuwählen, obwohl diese Kombination existiert.
-
-## Einhaltung von Best Coding Practices
-
-### Vermeidung von Namensraum-Verschmutzung
-
-DSLs können oft in großen Teilen der Code-Basis verwendet werden, und es ist
-großartig, wenn sie stark genutzt werden. Aber mit jeder Verwendung steigt
-die Gefahr, dass es zu Name-Clashes kommt. Wenn das DSL z.B. Erweiterungsmethoden
-für oft verwendete Klassen wie Strings verwendet, werden solche Probleme
-faktisch herausgefordert. Manchmal kommt es auch zu Clashes zwischen zwei
-verschiedenen DSLs, die z.B. beide denselben Operator für eine Klasse definieren
-möchten. Wenn möglich, sollten DSLs also auf eigenen oder zumindest spezifischen
-Datentypen operieren.
-
-### Entkopplung von Fachklassen
+==== Coupling
 
 Beim Schreiben einer DSL kann man den Eindruck gewinnen, dass es ganz
 offensichtlich der beste Weg ist, um mit den entsprechenden Entitäten zu
@@ -99,7 +58,7 @@ die bestimmte Operationen unterstützen, die sich ganz natürlich als Operatione
 wie "Addition" auffassen lassen, kann es sinnvoll sein, dies gleich in der Klasse
 zu implementieren.
 
-### Code Conventions
+==== Code Conventions
 
 Ein Punkt, bei dem man bei der DSL-Implementierung oft Abstriche machen muss,
 ist die Einhaltung von Code Conventions, etwa Regeln zur Groß- und Kleinschreibung.
@@ -107,4 +66,10 @@ Natürlich sollte man Implementierungen bevorzugen, die Code-Konventionen mögli
 wenig verletzen, aber im Kontext einer DSL-Implementierung sind Abweichungen
 davon prinzipiell akzeptabel. In diesen Fällen sollte z.B. mittels Kommentaren
 dokumentiert werden, dass es sich dabei um eine bewusste Entscheidung gehandelt hat.
+
+
+==== Documentation
+
+Often you it turns out that you have to deviate a bit from the original specification. Please don't forget to update the documentation accordingly.
+
 
