@@ -9,6 +9,8 @@ Author Name
 :showtitle: Creative DSLs in Kotlin
 :revyear: 2022
 :revnumber: 0.1
+:source-highlighter: rouge
+:icons: font
 :author: Daniel Gronau
 
 include::colophon.adoc[]

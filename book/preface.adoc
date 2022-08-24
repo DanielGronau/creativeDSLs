@@ -37,7 +37,8 @@ Tips, warnings etc. are shown as follows:
 
 TIP: When the white frost comes, do not eat the yellow snow.
 
-WARNING: First of all, keep him out of the light, he hates bright light, especially sunlight, it’ll kill him. Second, don’t give him any water, not even to drink. But the most important rule, the rule you can never forget, no matter how much he cries, no matter how much he begs, never feed him after midnight.
+WARNING: Beware the Jabberwock, my son! The jaws that bite, the claws that catch!
+Beware the Jubjub bird, and shun the frumious Bandersnatch!
 
 Example code is shown like this, and may include the file name or lines with numbered remarks:
 
