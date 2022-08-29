@@ -96,34 +96,89 @@ someMethod("Hi!", 1, 2, 3) {
 }
 ----
 
-### Property-Syntax
+=== Property-Syntax
 
-### Operator-Überladung
+Kotlin allows to control how properties are read and written. This makes it easy to hide DSL functionality in plain sight. An easy example is checking preconditions:
 
-...
+[source,kotlin]
+----
+class TemperatureSensor {
+    var celsius: Double = 0.0
+        set(value) {
+            if(value < -273.15) {
+                throw IllegalArgumentException("Temperature is under absolute zero.")
+            }
+            field = value
+       }
+   ...
+}
+----
 
-Der Invoke-Operator kann verwendet werden, um die Syntax eines
-Funktionsaufrufs zu simulieren. So können sich z.B. Objekte als
-Funktionen "tarnen", aber dabei State speichern:
 
-```kotlin
+=== Operator Overloading
+
+Kotlin allows operator overloading, but is quite conservative in the sense that it permits only a fixed and quite limited set of operators:
+
+* the unary operators `+`, `-` and `!`
+* the binary arithmetic operators `+`, `-`, `*`, `/` and `%`
+* the augmented assignments for these: `+=`, `-=`, `*=`, `/=` and `%=`
+* the range operator `..`
+* the in operator `in`
+* the index access operator `[]`
+* the invoke operator `()`
+* the equality operators `==` and `!=`
+* the comparison operators `<`, `<{zwsp}=`, `>`, `>=`
+
+Note that the boolean operators `&&` and `||` cannot be overloaded.
+
+There are many use cases for operators, but please don't overuse them. There should be at least some association or analogy between the operation and the chosen operator. E.g. for concatenating a path, `/` would be fine, as it is a common path separator. If you want to "add" a single value to a block in some sense, using the unary `+` has become a kind of standard. It might be also okay to use `..` instead of a `:`, because of the visual similarity.
+
+But at some point you need to draw a line, e.g. inverting a matrix by using `!` would be in my opinion a bit of a stretch. Also, it can be confusing when you reuse an operator too often, like "adding" an address, phone number, email or website to a person. Often it is better to use an inline function with a meaningful name instead of letting the users guess what an operator could mean.
+
+That said, you can do some sneaky things with operators. E.g. the invoke operator can be used to simulate the syntax of a function call. That makes it possible to camouflage objects as functions, when you need to store state:
+
+[source, kotlin]
+----
 object count {
-    private var n = 1
+    var n = 1
     operator fun invoke(): Int = n++
 }
-```
 
-### Inline Funktionen
+count() // increases n by 1
+----
 
-### Erweiterungs-Funktionen
+Similarly, the index access operator can be used to mimic e.g. arrays and maps.
 
-### Receiver-Funktionen und -Lambdas
+=== Extension Functions and Receiver Lambdas
 
-### Die @DslMarker-Annotation
+* generic extensions can express more than normal methods List<Int>.sum()
+* Loan Pattern
+* @DslMarker Annotation
+* needed for infix notation
 
-## Properties
+=== Infix Notation for Functions
 
-## Annotationen
+The infix notation allows names of functions to be used like binary operators. Well-known examples in the Kotlin API include `to` for creating pairs, and `until` and `downTo` for creating ranges.
 
-## Reflection
+The function must be a receiver function, and have one argument. The receiver-`this` becomes the left-hand side, and the argument the right-hand side of the operator. Note that you can still use the normal function call syntax. Here is an example for checking preconditions:
+
+[source,kotlin]
+----
+infix fun <T> T.shouldBe(expected: T) {
+    require(this == expected)
+}
+
+val x: String = ...
+x.shouldBe("expectedValue") // normal syntax
+x shouldBe "expectedValue" // infix syntax
+----
+
+A weak point of infix notation that you can't explicitly specify generics using this syntax. In this case, you can fall back to the normal function call syntax - but the users of the DSL might not know this.
+
+=== Generics
++ reified generics
+
+=== Annotationen
+
+=== Reflection
 
