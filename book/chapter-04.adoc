@@ -139,7 +139,7 @@ That said, you can do some sneaky things with operators. E.g. the invoke operato
 
 [source, kotlin]
 ----
-object count {
+object count{
     var n = 1
     operator fun invoke(): Int = n++
 }
@@ -151,10 +151,39 @@ Similarly, the index access operator can be used to mimic e.g. arrays and maps.
 
 === Extension Functions and Receiver Lambdas
 
-* generic extensions can express more than normal methods List<Int>.sum()
-* Loan Pattern
+One of the most important features for DSL design are functions and lambdas with receivers. This can be understood of putting the function body in the scope of the receiver, so you can access its public fields, methods etc., and also refer to the receiver via `this`. In case of extension functions, the call looks like
+
+Interestingly, you can do something using generic extension functions that isn't possible with instance methods: You can fix generic parameters to a certain type, and write a "specialized" function for this particular type. Here is an example for calculating the product of numbers as an extension function of `List`:
+
+[source,kotlin]
+----
+fun List<Double>.product() = fold(1.0, Double::times)
+
+val p = listOf(1.0, 2.0, 3.0).product()  // p == 6.0
+----
+
+Lambdas can have receivers too, and this plays nicely with the Loan Pattern. This is very useful for DSLs, because it helps to control the life-cycle of the receiver class. E.g. you can hide the construction of a builder, and the final call to the build method by expecting a lambda with receiver as an argument:
+
+[source,kotlin]
+----
+
+import java.net.URLimport java.net.http.HttpRequest
+
+fun req(block: HttpRequest.() -> Unit): HttpRequest =
+    HttpRequest.newBuilder().also { block.invoke(this) }
+
+req {
+   uri = URI.create("http://acme.com:9876/products/4423")
+   DELETE()
+}
+----
+
+
 * @DslMarker Annotation
-* needed for infix notation
+
+The infix notation covered in the next paragraph uses extension function syntax as well.
+
+It should be noted that you can also define extension fields, which will only allow getters. They aren't used nearly as much as extension functions, but it is good to know that they exist.
 
 === Infix Notation for Functions
 
