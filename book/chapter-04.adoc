@@ -114,7 +114,6 @@ class TemperatureSensor {
 }
 ----
 
-
 === Operator Overloading
 
 Kotlin allows operator overloading, but is quite conservative in the sense that it permits only a fixed and quite limited set of operators:
@@ -137,7 +136,7 @@ But at some point you need to draw a line, e.g. inverting a matrix by using `!` 
 
 That said, you can do some sneaky things with operators. E.g. the invoke operator can be used to simulate the syntax of a function call. That makes it possible to camouflage objects as functions, when you need to store state:
 
-[source, kotlin]
+[source,kotlin]
 ----
 object count{
     var n = 1
@@ -162,28 +161,46 @@ fun List<Double>.product() = fold(1.0, Double::times)
 val p = listOf(1.0, 2.0, 3.0).product()  // p == 6.0
 ----
 
-Lambdas can have receivers too, and this plays nicely with the Loan Pattern. This is very useful for DSLs, because it helps to control the life-cycle of the receiver class. E.g. you can hide the construction of a builder, and the final call to the build method by expecting a lambda with receiver as an argument:
+Lambdas can have receivers too, and this plays nicely with the Loan Pattern. This is very useful for DSLs, because it helps to control the life-cycle of the receiver class. Take this example:
 
 [source,kotlin]
 ----
+fun sb(block: StringBuilder.() -> Unit): String =
+    StringBuilder()
+      .also { block.invoke(this) }
+      .toString()
 
-import java.net.URLimport java.net.http.HttpRequest
-
-fun req(block: HttpRequest.() -> Unit): HttpRequest =
-    HttpRequest.newBuilder().also { block.invoke(this) }
-
-req {
-   uri = URI.create("http://acme.com:9876/products/4423")
-   DELETE()
+val s: String = sb {
+   append("World")
+   insert(0, "Hello ")
+   append('!')
 }
 ----
 
+This may look a little confusing at first, and the details will be discussed later, but the point is that you can use a block where `this` is a certain receiver class (here `StringBuilder`), and you don't have to care about its construction or final steps.
 
-* @DslMarker Annotation
+There is a scope problem when you nest several extension functions: Things visible in the outer blocks are also visible in the inner ones. E.g. in a DSL for HTML generation, one could write:
 
-The infix notation covered in the next paragraph uses extension function syntax as well.
+[source,kotlin]
+----
+html {
+    head {...}
+    body {
+        head {} // ouch, head() is defined in html's scope, but also visible here
+    }
+}
+----
+
+To avoid this problem, there is a mechanism for scope control:
+
+* Define a custom annotation
+* Annotate this annotation with `@DslMarker`
+* Mark all involved receiver classes (or a common super class) with your annotation
+* After this, you can't directly access things from the outer scope. You still can refer them indirectly, like with `this@html.head{}`
 
 It should be noted that you can also define extension fields, which will only allow getters. They aren't used nearly as much as extension functions, but it is good to know that they exist.
+
+The infix notation covered in the next paragraph uses extension function syntax as well.
 
 === Infix Notation for Functions
 
@@ -205,6 +222,7 @@ x shouldBe "expectedValue" // infix syntax
 A weak point of infix notation that you can't explicitly specify generics using this syntax. In this case, you can fall back to the normal function call syntax - but the users of the DSL might not know this.
 
 === Generics
+
 + reified generics
 
 === Annotationen
