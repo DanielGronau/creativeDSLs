@@ -6,9 +6,13 @@ For a software engineer, writing DSLs often feels exciting and fun, and it is ea
 
 The first question to answer is obviously which domain to tackle. For small domains and areas with existing standards, this question is usually easy to answer. For larger domains it can be tempting to over-generalize. Try to be specific. Sometimes, the deliberate decision to drop some lesser used and harder to implement parts of the problem domain can make the DSL more flexible and lean.
 
-When the system already employs other DSLs, it should be considered whether a parallel use could be confusing or yield unexpected results.
+Generally, it is a good practice to construct your DSL in layers, so that the lower layers don't rely on the higher ones, and can be used independently. E.g. if you design a DSL for linear algebra, the DSL part for matrices could be independent of the rest of the system, and therefore you can use them in other contexts as well.
+
+When your application already employs other DSLs, it should be considered whether a parallel use of the new DSL would be confusing or if it could yield unexpected results.
 
 After the specification of the problem domain, it might be advisable to look for existing DSLs. You might be surprised by the plethora of existing solutions, and of course it makes no sense to reinvent the wheel. Even if the results don't fit your use case perfectly, they might serve as a base implementation, or as a source of inspiration.
+
+If there is no existing DSL for your problem, you might also investigate whether using a DSL generator could be an option for you. Using such libraries can make designing a DSL a breeze. This book covers AutoDSL for Kotlin (https://github.com/F43nd1r/autodsl).
 
 === Specifying the Results
 

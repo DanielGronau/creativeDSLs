@@ -196,7 +196,7 @@ To avoid this problem, there is a mechanism for scope control:
 * Define a custom annotation
 * Annotate this annotation with `@DslMarker`
 * Mark all involved receiver classes (or a common super class) with your annotation
-* After this, you can't directly access things from the outer scope. You still can refer them indirectly, like with `this@html.head{}`
+* After this, you can't directly access things from the outer scope. You still can refer them indirectly, like with `this@html.head{...}`
 
 It should be noted that you can also define extension fields, which will only allow getters. They aren't used nearly as much as extension functions, but it is good to know that they exist.
 
