@@ -148,7 +148,7 @@ count() // increases n by 1
 
 Similarly, the index access operator can be used to mimic e.g. arrays and maps.
 
-=== Extension Functions and Receiver Lambdas
+=== Extensions
 
 One of the most important features for DSL design are functions and lambdas with receivers. This can be understood of putting the function body in the scope of the receiver, so you can access its public fields, methods etc., and also refer to the receiver via `this`. In case of extension functions, the call looks like
 
@@ -198,7 +198,18 @@ To avoid this problem, there is a mechanism for scope control:
 * Mark all involved receiver classes (or a common super class) with your annotation
 * After this, you can't directly access things from the outer scope. You still can refer them indirectly, like with `this@html.head{...}`
 
-It should be noted that you can also define extension fields, which will only allow getters. They aren't used nearly as much as extension functions, but it is good to know that they exist.
+It should be noted that you can also define extension properties. Generally, they aren't used nearly as much as extension functions, but they can help to make DSLs prettier, as they don't require the empty parentheses an equivalent extension function would need:
+
+[source,kotlin]
+----
+data class Amount(val value: BigDecimal, val currency: String)
+
+val Double.EUR
+    get() = Currency(this.toBigDecimal(), "EUR")
+
+// with an extension function, this would be 22.46.EUR()
+val money = 22.46.EUR
+----
 
 The infix notation covered in the next paragraph uses extension function syntax as well.
 
@@ -219,13 +230,77 @@ x.shouldBe("expectedValue") // normal syntax
 x shouldBe "expectedValue" // infix syntax
 ----
 
-A weak point of infix notation that you can't explicitly specify generics using this syntax. In this case, you can fall back to the normal function call syntax - but the users of the DSL might not know this.
+A weak point of infix notation that you can't explicitly specify generics using this syntax. In this case, you can fall back to the normal function call syntax - but users of the DSL might not know this.
 
 === Generics
 
-+ reified generics
+Generics are a useful abstraction over concrete types in all kinds of contexts, including DLS design. A specific use case is the implementation of compile time checks, e.g. by using phantom types. Here is a simple example modelling currencies:
 
-=== Annotationen
+[source,kotlin]
+----
+object Eur
+object Usd
+
+data class Currency<T>(val value: BigDecimal, val currency: T)
+
+val Double.EUR
+    get() = Currency(this.toBigDecimal(), Eur)
+val Double.USD
+    get() = Currency(this.toBigDecimal(), Usd)
+
+operator fun <T> Currency<T>.plus(that:Currency<T>) = copy(value = this.value + that.value)
+
+val works = 3.1.EUR + 4.5.EUR // 7.6 EUR
+val oops = 3.1.EUR + 4.5.USD // doesn't compile
+----
+
+The `Amount` class holds the `currency` field, which could be used for runtime checks. But with generics, we can do better: Adding amounts of different currencies together isn't possible, because the definition of `+` ensures that both amounts have the same currency type.
+
+One great feature of Kotlin is reified generics. The JVM implements generics using "type erasure", which means that (while the compiler checks them and even adds type casts and auxiliary methods) at runtime the JVM basically "forgets" them. In Kotlin, you can access that type information under certain circumstances:
+
+[source,kotlin]
+----
+inline fun <reified T> List<T>.combine() = println(when(T::class) {
+    Int::class -> (this as List<Int>).sum()
+    String::class -> (this as List<String>).fold("", String::plus)
+    else -> this
+})
+...
+listOf<Int>().combine() // 0
+listOf(1, 2, 3).combine() // 6
+listOf("x", "y", "z").combine() // xyz
+listOf(true, false).combine() // [true, false]
+----
+
+Note the expression `T::class`, which shouldn't work considering type erasure. However, the function is defined as an `inline` function, and the generic parameter `T` is marked as "reified". The details are beyond the scope of this book, but basically the inlining allows the compiler to gather the generic type information already at compile time, and make it look like as there is no type erasure happening. It should be noted that inline functions are subjected to some restrictions, and show subtle differences to not inlined functions.
+
+=== Annotations
+
+You can write whole DSLs using annotations, but more often annotations can support DSLs, e.g. by pointing out how certain fields or classes should be handled. They are especially powerful when your DSL shows a certain default behavior, but needs to consider some edge cases or exceptions, like "don't persist this property".
+
+Another useful application for annotations is code generation. E.g. the already mentioned AutoDSL library uses the information provided via annotations to construct the DSL classes.
 
 === Reflection
 
+Sometimes you need to inspect or deconstruct classes, call unknown methods, react to annotations etc., which can be done using reflection. If you need more than the most basic reflection in Kotlin, you have to import a separate dependency:
+
+[source,kotlin]
+.Gradle (.kts)
+----
+dependencies {
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.7.10")
+}
+----
+
+[source,xml]
+.Maven
+----
+<dependencies>
+  <dependency>
+      <groupId>org.jetbrains.kotlin</groupId>
+      <artifactId>kotlin-reflect</artifactId>
+  </dependency>
+</dependencies>
+----
+
+Depending on your use case, you might also consider alternatives like kotlinx.reflect.lite (https://github.com/Kotlin/kotlinx.reflect.lite).

@@ -1,5 +1,5 @@
 = Creative DSLs in Kotlin
-Author Name
+:front-cover-image: image:cover.png[]
 :doctype: book
 :encoding: utf-8
 :lang: en
@@ -14,8 +14,6 @@ Author Name
 :author: Daniel Gronau
 
 include::colophon.adoc[]
-
-include::dedication.adoc[]
 
 include::acknowledgements.adoc[]
 
