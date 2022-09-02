@@ -10,7 +10,7 @@ operator fun Complex.unaryMinus(): Complex = this.negate()
 
 operator fun Complex.plus(other: Complex): Complex = add(other)
 operator fun Complex.plus(other: Double): Complex = add(other)
-operator fun Double.plus(other: Complex): Complex = fromDouble(this).add(this)
+operator fun Double.plus(other: Complex): Complex = fromDouble(this).add(other)
 
 operator fun Complex.minus(other: Complex): Complex = subtract(other)
 operator fun Complex.minus(other: Double): Complex = subtract(other)

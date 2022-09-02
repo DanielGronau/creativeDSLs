@@ -1,2 +1,110 @@
-== Chapter 5
+== Algebraic DSLs
 
+A common class of problems deals with objects forming algebraic structures, in other words, object that behave somewhat similar to numbers. This includes complex numbers, quaternions, vectors, matrices, physical and monetary units, and much more. This is one of the easiest DSL designs in Kotlin, especially when you can reuse the existing operators.
+
+NOTE: As for many other types of DSL, there seems to be no established name for this DSL category in the literature. I think calling them "Algebraic DSLs" covers their behavior quite well, but you might find the same concept under different names elsewhere.
+
+In fact, the Kotlin API itself contains some nice algebraic DSL examples, e.g. for `BigInteger` and `BigDecimal`, which can be used pretty much like "normal" numbers - something Java programmers can only dream of.
+
+Even if your problem domain has not really an algebraic structure, you should know about these techniques. Take chemical formulas as an example: Even though they are clearly not number-like, they contain the concepts of (scalar) multiplication and addition.
+
+=== Case Study: A DSL for Complex Numbers
+
+As promised in the preface, this book tries to avoid toy examples. That's why we won't use our own implementation for complex numbers, but an existing "serious" one that you could very well find in a production environment. We will use the https://github.com/apache/commons-numbers/tree/master/commons-numbers-complex[Apache Commons Numbers: Complex] implementation, which is written in Java.
+
+The implementation behaves pretty much as expected:
+
+[source,kotlin]
+----
+val a = Complex.ofCartesian(3.0, 4.0)
+val b = Complex.ofCartesian(5.0, 6.0)
+val c = a.add(b) // 8 + 10i
+val d = a.times(b) // -9 + 38i
+----
+
+There are some static factory methods to create `Complex` objects, like `Complex.ofCartesian()` or `Complex.ofPolar()`, and then you can use some methods like `add()` and `times()` on these objects.
+
+If we follow the methodology from chapter 3, we should now come up with an ideal syntax, but this is easy, as in maths we would simply write `3.0 + 4.0i` instead of `Complex.ofCartesian(3.0, 4.0)`. I think it is acceptable to have no special syntax for other ways to initialize complex numbers, like the polar definition.
+
+When we consider that `4.0i` is actually a multiplication, we are already there: A syntax like `3.0 + 4.0*i` can be implemented in Kotlin.
+
+First, we need to define the imaginary unit `i` with `val i = Complex.I`. This is a bit risky because of possible name clashes, so it would be also an option to import `Complex.I` instead.
+
+Next, the arithmetic operations can be implemented using operator overloading. We need not only operations between two `Complex` instances, but also between `Complex` and `Double`. Here is an example for addition:
+
+[source,kotlin]
+----
+operator fun Complex.plus(other: Complex): Complex = add(other)
+operator fun Complex.plus(other: Double): Complex = add(other)
+operator fun Double.plus(other: Complex): Complex =
+    Complex.ofCartesian(this, 0.0).add(this)
+----
+
+The other operations look basically the same. We could also support interoperability with `Int` in addition to `Double` if we want, but it was omitted for the sake of brevity. A little improvement would be a helper method for the conversion from double to complex, instead of relying on the awkward `Complex.ofCartesian` factory.
+
+Next, we need also to support negation of complex numbers (and probably the unary plus, too, for symmetry reasons). This looks very similar to the code above:
+
+[source,kotlin]
+----
+operator fun Complex.unaryMinus(): Complex = this.negate()
+----
+
+And that's already it, we have a basic DSL for complex numbers. Here is the complete code:
+
+[source,kotlin]
+----
+import org.apache.commons.numbers.complex.Complex
+
+val i = Complex.I
+
+operator fun Complex.unaryPlus(): Complex = this
+
+operator fun Complex.unaryMinus(): Complex = this.negate()
+
+operator fun Complex.plus(that: Complex): Complex = add(that)
+operator fun Complex.plus(that: Double): Complex = add(that)
+operator fun Double.plus(that: Complex): Complex = fromDouble(this).add(that)
+
+operator fun Complex.minus(that: Complex): Complex = subtract(that)
+operator fun Complex.minus(that: Double): Complex = subtract(that)
+operator fun Double.minus(that: Complex): Complex = fromDouble(this).subtract(that)
+
+operator fun Complex.times(that: Complex): Complex = multiply(that)
+operator fun Complex.times(that: Double): Complex = multiply(that)
+operator fun Double.times(that: Complex): Complex = fromDouble(this).multiply(that)
+
+operator fun Complex.div(that: Complex): Complex = divide(that)
+operator fun Complex.div(that: Double): Complex = divide(that)
+operator fun Double.div(that: Complex): Complex = fromDouble(this).divide(that)
+
+private fun fromDouble(d: Double) = Complex.ofCartesian(d, 0.0)
+----
+
+Now our very first example can be written as
+[source,kotlin]
+----
+val a = 3.0 + 4.0*i
+val b = 5.0 + 6.0*i
+val c = a + b
+val d = a * b
+----
+
+Of course we could start to add more functionality. E.g. this function would allow to compare complex numbers by their absolute value:
+
+[source,kotlin]
+----
+operator fun Complex.compareTo(that: Complex): Int =
+    abs().compareTo(that.abs())
+
+val cmp = 3.0 + 4.0*i < 5.0 - 1.0*i // true
+----
+
+This wasn't included in the DSL because it is somewhat dangerous, as it isn't consistent with the behavior of `Double` values: Of course `-5.0 < 4.0`, but with the code above, we would have `-5.0 + 0.0*i > 4.0 + 0.0*i`.
+
+=== Conclusion
+
+I hope the case study shows that writing algebraic DLSs is generally quite straightforward. There are still a few points to consider:
+
+* Finding an appropriate set of operators might not be as easy as in the example above, especially as operator precedence has to be taken into account
+* It might get quite confusing when two algebraic DSLs are used in the same piece of code
+* Using such DSLs from Java code can be more painful than using the original syntax

@@ -10,6 +10,7 @@ class ComplexTest {
         val a = Complex.ofCartesian(3.0, 4.0)
         val b = Complex.ofCartesian(2.0, 1.0)
 
+        assertThat(4.0 * i).isEqualTo(Complex.ofCartesian(0.0, 4.0))
         assertThat(3.0 + 4.0 * i).isEqualTo(Complex.ofCartesian(3.0, 4.0))
         assertThat(+a).isEqualTo(Complex.ofCartesian(3.0, 4.0))
         assertThat(-a).isEqualTo(Complex.ofCartesian(-3.0, -4.0))
@@ -18,13 +19,6 @@ class ComplexTest {
         assertThat(a * b).isEqualTo(Complex.ofCartesian(2.0, 11.0))
         assertThat(a / b).isEqualTo(Complex.ofCartesian(2.0, 1.0))
         assertThat(a < b).isFalse
-
-        foo("s", 1,2,3){}
-        bar("s", 1,2,3, b = "c")
     }
-
-    fun foo(s: String, vararg a: Int, b: () -> Unit) {}
-
-    fun bar(s: String, vararg a: Int, b: String) {}
 
 }
