@@ -10,6 +10,9 @@ import java.time.temporal.TemporalUnit
 fun httpRequest(uri: URI, block: HttpRequestBuilder.() -> Unit): HttpRequest =
     HttpRequestBuilder(uri).apply(block).build()
 
+fun httpRequest(uri: String, block: HttpRequestBuilder.() -> Unit): HttpRequest =
+    HttpRequestBuilder(URI.create(uri)).apply(block).build()
+
 typealias HttpMethod = Pair<String, BodyPublisher?>
 
 @DslMarker
