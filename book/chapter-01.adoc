@@ -18,3 +18,5 @@ One disadvantage of internal DSLs is the limitation of the syntax inherited by t
 === Code Generation for Internal DSLs
 
 A common problem in DSL design is combinatorial explosion: Take for example a DSL for physical units, and all the possible results when multiplying or dividing them. In order to achieve a pleasing syntax, but avoid illegal conversions you might have to write lots of boilerplate code. In these cases, code generation can help to get the job done, even if it seemed hopeless at the first glance.
+
+There are also libraries creating DSLs for you. If you need a well-known style of DSL, you just describe what you need (e.g. by annotating your business classes accordingly), and the library will generate the DSL code for you. An example for this approach is https://github.com/F43nd1r/autodsl[AutoDSL for Kotlin]

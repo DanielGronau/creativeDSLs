@@ -10,9 +10,11 @@ Generally, it is a good practice to construct your DSL in layers, so that the lo
 
 When your application already employs other DSLs, it should be considered whether a parallel use of the new DSL would be confusing or if it could yield unexpected results.
 
-After the specification of the problem domain, it might be advisable to look for existing DSLs. You might be surprised by the plethora of existing solutions, and of course it makes no sense to reinvent the wheel. Even if the results don't fit your use case perfectly, they might serve as a base implementation, or as a source of inspiration.
+=== Research
 
-If there is no existing DSL for your problem, you might also investigate whether using a DSL generator could be an option for you. Using such libraries can make designing a DSL a breeze. This book covers AutoDSL for Kotlin (https://github.com/F43nd1r/autodsl).
+After the specification of the problem domain, it might be advisable to look for existing DSLs. You might be surprised by the plethora of existing solutions, and of course it makes little sense to reinvent the wheel. Even if the results don't fit your use case perfectly, they might serve as a base implementation, or as a source of inspiration.
+
+If there is no existing DSL for your problem, you might also investigate whether using a DSL generator could be an option for you. Using such libraries can make designing a DSL a breeze. This book covers https://github.com/F43nd1r/autodsl[AutoDSL for Kotlin].
 
 === Specifying the Results
 

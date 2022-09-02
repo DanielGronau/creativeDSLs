@@ -1,8 +1,6 @@
 == Relevant Language Features
-:source-highlighter: rouge
-:icons: font
 
-As mentioned in the preface, this book assumes basic Kotlin knowledge from the reader. However, DSLs use other language features, or they use them in other ways than common code. This chapter wants to give a short overview of language features that are relevant for writing DSLs.
+As mentioned in the preface, this book assumes basic Kotlin knowledge from the reader. However, DSLs use often lesser common language features, or they use features in other ways than common code. This chapter wants to give a short overview of language features that are relevant for writing DSLs.
 
 === Backtick Identifiers
 
@@ -39,22 +37,33 @@ val person = Person("John", "Doe", 23)
 val happyBirthday = person.copy(age = person.age + 1)
 ----
 
-As you can see, the values of the current object are set as default values of the new instance, and thanks to the named argument feature one can pinpoint the arguments which must be changed, and leave all others untouched.
+As you can see, the values of the current object are set as default values of the new instance, and thanks to the named argument feature one can pick the arguments which must be changed, and leave all others untouched.
 
 === Trailing Lambda Arguments
 
-If a method expects an argument of a function type, you can use the usual lambda syntax with curly braces when you call it. E.g. you can map a list of strings to their lengths as follows:
+If a method expects an argument of a function type, you can use the usual lambda syntax with curly braces when you call it. E.g. you can merge a list of strings using then `fold()` method as follows:
 
 [source,kotlin]
 ----
-listOf("one", "two", "three").map({ s -> s.length })
+listOf("one", "two", "three").fold("", { s, t -> s + t })
 ----
 
-However, if such an argument is the last one, you can pull it out of the argument list. And if it is the only one, you also don't have to write the empty parenthesis. That's the usual syntax:
+However, if such an argument is the last one, you can "pull it out" of the argument list:
 
 [source,kotlin]
 ----
-listOf("one", "two", "three").map{ s -> s.length }
+listOf("one", "two", "three").fold("") {
+   s, t -> s + t
+}
+----
+
+And if it is the only argument, you don't have to write the empty parenthesis. The `map()` method is an example for a method with a single function argument:
+
+[source,kotlin]
+----
+listOf("one", "two", "three").map {
+    s -> s.length
+}
 ----
 
 While this syntactic sugar doesn't look very impressive at the first glance, it allows to write very natural looking DSLs for nested structures. Here is an example from the Kotlin documentation:
@@ -72,11 +81,13 @@ html {
 
 === Varargs
 
-Varargs are already part of Java, and allow to call a method with a variable number of arguments. Kotlin has them too, but made them more safe and more convenient at the same time:
+Varargs are already part of Java, and allow to call a method with a variable number of arguments. Kotlin has them too, but made them more safe and convenient:
 
-One change is that the syntax is now unambiguous. In Java, there were cases when it wasn't clear whether an array was meant to be a single argument of a vararg, or if its elements should be used. Kotlin introduced the "spread operator" `*`, which makes clear that the elements of an array should be used for the vararg. Also, Kotlin allows to combine arguments from single values and from spread arrays freely, e.g. you can write: `val list = listOf(2, 0, *someArray, 4)`.
+One change is that the syntax is now unambiguous. In Java, there were cases when it wasn't clear whether an array was meant to be a single argument of a vararg, or if its elements should be used as arguments. Kotlin introduced the "spread operator" `*`, which makes clear that the elements of an array should be used for the vararg. Also, Kotlin allows to combine arguments from single values and from spread arrays freely, e.g. you can write: `val list = listOf(2, 0, *someArray, 4)`.
 
-In Java a vararg has to be the last argument. Kotlin allows to put them anywhere, even though you might need tu use named arguments in order to avoid ambiguity:
+==== Vararg Position
+
+In Java a vararg has to be the last argument. Kotlin allows to put the vararg anywhere, even though you might have to use named arguments in order to avoid ambiguity:
 
 [source,kotlin]
 ----
@@ -85,7 +96,9 @@ fun someMethod(vararg numbers: Int, someString: String) { ... }
 someMethod(1, 2, 3, someString = "Hi!")
 ----
 
-At the first glance, having the choice to put varargs wherever you want doesn't seem to be terribly useful. But there is one use case which makes this feature interesting from a DSL design perspective: You can put a vararg as second to last element before a trailing function argument:
+==== Varargs and Trailing Lambda Syntax
+
+At the first glance, having the choice to put varargs wherever you want doesn't seem to be terribly useful. But there is one use case which makes this feature interesting from a DSL design perspective: You can put a vararg as second to last element before a trailing lambda argument:
 
 [source,kotlin]
 ----
@@ -95,6 +108,8 @@ someMethod("Hi!", 1, 2, 3) {
     ...
 }
 ----
+
+As you can see, you don't need named arguments for clarification in this case.
 
 === Property-Syntax
 
@@ -114,6 +129,8 @@ class TemperatureSensor {
 }
 ----
 
+Later in the extensions section we'll discuss another use of the property syntax.
+
 === Operator Overloading
 
 Kotlin allows operator overloading, but is quite conservative in the sense that it permits only a fixed and quite limited set of operators:
@@ -132,7 +149,7 @@ Note that the boolean operators `&&` and `||` cannot be overloaded.
 
 There are many use cases for operators, but please don't overuse them. There should be at least some association or analogy between the operation and the chosen operator. E.g. for concatenating a path, `/` would be fine, as it is a common path separator. If you want to "add" a single value to a block in some sense, using the unary `+` has become a kind of standard. It might be also okay to use `..` instead of a `:`, because of the visual similarity.
 
-But at some point you need to draw a line, e.g. inverting a matrix by using `!` would be in my opinion a bit of a stretch. Also, it can be confusing when you reuse an operator too often, like "adding" an address, phone number, email or website to a person. Often it is better to use an inline function with a meaningful name instead of letting the users guess what an operator could mean.
+But at some point you need to draw a line, e.g. inverting a matrix by using `!` would be in my opinion a bit of a stretch. Also, it can be confusing when you reuse an operator too often, like "adding" an address, phone number, email or website to a person. Often it is better to use an infix function with a meaningful name instead of letting the users guess what an operator could mean.
 
 That said, you can do some sneaky things with operators. E.g. the invoke operator can be used to simulate the syntax of a function call. That makes it possible to camouflage objects as functions, when you need to store state:
 
@@ -150,7 +167,7 @@ Similarly, the index access operator can be used to mimic e.g. arrays and maps.
 
 === Extensions
 
-One of the most important features for DSL design are functions and lambdas with receivers. This can be understood of putting the function body in the scope of the receiver, so you can access its public fields, methods etc., and also refer to the receiver via `this`. In case of extension functions, the call looks like
+One of the most important features for DSL design are functions and lambdas with receivers. This can be understood of putting the function body in the scope of the receiver, so you can access its public fields, methods etc., and also refer to the receiver via `this`. In case of extension functions, the call looks like a normal method call on a receiver instance.
 
 Interestingly, you can do something using generic extension functions that isn't possible with instance methods: You can fix generic parameters to a certain type, and write a "specialized" function for this particular type. Here is an example for calculating the product of numbers as an extension function of `List`:
 
@@ -161,7 +178,9 @@ fun List<Double>.product() = fold(1.0, Double::times)
 val p = listOf(1.0, 2.0, 3.0).product()  // p == 6.0
 ----
 
-Lambdas can have receivers too, and this plays nicely with the Loan Pattern. This is very useful for DSLs, because it helps to control the life-cycle of the receiver class. Take this example:
+==== Loan Pattern
+
+Lambdas can have receivers too, and this plays nicely with the Loan Pattern. Applying the Loan Pattern means that construction and disposal of an instance (e.g. often a resource) is hidden from client code, which gets access to the already fully initialized instance, and isn't responsible for things like closing connections at the end. This is very useful for DSLs, because it helps to control the life-cycle of the receiver class. Take this example:
 
 [source,kotlin]
 ----
@@ -177,7 +196,9 @@ val s: String = sb {
 }
 ----
 
-This may look a little confusing at first, and the details will be discussed later, but the point is that you can use a block where `this` is a certain receiver class (here `StringBuilder`), and you don't have to care about its construction or final steps.
+This may look a little confusing at first, and the details will be discussed later, but the point is that you can use a block where `this` is a certain receiver class (here `StringBuilder`), and you don't have to care about its construction or final steps (like calling a `build()` method).
+
+==== The @DslMarker annotation
 
 There is a scope problem when you nest several extension functions: Things visible in the outer blocks are also visible in the inner ones. E.g. in a DSL for HTML generation, one could write:
 
@@ -256,6 +277,8 @@ val oops = 3.1.EUR + 4.5.USD // doesn't compile
 
 The `Amount` class holds the `currency` field, which could be used for runtime checks. But with generics, we can do better: Adding amounts of different currencies together isn't possible, because the definition of `+` ensures that both amounts have the same currency type.
 
+==== Reified Generics
+
 One great feature of Kotlin is reified generics. The JVM implements generics using "type erasure", which means that (while the compiler checks them and even adds type casts and auxiliary methods) at runtime the JVM basically "forgets" them. In Kotlin, you can access that type information under certain circumstances:
 
 [source,kotlin]
@@ -303,4 +326,4 @@ dependencies {
 </dependencies>
 ----
 
-Depending on your use case, you might also consider alternatives like kotlinx.reflect.lite (https://github.com/Kotlin/kotlinx.reflect.lite).
+Depending on your use case, you might also consider alternatives like https://github.com/Kotlin/kotlinx.reflect.lite[kotlinx.reflect.lite].
