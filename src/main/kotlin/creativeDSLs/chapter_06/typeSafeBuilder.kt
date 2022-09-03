@@ -36,3 +36,12 @@ fun productBuilder() = ProductBuilder(
 
 fun ProductBuilder<With<UUID>, With<String>, With<BigDecimal>>.build() =
     Product(id.value, name.value, price.value, description, images)
+
+fun main() {
+    productBuilder()
+        .id(UUID.randomUUID())
+        .name("Comb")
+        .description("Green plastic comb")
+        .price(12.34.toBigDecimal())
+        .build()
+}

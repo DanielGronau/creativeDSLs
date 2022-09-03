@@ -255,7 +255,7 @@ A weak point of infix notation that you can't explicitly specify generics using 
 
 === Generics
 
-Generics are a useful abstraction over concrete types in all kinds of contexts, including DLS design. A specific use case is the implementation of compile time checks, e.g. by using phantom types. Here is a simple example modelling currencies:
+Generics are a useful abstraction over concrete types in all kinds of contexts, including DLS design. A specific use case is the implementation of compile time checks. Here is a simple example modelling currencies:
 
 [source,kotlin]
 ----
@@ -274,6 +274,8 @@ operator fun <T> Currency<T>.plus(that:Currency<T>) = copy(value = this.value + 
 val works = 3.1.EUR + 4.5.EUR // 7.6 EUR
 val oops = 3.1.EUR + 4.5.USD // doesn't compile
 ----
+
+NOTE: A type parameter which doesn't relate to any field, argument, etc. of its  class is called a "phantom type".
 
 The `Amount` class holds the `currency` field, which could be used for runtime checks. But with generics, we can do better: Adding amounts of different currencies together isn't possible, because the definition of `+` ensures that both amounts have the same currency type.
 

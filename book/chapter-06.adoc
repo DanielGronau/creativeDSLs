@@ -2,7 +2,7 @@
 
 A common task is the initialization of a complex, sometimes nested object. The classical solution for this is the Builder Pattern. The builder class is mutable, uses method chaining (a.k.a. "Fluent Interfaces") to simplify value assignments, and contains a terminal build method, which constructs (hopefully after some sanity checks) the domain object.
 
-As an example for a classical builder with a bit of realistic complexity, we can use `java.net.http.HttpRequest`, which is written in Java. A typical builder call could look like this:
+As an example for a classical builder with realistic complexity, we can use `java.net.http.HttpRequest`, which is written in Java. A typical builder call could look like this:
 
 [source,kotlin]
 ----
@@ -27,7 +27,7 @@ data class Color(val red: Int, val green: Int, val blue: Int, val alpha: Int = 2
 val c = Color(0, 100, 130, 200)
 ----
 
-Written like this, the four `Int` values might be a little confusing to read, especially when you expect only three values as for RGB colors. But you don't need a builder in this case, you can clarify the meaning by rewriting the last line as follows:
+Written like this, the four `Int` values might be a little confusing to read, especially when you expect only three values as for RGB colors. However, instead on relying on a builder, you can simply clarify the meaning by rewriting the last line as follows:
 
 [source,kotlin]
 ----
@@ -71,7 +71,7 @@ val id: ID, val name: NAME, val price: PRICE, val description: String?, val imag
 }
 ----
 
-That's a scary looking signature, but it isn't really hard to understand: Every mandatory field gets a separate type parameter, which keeps track whether it is already set or not. We could use the constructor to start the building process, but a helper function is more convenient:
+That's a scary looking generic signature, but it isn't really hard to understand: Every mandatory field gets a separate type parameter, which keeps track whether it is already set or not. We could use the constructor to start the building process, but a helper function is more convenient:
 
 [source,kotlin]
 ----
@@ -101,9 +101,9 @@ data class ProductBuilder<ID : Mandatory<UUID>, NAME : Mandatory<String>, PRICE 
 }
 ----
 
-Again, type inference safes us from a lot of typing, but the setters for the mandatory fields return a builder with a changed signature. That's why you can't use the `copy()` methods in this case.
+Again, type inference saves us from a lot of typing, but the setters for the mandatory fields return a builder with a changed signature. That's why you can't use the `copy()` methods in this case.
 
-Of course, one crucial part is missing: The `build()` method. However, we can't write it as part of the class, as it needs to inspect the generic signature. It has to be an extension method, because there you can "fix" the type parameters to concrete types:
+Of course, one crucial part is missing: The `build()` method. However, we can't write it as part of the builder class, as it needs to inspect the generic signature. It has to be an extension method, because only there you can "fix" the type parameters to concrete types:
 
 [source,kotlin]
 ----
@@ -115,7 +115,48 @@ Note how you can access the `value` fields of the `With` classes, because the ex
 
 NOTE: The Typesafe Builder Pattern is an example of type-level programming, where the compiler is used to perform checks or even calculations, and hence giving more control over the behavior of the affected classes. The pattern was pioneered by http://blog.rafaelferreira.net/2008/07/type-safe-builder-pattern-in-scala.html[Rafael Ferreira] in Scala, using ideas from Haskell. The code shown here is based on the implementation of http://dcsobral.blogspot.de/2009/09/type-safe-builder-pattern.html[Daniel Sobral].
 
-=== Chameleon Builders
+=== Counting Builder
+
+I have to admit that this is one of the more exotic builder variations, but I decided to include it because it is an interesting technique, and because this kind of construction might be useful in other contexts.
+
+Consider the following `Polygon` class, which could be part of a graphics library:
+
+[source,kotlin]
+----
+data class Polygon(val points: List<Point2D>)
+----
+
+It is very easy to write a builder to collect all points, and to construct the polygon from it, but there is a problem: A polygon with less than three points isn't really a polygon. Therefore, we would need a builder which can "count" how often a point is added, and only allows to construct polygons with at least three points.
+
+One possible solution is to keep track of the number of points using a recursive type parameter. While this sounds strange at first, the implementation of the idea is straightforward:
+
+[source,kotlin]
+----
+sealed class PB
+object PolygonBuilder : PB() {
+    fun add(point: Point2D) = PointPB<PolygonBuilder>(listOf(point))
+}
+class PointPB<T : PB>(val points:List<Point2D>) : PB() {
+    fun add(point: Point2D) = PointPB<PointPB<T>>(points + point)
+}
+----
+
+The `PolygonBuilder` is both starting point and marker for an empty builder. The `PointPB` builder takes a list of points as arguments, but it also keeps track of the type of the calling builder in its type parameter.
+
+After the first `PolygonBuilder.add()` call, you get a `PointPB<PolygonBuilder>` back. Calling `add()` again gives you a `PointPB<PointPB<PolygonBuilder>>`. The next call returns a `PointPB<PointPB<PointPB<PolygonBuilder>>>`. And as in the Typesafe Builder Pattern example, we can use an extension method to make sense of these signatures:
+
+[source,kotlin]
+----
+fun <T: PB> PointPB<PointPB<PointPB<T>>>.build() = Polygon(points)
+----
+
+As you can see, the `build()` method is quite literally counting the points by inspecting the type signature of the receiver.
+
+=== Builder Chain
+
+Sometimes you want to construct an object in stages, either for better readability or for more control over the life cycle. E.g. for a SQL query, you might want to define separate builders for the SELECT part, for the FROM part and for the WHERE part.
+
+=== Chameleon Builder
 
 
 ## Fallstudie: HttpRequest
