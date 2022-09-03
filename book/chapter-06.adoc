@@ -34,12 +34,86 @@ Written like this, the four `Int` values might be a little confusing to read, es
 val c = Color(red = 0, green = 100, blue = 130, alpha = 200)
 ----
 
-=== Typesafe Builder Pattern
+=== The Typesafe Builder Pattern
 
 A common weakness of builders is that you can't enforce that mandatory fields are set. Of course, conditions like these should be always checked in the build method, but it would be nice if already the compiler could prevent you from attempting to build incomplete objects.
 
-Although it requires admittedly some boilerplate code, you can use generics to keep track of the state of mandatory fields, and adapt the build method to accept only correctly filled out builders.
+Although it requires some boilerplate code, you can use generics to keep track of the state of mandatory fields, and adapt the build method to accept only correctly filled out builders. As the generic signature of the builder must change for this to work, you can't use a single mutable builder, so the setter methods return new builders.
 
+As an example, consider the following class for a product, which needs to have product id, name and price set, while the other attributes are optional:
+
+[source,kotlin]
+----
+ data class Product(
+    val id: UUID,
+    val name: String,
+    val price: BigDecimal,
+    val description: String?,
+    val images: List<URI>)
+----
+
+The first ingredient to our builder are three classes as a common prerequisite. They are similar to `Optional`, with the difference that the empty and full state are represented by different classes. In case you wonder why `T: Any` was used instead of simply `T`, this prevents `T` from being inhabited by a nullable type.
+
+[source,kotlin]
+----
+sealed class Mandatory<T: Any>
+class Without<T: Any> : Mandatory<T>()
+class With<T: Any>(val value: T): Mandatory<T>()
+----
+
+With the help of these classes, we can write the builder:
+
+[source,kotlin]
+----
+data class ProductBuilder<ID: Mandatory<UUID>, NAME: Mandatory<String>, PRICE: Mandatory<BigDecimal>>(
+val id: ID, val name: NAME, val price: PRICE, val description: String?, val images: List<URI>) {
+    ...
+}
+----
+
+That's a scary looking signature, but it isn't really hard to understand: Every mandatory field gets a separate type parameter, which keeps track whether it is already set or not. We could use the constructor to start the building process, but a helper function is more convenient:
+
+[source,kotlin]
+----
+fun productBuilder() = ProductBuilder(
+    id = Without(),
+    name = Without(),
+    price = Without(),
+    description = null,
+    images = listOf()
+)
+----
+
+Thankfully, we don't have to write all the generic signatures, but the inferred return type of this function is `ProductBuilder<Without<UUID>, Without<String>, Without<BigDecimal>>`.
+
+Now you can hopefully anticipate how the generics keep track of the mandatory fields. Basically, when an optional field is set, the type parameters don't change, but when a mandatory field is set, the signature will change from `Without` to `With` for this particular field. Here is the complete builder class:
+
+[source,kotlin]
+----
+data class ProductBuilder<ID : Mandatory<UUID>, NAME : Mandatory<String>, PRICE : Mandatory<BigDecimal>>(
+    val id: ID, val name: NAME, val price: PRICE, val description: String?, val images: List<URI>
+) {
+    fun id(uuid: UUID) = ProductBuilder(With(uuid), name, price, description, images)
+    fun name(n: String) = ProductBuilder(id, With(n), price, description, images)
+    fun price(p: BigDecimal) = ProductBuilder(id, name, With(p), description, images)
+    fun description(desc: String) = copy(description = desc)
+    fun addImage(img: URI) = copy(images = images + img)
+}
+----
+
+Again, type inference safes us from a lot of typing, but the setters for the mandatory fields return a builder with a changed signature. That's why you can't use the `copy()` methods in this case.
+
+Of course, one crucial part is missing: The `build()` method. However, we can't write it as part of the class, as it needs to inspect the generic signature. It has to be an extension method, because there you can "fix" the type parameters to concrete types:
+
+[source,kotlin]
+----
+fun ProductBuilder<With<UUID>, With<String>, With<BigDecimal>>.build() =
+    Product(id.value, name.value, price.value, description, images)
+----
+
+Note how you can access the `value` fields of the `With` classes, because the extension method is only applicable on a fully set builder. Now we have a builder with a `build()` method that can be only called if all mandatory fields are set.
+
+NOTE: The Typesafe Builder Pattern is an example of type-level programming, where the compiler is used to perform checks or even calculations, and hence giving more control over the behavior of the affected classes. The pattern was pioneered by http://blog.rafaelferreira.net/2008/07/type-safe-builder-pattern-in-scala.html[Rafael Ferreira] in Scala, using ideas from Haskell. The code shown here is based on the implementation of http://dcsobral.blogspot.de/2009/09/type-safe-builder-pattern.html[Daniel Sobral].
 
 === Chameleon Builders
 
