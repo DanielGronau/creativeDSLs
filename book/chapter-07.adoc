@@ -4,7 +4,7 @@ This DSL type is Kotlin's answer to the Builder Pattern. Instead of having a mut
 
 In this chapter, we will first write a more convenient replacement for the `HttpRequest.Builder` presented in the last chapter. Next, we discuss and example for a chained loan pattern. If you have control over the business class you want to construct, you can use a library like AutoDSL to generate a DSL for you. We will explore this in the second part of this chapter.
 
-## Fallstudie: HttpRequest
+=== Fallstudie: HttpRequest
 
 Als ein realistisches Beispiel kann `java.net.http.HttpRequest` dienen, dessen
 Aufruf etwa so aussehen kann:

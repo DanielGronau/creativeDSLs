@@ -1,4 +1,4 @@
-== Chapter 10
+== Annotation-based DSLs
 
 Annotations can be used to tie specify actions or behavior to classes, methods, fields etc. Typical examples include dependency injection frameworks (like Spring or Dagger), transformers to formats like XML or JSON (like Gson, Jackson or JAXB), or authorization (like Spring Security). In Java, Project Lombok aims to reduce the boilerplate of the language in many ways, and uses annotations as well.
 
