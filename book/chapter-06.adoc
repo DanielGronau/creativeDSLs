@@ -127,7 +127,7 @@ fun ProductBuilder<With<UUID>, With<String>, With<BigDecimal>>.build() =
 
 Note how you can access the `value` fields of the `With` classes, because the extension method is only applicable on a fully set builder. Now we have a builder with a `build()` method that can be only called if all mandatory fields are set.
 
-NOTE: The Typesafe Builder Pattern is an example of type-level programming, where the compiler is used to perform checks or even calculations, and hence giving more control over the behavior of the affected classes. The pattern was pioneered by http://blog.rafaelferreira.net/2008/07/type-safe-builder-pattern-in-scala.html[Rafael Ferreira] in Scala, using ideas from Haskell. The code shown here is based on the implementation of http://dcsobral.blogspot.de/2009/09/type-safe-builder-pattern.html[Daniel Sobral].
+NOTE: The Typesafe Builder Pattern is an example of type-level programming. The pattern was pioneered by http://blog.rafaelferreira.net/2008/07/type-safe-builder-pattern-in-scala.html[Rafael Ferreira] in Scala, using ideas from Haskell. The code shown here is based on the implementation of http://dcsobral.blogspot.de/2009/09/type-safe-builder-pattern.html[Daniel Sobral].
 
 === Counting Builder
 

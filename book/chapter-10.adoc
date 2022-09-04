@@ -1,0 +1,101 @@
+== Chapter 10
+
+Annotations can be used to tie specify actions or behavior to classes, methods, fields etc. Typical examples include dependency injection frameworks (like Spring or Dagger), transformers to formats like XML or JSON (like Gson, Jackson or JAXB), or authorization (like Spring Security). In Java, Project Lombok aims to reduce the boilerplate of the language in many ways, and uses annotations as well.
+
+=== Case Study: Mapper DSL
+
+Mapping between similar classes is a common and often tedious task. There exist already many solutions, e.g. the https://mapstruct.org/[MapStruct] library, which is a code generator for mapper classes.
+
+In this case study, we will write a very simple mapper DSL to transform e.g. data classes at runtime. The actual transformation code is not for the faint of heart, it relies on reflection and is very unsafe in order to keep it short. Explaining the details is beyond the scope of this book.
+
+Let's start with an example. Assume we have a `User` and a `Person` class, and that we want to transform users into persons:
+
+[source,kotlin]
+----
+data class User(
+    val id: UUID,
+    val firstName: String,
+    val familyName: String,
+    val birthDay: ZonedDateTime)
+
+data class Person(
+    val firstName: String,
+    val lastName: String,
+    val age: Int)
+----
+
+As you can see, we have to consider three cases:
+
+1. the source and target parameters have the same name and type, like `firstName`
+2. the source and target parameters have the same type, but different names, like  `familyName` and `lastName`
+3. the source and target parameters have different types, like `birthday` and `age`
+
+In the first case, our mapper should just transfer the values. In the second case, we must specify how the names should be mapped. In the third case, we also need some kind of transformer. As you might have guessed, we will specify the required nformation using annotations. This is how our DSL could look like:
+
+[source,kotlin]
+----
+@Mapping("familyName", "lastName")
+@Mapping("birthDay", "age", AgeTransformer::class)
+object UserToPerson : Mapper<User, Person>()
+
+val person = UserToPerson.map(getSomeUser())
+----
+
+The definition of the `@Mapping` annotations is straightforward. They need to be present at runtime, they should be only valid on classes, and it must be possible to use multiple ones (which requires the `@Repeatable` annotation). As the annotation fields cannot be null, we have to use a dummy default class for the `transformer` field:
+
+[source,kotlin]
+----
+@Repeatable
+@Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class Mapping(
+    val source: String,
+    val target: String,
+    val transformer: KClass<*> = Nothing::class
+)
+----
+
+The `AgeTransformer` could be just a function from `ZonedDateTime` to `Int`. When a class is specified in the annotation which isn't a function (like the default value, which is `Nothing`), we will simply ignore it. As the transformer is immutable and  reusable, we can implement it as an `object`:
+
+[source,kotlin]
+----
+object AgeTransformer : (ZonedDateTime) -> Int {
+    override fun invoke(z: ZonedDateTime) =
+        ChronoUnit.YEARS.between(z, ZonedDateTime.now()).toInt()
+}
+----
+
+Now the only thing missing is the `Mapper` class, which needs to figure out which fields need to be mapped, and which transformers to use. As mentioned, it is neither pretty nor safe, but here it goes:
+
+[source,kotlin]
+----
+abstract class Mapper<S : Any, T : Any> {
+    fun map(s: S): T {
+        val annotations = this::class.findAnnotations(Mapping::class)
+        val targetType = this::class.supertypes[0].arguments[1].type!!.classifier as KClass<*>
+        val targetConstructor = targetType.primaryConstructor!!
+        val args = targetConstructor.parameters.map { targetParam ->
+            val ann = annotations.find { it.target == targetParam.name }
+            val sourceParam = ann?.source ?: targetParam.name
+            val sourceValue = s::class.memberProperties.find { it.name == sourceParam }!!.getter.call(s)
+            val hasTransformer = ann?.transformer?.isSubclassOf(Function1::class) ?: false
+            when {
+                hasTransformer -> {
+                    val transformer = ann!!.transformer.objectInstance
+                        ?: ann.transformer.primaryConstructor!!.call()
+                    transformer::class.memberFunctions
+                        .find { it.name == "invoke" }!!
+                        .call(transformer, sourceValue)
+                }
+                else -> sourceValue
+            }
+        }.toTypedArray()
+        println(args.toList())
+        return targetConstructor.call(*args) as T
+    }
+}
+----
+
+As it uses reflection, you need to include a dependency to the `kotlin-reflect` library, as described in chapter 4.10. "Reflection". Of course, the example could be improved in many ways, e.g. sometimes you would need multiple source fields to calculate a target field.
+
+=== Conclusion
