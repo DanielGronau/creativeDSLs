@@ -170,34 +170,31 @@ Similarly, the index access operator can be used to mimic e.g. arrays and maps.
 
 One of the most important features for DSL design are functions and lambdas with receivers. This can be understood of putting the function body in the scope of the receiver, so you can access its public fields, methods etc., and also refer to the receiver via `this`. In case of extension functions, the call looks like a normal method call on a receiver instance.
 
-Interestingly, you can do something using generic extension functions that isn't possible with instance methods: You can fix generic parameters to a certain type, and write a "specialized" function for this particular type. Here is an example for calculating the product of numbers as an extension function of `List`:
+==== Type narrowing
+
+Interestingly, generic extension functions have a capability that normal instance methods haven't: They can "fix" generic parameters to a certain type, narrowing down the range of possible receivers. Here is an example for calculating the product of numbers as an extension function for a list:
 
 [source,kotlin]
 ----
-fun List<Double>.product() = fold(1.0, Double::times)
-
-val p = listOf(1.0, 2.0, 3.0).product()  // p == 6.0
+include::{srcdir}/chapter_04/productSnippet.kt[lines=3..]
 ----
+
+The call to `Double::times` is only possible because the receiver is not just any list, but specifically a `List<Double>`, and this additional type information is also applied to the function body. This feature of extension methods can be used in DSLs e.g. for performing compile-time checks.
 
 ==== Loan Pattern
 
-Lambdas can have receivers too, and this plays nicely with the Loan Pattern. Applying the Loan Pattern means that construction and disposal of an instance (e.g. often a resource) is hidden from client code, which gets access to the already fully initialized instance, and isn't responsible for things like closing connections at the end. This is very useful for DSLs, because it helps to control the life-cycle of the receiver class. Take this example:
+NOTE: The idea of the Loan Pattern is to hide construction and disposal of an instance (e.g. often a resource) from client code. The caller gets only access to the already initialized instance, and isn't responsible for things like closing connections at the end.
+
+Lambdas can have receivers too, and this plays nicely with the Loan Pattern.  This is very useful for DSLs, because it helps to control the life-cycle of the receiver class. Take this example:
 
 [source,kotlin]
 ----
-fun sb(block: StringBuilder.() -> Unit): String =
-    StringBuilder()
-      .also { block.invoke(this) }
-      .toString()
-
-val s: String = sb {
-   append("World")
-   insert(0, "Hello ")
-   append('!')
-}
+include::{srcdir}/chapter_04/stringBuilderSnippet.kt[lines=3..]
 ----
 
-This may look a little confusing at first, and the details will be discussed later, but the point is that you can use a block where `this` is a certain receiver class (here `StringBuilder`), and you don't have to care about its construction or final steps (like calling a `build()` method).
+This may look a little confusing at first, but the main point is that you can use extension methods to create a block where `this` is a certain receiver class (here `StringBuilder`), and you don't have to care about its construction or final steps (like calling a `build()` - or here `toString()` - method).
+
+Building DSLs using this feature is very common, as it has several advantages over the classic Builder Pattern.
 
 ==== The @DslMarker annotation
 
@@ -240,7 +237,7 @@ The function must be a receiver function, and have one argument. The receiver-`t
 include::{srcdir}/chapter_04/shouldBeSnippet.kt[lines=3..]
 ----
 
-A weak point of infix notation that you can't explicitly specify generics using this syntax. In this case, you can fall back to the normal function call syntax - but users of the DSL might not know this.
+A weakness of the infix notation is that you can't explicitly specify generics using this syntax. In this case, you can fall back to the normal function call syntax - but users of the DSL might not know this.
 
 === Generics
 
