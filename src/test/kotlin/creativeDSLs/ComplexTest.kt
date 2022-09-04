@@ -1,5 +1,6 @@
 package creativeDSLs
 
+import creativeDSLs.chapter_05.*
 import org.apache.commons.numbers.complex.Complex
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -18,7 +19,7 @@ class ComplexTest {
         assertThat(a - b).isEqualTo(Complex.ofCartesian(1.0, 3.0))
         assertThat(a * b).isEqualTo(Complex.ofCartesian(2.0, 11.0))
         assertThat(a / b).isEqualTo(Complex.ofCartesian(2.0, 1.0))
-        assertThat(a < b).isFalse
+        assertThat(a pow b).isEqualTo(a.pow(b))
     }
 
 }
