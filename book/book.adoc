@@ -12,6 +12,7 @@
 :source-highlighter: rouge
 :icons: font
 :author: Daniel Gronau
+:srcdir: ../src/main/kotlin/creativeDsls
 
 include::colophon.adoc[]
 

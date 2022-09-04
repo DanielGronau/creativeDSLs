@@ -1,4 +1,5 @@
 == Relevant Language Features
+:srcdir: ../src/main/kotlin/creativeDsls
 
 As mentioned in the preface, this book assumes basic Kotlin knowledge from the reader. However, DSLs use often lesser common language features, or they use features in other ways than common code. This chapter wants to give a short overview of language features that are relevant for writing DSLs.
 
@@ -223,13 +224,7 @@ It should be noted that you can also define extension properties. Generally, the
 
 [source,kotlin]
 ----
-data class Amount(val value: BigDecimal, val currency: String)
-
-val Double.EUR
-    get() = Currency(this.toBigDecimal(), "EUR")
-
-// with an extension function, this would be 22.46.EUR()
-val money = 22.46.EUR
+include::{srcdir}/chapter_04/amountSnippet.kt[lines=5..]
 ----
 
 The infix notation covered in the next paragraph uses extension function syntax as well.
@@ -242,13 +237,7 @@ The function must be a receiver function, and have one argument. The receiver-`t
 
 [source,kotlin]
 ----
-infix fun <T> T.shouldBe(expected: T) {
-    require(this == expected)
-}
-
-val x: String = ...
-x.shouldBe("expectedValue") // normal syntax
-x shouldBe "expectedValue" // infix syntax
+include::{srcdir}/chapter_04/shouldBeSnippet.kt[lines=3..]
 ----
 
 A weak point of infix notation that you can't explicitly specify generics using this syntax. In this case, you can fall back to the normal function call syntax - but users of the DSL might not know this.
@@ -259,21 +248,7 @@ Generics are a useful abstraction over concrete types in all kinds of contexts, 
 
 [source,kotlin]
 ----
-object Eur
-object Usd
-
-data class Currency<T>(val value: BigDecimal, val currency: T)
-
-val Double.EUR
-    get() = Currency(this.toBigDecimal(), Eur)
-val Double.USD
-    get() = Currency(this.toBigDecimal(), Usd)
-
-operator fun <T> Currency<T>.plus(that:Currency<T>) =
-    copy(value = this.value + that.value)
-
-val works = 3.1.EUR + 4.5.EUR // 7.6 EUR
-val oops = 3.1.EUR + 4.5.USD // doesn't compile
+include::{srcdir}/chapter_04/currencySnippet.kt[lines=5..]
 ----
 
 NOTE: A type parameter which doesn't relate to any field, argument, etc. of its  class is called a "phantom type".
@@ -286,16 +261,7 @@ One great feature of Kotlin is reified generics. The JVM implements generics usi
 
 [source,kotlin]
 ----
-inline fun <reified T> List<T>.combine() = println(when(T::class) {
-    Int::class -> (this as List<Int>).sum()
-    String::class -> (this as List<String>).fold("", String::plus)
-    else -> this
-})
-...
-listOf<Int>().combine() // 0
-listOf(1, 2, 3).combine() // 6
-listOf("x", "y", "z").combine() // xyz
-listOf(true, false).combine() // [true, false]
+include::{srcdir}/chapter_04/reifiedSnippet.kt[lines=3..]
 ----
 
 Note the expression `T::class`, which shouldn't work considering type erasure. However, the function is defined as an `inline` function, and the generic parameter `T` is marked as "reified". The details are beyond the scope of this book, but basically the inlining allows the compiler to gather the generic type information already at compile time, and make it look like as there is no type erasure happening. It should be noted that inline functions are subjected to some restrictions, and show subtle differences to not inlined functions.
