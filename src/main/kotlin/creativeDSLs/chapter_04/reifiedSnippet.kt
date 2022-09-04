@@ -1,4 +1,4 @@
-package creativeDSLs
+package creativeDSLs.chapter_04
 
 inline fun <reified T> List<T>.combine() = println(when(T::class) {
     Int::class -> (this as List<Int>).sum()

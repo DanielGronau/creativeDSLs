@@ -1,4 +1,4 @@
-package creativeDSLs
+package creativeDSLs.chapter_07
 
 import java.net.URI
 import java.net.http.HttpClient

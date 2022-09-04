@@ -1,4 +1,4 @@
-package creativeDSLs
+package creativeDSLs.chapter_06
 
 data class Color(val red: Int, val green: Int, val blue: Int, val alpha: Int = 255)
 

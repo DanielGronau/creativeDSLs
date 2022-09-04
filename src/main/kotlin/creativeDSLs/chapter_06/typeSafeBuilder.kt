@@ -12,11 +12,11 @@ data class Product(
     val images: List<URI>
 )
 
-sealed class Mandatory<T : Any>
-class Without<T : Any> : Mandatory<T>()
-class With<T : Any>(val value: T) : Mandatory<T>()
+sealed class Val<T : Any>
+class Without<T : Any> : Val<T>()
+class With<T : Any>(val value: T) : Val<T>()
 
-data class ProductBuilder<ID : Mandatory<UUID>, NAME : Mandatory<String>, PRICE : Mandatory<BigDecimal>>(
+data class ProductBuilder<ID : Val<UUID>, NAME : Val<String>, PRICE : Val<BigDecimal>>(
     val id: ID, val name: NAME, val price: PRICE, val description: String?, val images: List<URI>
 ) {
     fun id(uuid: UUID) = ProductBuilder(With(uuid), name, price, description, images)
