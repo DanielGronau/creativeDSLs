@@ -1,4 +1,4 @@
-== Builders
+== Builder Pattern DSLs
 
 A common task is the initialization of a complex, sometimes nested object. The classical solution for this is the Builder Pattern. The builder class is mutable, uses method chaining (a.k.a. "Fluent Interfaces") to simplify value assignments, and contains a terminal build method, which constructs (hopefully after some sanity checks) the domain object.
 
