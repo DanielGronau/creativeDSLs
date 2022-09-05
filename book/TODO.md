@@ -5,6 +5,7 @@
 * Fiverr Proofreader -> maybe, 2.5€ / page (1 page ~ 500 words)
 
 Chapters
+
 1. Intro
 1. Requirements Analysis
 1. Writing a DSL
@@ -17,3 +18,11 @@ Chapters
 1. Annotation based DSL (data class mapper)
 1. Code Generation with KotlinPoet 
 1. Dissecting common DSLs (kotest, gradle .kts, Kotlin Poet)
+
+## Publishers
+
+https://indie-autoren-buecher.de/selfpublishing-blog/buch-veroeffentlichen-als-selfpublisher-anbietervergleich/
+
+https://blog.buuk.app/selfpublishing-distributoren-und-plattformen-im-vergleich-ausfuehrlich/
+
+https://www.savethestudent.org/make-money/best-ebook-publishing-companies.html

@@ -1,189 +1,203 @@
 == Loan Pattern DSL
 
-This DSL type is Kotlin's answer to the Builder Pattern. Instead of having a mutable builder using method chaining, we have a mutable builder class exposing its members using the Loan Pattern. The main ingredients to make it work are extension methods and the trailing lambda syntax.
+The Loan Pattern DSL type is Kotlin's common answer to the Builder Pattern, and covers the same use cases. Instead of having a mutable builder using method chaining, we have a mutable builder class exposing its members using the Loan Pattern. The main ingredients to make it work are extension methods and the trailing lambda syntax.
 
 In this chapter, we will first write a more convenient replacement for the `HttpRequest.Builder` presented in the last chapter. Next, we discuss and example for a chained loan pattern. If you have control over the business class you want to construct, you can use a library like AutoDSL to generate a DSL for you. We will explore this in the second part of this chapter.
 
-=== Fallstudie: HttpRequest
+=== Case Study: HttpRequest
 
-Als ein realistisches Beispiel kann `java.net.http.HttpRequest` dienen, dessen
-Aufruf etwa so aussehen kann:
+As already shown in the last chapter, `HttpRequest` comes already with a builder, which looks like this:
 
-```kotlin
+[source,kotlin]
+----
 val request = HttpRequest.newBuilder(URI.create("https://acme.com:9876/products"))
     .GET()
     .header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
     .header("Accept-Encoding", "gzip, deflate")
     .timeout(Duration.ofSeconds(5L))
     .build()
-```
-Das sieht schon nicht schlecht aus, aber es gibt immer noch die störenden Aufrufe
-von newBuilder() und build(), und in der Syntax wird nicht deutlich, dass die
-Methodenaufrufe eigentlich nur Wertzuweisungen sind. Die Frage ist, ob wir es in
-Kotlin besser machen können.
+----
 
-Wenn wir uns an den Prozess zum DSL-Design erinnern, folgt auf die Anforderungsanalyse
-(hier wäre das einfach, `HttpRequest` komfortabler zu konstruieren) das Brainstorming
-für eine ideale Syntax. Natürlich ist immer subjektiv, was als "ideal" angesehen wird,
-aber ich hoffe, dass der folgende Vorschlag wenigstens eine Verbesserung
-gegenüber dem Original darstellt:
+This doesn't look too bad, but there is some noise in form of the `newBuilder()` and `build()` calls, and the other method calls are actually assignments in disguise. The question is how we can improve this in Kotlin.
 
-```kotlin
-val request = httpRequest(URI.create("https://acme.com:9876/products")) {
-      method = GET
-      headers {
+My suggestion for a better syntax looks like this:
+
+[source,kotlin]
+----
+val request = httpRequest("https://acme.com:9876/products") {
+    method = GET
+    headers {
         "Content-Type" .. "application/x-www-form-urlencoded; charset=UTF-8"
         "Accept-Encoding" .. "gzip, deflate"
-      }
-      timeout = 5 * SECONDS
     }
-```
-Es stellt sich heraus, dass diese Syntax auch so umsetzbar ist.
-
-Dabei ist `httpRequest` eine Methode, die uns unsere Version des Builders zur Verfügung
-stellt, aber Konstruktion und Finalisierung für uns übernimmt. Damit handelt es sich
-um eine Anwendung des Loan-Patterns, dass sich in vielen Fällen als nützlich beim
-DSL-Design erweist. Die Implementierung der Methode ist trivial:
-
-```kotlin
-fun httpRequest(uri: URI, block: HttpRequestBuilder.() -> Unit): HttpRequest =
-    HttpRequestBuilder(uri).apply(block).build()
-```
-
-Unser Builder hält intern einen "originalen" Builder, und delegiert auch den Aufruf der
-`build()`-Methode:
-
-```kotlin
-class HttpRequestBuilder(val uri: URI) {
-    private val peer = HttpRequest.newBuilder(uri)
-    ...
-    fun build(): HttpRequest {
-        ...
-        peer.build()
-    }
+    timeout = 5 * SECONDS
 }
-```
+----
 
-Für die HTTP-Methode wird es ein wenig komplizierter, da sie mit oder ohne Body kommen
-kann. Zuerst definieren wir einen Typ-Alias, und dann ein paar vorgefertigte Konstanten
-und Methoden. In der build-Methode werden die Variable dann ausgelesen, wobei wir
-leider nicht um eine Fallunterscheidung herumkommen:
+There are no more `newBuilder()` and `build()` calls, the assignments are assignments, headers became their own section and the duration can be calculated. For convenience, you have now the choice whether to specify the web-address as `String` or `URI` (the example shows only `String`).
 
-```kotlin
-typealias HttpMethod = Pair<String, BodyPublisher?>
+As you might have guessed, `httpRequest` is a method employing the Loan Pattern: It initializes a builder class, exposes it as a receiver, and takes care of the final `build()` call. We have two versions of it, depending on how the address is specified:
 
-class HttpRequestBuilder(uri: URI) {
-    private val peer = HttpRequest.newBuilder(uri)
-
-    val GET: HttpMethod = "GET" to null
-    val DELETE: HttpMethod = "DELETE" to null
-    fun PUT(bp: BodyPublisher): HttpMethod = "PUT" to bp
-    fun POST(bp: BodyPublisher): HttpMethod = "POST" to bp
-
-    var method: HttpMethod? = null
-    ...
-    fun build(): HttpRequest {
-        method?. let {
-            when (method) {
-                GET -> peer.GET()
-                DELETE -> peer.DELETE()
-                else -> peer.method(method!!.first, method!!.second)
-            }
-        }
-        ...
-        peer.build()
-    }
-}
-```
-
-Es sei angemerkt, dass man nicht auf die vier vorgegebenen HTTP-Methoden
-GET, DELETE, PUT und POST beschränkt ist, man kann auch einfach etwas wie
-`method = "OPTION" to someBodyPublisher` schreiben.
-
-Für die Header verwenden wir dieselbe Loan-Pattern-Technik wie zuvor. Durch
-Verwendung einer inneren Klasse braucht man den originalen Builder nicht
-"durchzureichen", sondern kann direkt darauf zugreifen. Ob man den
-Range-Operator `..` hier so zweckentfremden sollte, ist eine Geschmacksfrage,
-mich persönlich erinnert er an einen Doppelpunkt.
-
-```kotlin
-class HttpRequestBuilder(uri: URI) {
-    private val peer = HttpRequest.newBuilder(uri)
-    ...
-    fun headers(block: Headers.() -> Unit) {
-        Headers().apply(block)
-    }
-    ...
-    inner class Headers {
-        operator fun String.rangeTo(value: String) {
-            peer.header(this@rangeTo, value)
-        }
-    }
-}
-```
-
-Alle anderen Variablen werden einfach in der build-Methode ausgelesen und
-am originalen Builder gesetzt. Für die `Duration` wurde noch eine vereinfachte
-Schreibweise unterstützt (es gibt ab auch ein experimentelles Feature in
-`kotlin.time`, das die Syntax `5.seconds` unterstützt, aber als "deprected"
-gekennzeichnet ist). Hier ist die gesamte Implementierung:
-
-```kotlin
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpRequest.BodyPublisher
-import java.time.Duration
-import java.time.temporal.TemporalUnit
-
-fun httpRequest(uri: URI, block: HttpRequestBuilder.() -> Unit): HttpRequest =
+[source,kotlin]
+----
+fun httpRequest(uri: URI, block: HttpRequestBuilder.() -> Unit) =
     HttpRequestBuilder(uri).apply(block).build()
 
+fun httpRequest(address: String, block: HttpRequestBuilder.() -> Unit) =
+    HttpRequestBuilder(URI.create(address)).apply(block).build()
+----
+
+The builder contains some mutable fields, and a `build()`-Method to construct the `HttpRequest`:
+
+[source,kotlin]
+----
 typealias HttpMethod = Pair<String, BodyPublisher?>
 
-class HttpRequestBuilder(uri: URI) {
-
-    private val peer = HttpRequest.newBuilder(uri)
-
-    val GET: HttpMethod = "GET" to null
-    val DELETE: HttpMethod = "DELETE" to null
-    fun PUT(bp: BodyPublisher): HttpMethod = "PUT" to bp
-    fun POST(bp: BodyPublisher): HttpMethod = "POST" to bp
+class HttpRequestBuilder(var uri: URI) {
 
     var method: HttpMethod? = null
     var timeout: Duration? = null
     var expectContinue: Boolean? = null
     var version: HttpClient.Version? = null
+    private val headers = mutableMapOf<String, String>()
+
+    ...
+
+    fun build(): HttpRequest =
+        with(HttpRequest.newBuilder(uri)) {
+            // set the values
+            // ...
+            this.build()
+        }
+
+    ...
+}
+----
+
+The `headers` field can't be set directly, because we want to use a nested structure here. The `headers()` method works analogous to the `httpRequest()` method, and exposes the inner `Headers` class, which in turn enables to fill the `headers` field. The range operator `..` was chosen to collect the key-value-pairs because it looks like `:`. As discussed in the fourth chapter, we don't want that you can see all the `HttpRequestBuilder` fields from its inner class `Headers`, and that's why we use te `@DslMarker` mechanism to limit the scope inside of `Headers`.
+
+[source,kotlin]
+----
+@DslMarker
+annotation class HttpRequestDsl
+
+@HttpRequestDsl
+class HttpRequestBuilder(var uri: URI) {
+    ...
+    private val headers = mutableMapOf<String, String>()
+    ...
+    fun headers(block: Headers.() -> Unit) {
+        Headers().apply(block)
+    }
+    ...
+    @HttpRequestDsl
+    inner class Headers {
+        operator fun String.rangeTo(value: String) {
+            this@HttpRequestBuilder.headers[this@rangeTo] = value
+        }
+    }
+   ...
+}
+----
+
+Next, there are some cfields and methods required in order to simplify seting the HTTP method. However, you can still define your own ones, e.g. `method = "OPTION" to someBodyPublisher`:
+
+[source,kotlin]
+----
+typealias HttpMethod = Pair<String, BodyPublisher?>
+
+class HttpRequestBuilder(var uri: URI) {
+
+    var method: HttpMethod? = null
+    ...
+    val GET: HttpMethod = "GET" to null
+    val DELETE: HttpMethod = "DELETE" to null
+    fun PUT(bp: BodyPublisher): HttpMethod = "PUT" to bp
+    fun POST(bp: BodyPublisher): HttpMethod = "POST" to bp
+    ...
+}
+----
+
+In order to simplify the definition of a `Duration`, there are some operator overloading functions defined. Note that these are only visible inside of `HttpRequestBuilder`, so name clashes can be avoided.
+
+[source,kotlin]
+----
+class HttpRequestBuilder(var uri: URI) {
+    ...
+    operator fun Long.times(unit: TemporalUnit): Duration =
+        Duration.of(this, unit)
+
+    operator fun Int.times(unit: TemporalUnit): Duration =
+        Duration.of(this.toLong(), unit)
+}
+----
+
+And that's almost it, we covered everything except some details of the `build()` method. Here is the complete code:
+
+[source,kotlin]
+----
+fun httpRequest(uri: URI, block: HttpRequestBuilder.() -> Unit) =
+    HttpRequestBuilder(uri).apply(block).build()
+
+fun httpRequest(uri: String, block: HttpRequestBuilder.() -> Unit) =
+    HttpRequestBuilder(URI.create(uri)).apply(block).build()
+
+typealias HttpMethod = Pair<String, BodyPublisher?>
+
+@DslMarker
+annotation class HttpRequestDsl
+
+@HttpRequestDsl
+class HttpRequestBuilder(var uri: URI) {
+
+    var method: HttpMethod? = null
+    var timeout: Duration? = null
+    var expectContinue: Boolean? = null
+    var version: HttpClient.Version? = null
+    private val headers = mutableMapOf<String, String>()
+
+    val GET: HttpMethod = "GET" to null
+    val DELETE: HttpMethod = "DELETE" to null
+    fun PUT(bp: BodyPublisher): HttpMethod = "PUT" to bp
+    fun POST(bp: BodyPublisher): HttpMethod = "POST" to bp
 
     fun headers(block: Headers.() -> Unit) {
         Headers().apply(block)
     }
 
-    fun build(): HttpRequest {
-        timeout?.let { peer.timeout(it) }
-        expectContinue?.let { peer.expectContinue(it) }
-        version?.let { peer.version(it) }
-        method?. let {
-            when (method) {
-                GET -> peer.GET()
-                DELETE -> peer.DELETE()
-                else -> peer.method(method!!.first, method!!.second)
+    fun build(): HttpRequest =
+        with(HttpRequest.newBuilder(uri)) {
+            headers.forEach { (key, value) -> header(key, value) }
+            timeout?.let { timeout(it) }
+            expectContinue?.let { expectContinue(it) }
+            version?.let { version(it) }
+            method?.let {
+                when (method) {
+                    GET -> GET()
+                    DELETE -> DELETE()
+                    else -> method(method!!.first, method!!.second)
+                }
             }
+            this.build()
         }
-        return peer.build()
-    }
 
+    @HttpRequestDsl
     inner class Headers {
         operator fun String.rangeTo(value: String) {
-            peer.header(this@rangeTo, value)
+            this@HttpRequestBuilder.headers[this@rangeTo] = value
         }
     }
 
-    operator fun Long.times(unit: TemporalUnit): Duration = Duration.of(this, unit)
-    operator fun Int.times(unit: TemporalUnit): Duration = Duration.of(this.toLong(), unit)
+    operator fun Long.times(unit: TemporalUnit): Duration =
+        Duration.of(this, unit)
+
+    operator fun Int.times(unit: TemporalUnit): Duration =
+        Duration.of(this.toLong(), unit)
 }
-```
+----
 
 === Chained Loan Pattern
 
 === AutoDSL
+
+=== Conclusion
