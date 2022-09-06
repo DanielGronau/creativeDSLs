@@ -26,8 +26,6 @@ I was always interested in the weird nooks and crannies in the languages I used.
 
 I'm a quite open person, and I always try to get feedback and constructive criticism. That's why as soon as the content was more or less there, I presented the book to various friends and programming forums, and I'm very thankful for all the support I got. As a self-publisher, I am the only person responsible for the quality of the book, and I can't believe how much it has improved through sharing it.
 
-One thing I'm quite surprised about is how serious my technical writing style turned out tp be: No jokes, no personal stories, no funny quips. Reading the book, you could get the impression I have no life at all - which is true - and no humor at all, which couldn't be farther from the truth. I think I unconsciously used a serious style because I take the topic serious, and because I also think the content can speak for itself, that it can spark curiosity and interest without any sugarcoating.
-
 === Prerequisites
 
 To try out code samples from this book or the associated project https://github.com/creativeDsls[], you can use any IDE capable of running Kotlin (obviously IntelliJ IDEA will have an edge regarding Kotlin support), or you can go to https://play.kotlinlang.org/[] for an online sandbox. The Kotlin language version used is 1.7. If not stated otherwise, when discussing Java, language level 11 is assumed.
