@@ -2,7 +2,7 @@
 
 A common task is the initialization of a complex, sometimes nested object. The classical solution for this is the Builder Pattern. The builder class is mutable, uses method chaining (a.k.a. "Fluent Interfaces") to simplify value assignments, and contains a terminal build method, which constructs (hopefully after some sanity checks) the domain object.
 
-This chapter covers the classical builder as often used in Java. Sometimes this is overkill is Kotlin, as named arguments can be used for smaller classes. Next, we will address the problem of mandatory fields in builders by presenting the Typesafe Builder Pattern. The next three sections cover some more exotic extensions: Builders that can count, chains of builders and chameleon builders. In the conclusion section we discuss why builders are not as widely used in Kotlin as in Java.
+This chapter covers the classical builder as often used in Java. Sometimes this is overkill is Kotlin, as named arguments can be used for smaller classes. Next, we will address the problem of mandatory fields in builders by presenting the Typesafe Builder Pattern. The following three sections cover some more exotic variations: Builders that can count, chains of builders and chameleon builders. In the conclusion section we discuss why in Kotlin builders are not as widely used as in Java.
 
 === Classical Builder
 
@@ -171,7 +171,115 @@ As you can see, the `build()` method is quite literally counting the points by i
 
 === Builder Chain
 
-Sometimes you want to construct an object in stages, either for better readability or for more control over the life cycle. E.g. for a SQL query, you might want to define separate builders for the SELECT part, for the FROM part and for the WHERE part.
+Sometimes you want to construct an object in stages, either for better readability or for more control over the life cycle. E.g. for a SQL query, you might want to define separate builders for the SELECT, FROM and WHERE part. As the SQL language is very complex, we can show here just a simplified example. The final DSL will allow you to write basic SQL queries like this:
+
+[source,kotlin]
+----
+val query = SqlQuery
+    .select("p.firstName", "p.lastName", "p.income")
+    .from("Person", "p")
+    .join("Address", "a").on("p.addressId","a.id")
+    .where("p.age > 20")
+    .and("p.age <= 40")
+    .and("a.city = 'London'")
+----
+
+Let's start with the SELECT part, which is straightforward:
+
+[source,kotlin]
+----
+object SqlQuery {
+    fun select(vararg columns: String) = SelectClause(*columns)
+}
+
+class SelectClause(vararg val columns: String) {
+    fun from(tableName: String) =
+        FromClause(columns.asList(), tableName to null)
+    fun from(tableName: String, alias: String) =
+        FromClause(columns.asList(), tableName to alias)
+}
+----
+
+There is no `build()` method, the only way forward is going into the `FromClause`, which is a bit more involved, as there might be multiple tables joined together:
+
+[source,kotlin]
+----
+data class FromClause(
+    val columns: List<String>,
+    val tableName: NameWithAlias,
+    val joinClauses: List<Triple<NameWithAlias, String, String>> = listOf()
+) {
+    fun join(tableName: String) =
+        JoinClause(this, tableName to null)
+    fun join(tableName: String, alias: String) =
+        JoinClause(this, tableName to alias)
+
+    fun where(condition: String) =
+        WhereClause(columns, tableName, joinClauses, listOf(condition))
+
+    fun build() = build(columns, tableName, joinClauses, listOf())
+}
+----
+
+From here, you can go to a `JoinClause`, which allows to mimic the SQL syntax by allowing to write something like `fromClause.join("Address","a").on("p.addressId", "a.id")`. The other exit is to start a `WhereClause`. Additionally, the `FromClause` has a `build()` method, because the where part is optional.
+
+The `JoinClause` offers just an `on()` method, which leads back to the `FromClause`. Note that when constructing the `JoinClause`, it gets the calling `FromClause` as an argument, which is a neat trick to avoid passing around all the data separately, and allows to use the power of the `copy()` method:
+
+[source,kotlin]
+----
+data class JoinClause(val fromClause: FromClause, val tableName: NameWithAlias) {
+    fun on(firstColumn: String, secondColumn: String) =
+        fromClause.copy(joinClauses =
+           fromClause.joinClauses + Triple(tableName, firstColumn, secondColumn))
+}
+----
+
+The `WhereClause` is quite simple, but of course using `String` to represent the different conditions is not very safe and should be avoided in production code. The SQL syntax allows other clauses like `HAVING` and `ORDER BY` after `WHERE`, but for brevity the example stops here, so after all conditions are set, the only thing to do is calling the `build()` method:
+
+[source,kotlin]
+----
+data class WhereClause(
+    val columns: List<String>,
+    val tableName: NameWithAlias,
+    val joinClauses: List<Triple<NameWithAlias, String, String>>,
+    val conditions: List<String>
+) {
+    fun and(condition: String) = copy(conditions = conditions + condition)
+    fun build() = build(columns, tableName, joinClauses, conditions)
+}
+----
+
+The only missing part is the separate `build()` method used by both `FromClause` and `WhereClause`:
+
+[source,kotlin]
+----
+private fun build(
+    columns: List<String>,
+    tableName: NameWithAlias,
+    joinClauses: List<Triple<NameWithAlias, String, String>>,
+    conditions: List<String>
+): String {
+    val sb = StringBuilder()
+        .append("SELECT ${columns.joinToString(", ") { it }}")
+        .append("\nFROM ")
+        .append(nameWithAlias(tableName))
+    joinClauses.forEach { (n, c1, c2) ->
+        sb.append("\n JOIN ${nameWithAlias(n)} ON $c1 = $c2")
+    }
+    if (conditions.isNotEmpty()) {
+        sb.append("\nWHERE ${conditions.joinToString("\n AND ")}")
+    }
+    sb.append(';')
+    return sb.toString()
+}
+
+private fun nameWithAlias(name: NameWithAlias) = when (name.second) {
+    null -> name.first
+    else -> "${name.first} AS ${name.second}"
+}
+----
+
+In the next section, we will look at an alternative implementation, which isn't as straightforward, but avoids the overhead of copying around data as much as in the chained builder approach above.
 
 === Chameleon Builder
 
