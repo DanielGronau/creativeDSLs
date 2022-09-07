@@ -1,8 +1,6 @@
 package creativeDSLs.chapter_06.chained
 
-object SqlQuery {
-    fun select(vararg columns: String) = SelectClause(*columns)
-}
+fun select(vararg columns: String) = SelectClause(*columns)
 
 class SelectClause(vararg val columns: String) {
     fun from(tableName: String) =
@@ -71,8 +69,7 @@ private fun nameWithAlias(name: NameWithAlias) = when (name.second) {
 }
 
 fun main() {
-    val query = SqlQuery
-        .select("p.firstName", "p.lastName", "p.income")
+    val query = select("p.firstName", "p.lastName", "p.income")
         .from("Person", "p")
         .join("Address", "a").on("p.addressId","a.id")
         .where("p.age > 20")
