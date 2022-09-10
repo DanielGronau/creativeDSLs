@@ -198,6 +198,33 @@ class HttpRequestBuilder(var uri: URI) {
 
 === Chained Loan Pattern
 
+It is possible to have a chained version of the Loan Pattern, but it depends on the use case whether it looks better than the chained Builder Pattern. I would argue that in case of the SQL DSL from the last chapter the chained version wouldn't be an improvement. Here is how it could look like:
+
+[source,kotlin]
+----
+SELECT {
+    +"p.firstName"
+    +"p.lastName"
+    +"p.income"
+}.FROM {
+    "Person" AS "p"
+    JOIN {
+        "Address" AS "a"
+        ON("p.addressId","a.id")
+    }
+}.WHERE {
+   "p.age > 20" AND "p.age <= 40" AND "a.city = 'London'"
+}
+----
+
+I don't provide an implementation, as there is not much new to learn. The code is very similar to the one from the previous section, with the addition of some infix functions, which were covered in chapter 5.
+
 === AutoDSL
+
+As this kind of DSL is very common, and its structure is quite predictable, it shouldn't come as a surprise that there exist libraries for deriving such DSLs automatically. At this point we will cover the https://github.com/F43nd1r/autodsl[AutoDSL] library.
+
+WARNING: Please make sure to use the right GitHub project. There is an older library called "AutoDsl", which was the inspiration for the project covered here. Unfortunately, it is no longer maintained, and doesn't work for Kotlin 1.4 or newer.
+
+
 
 === Conclusion

@@ -16,6 +16,8 @@
 
 include::colophon.adoc[]
 
+include::dedication.adoc[]
+
 include::acknowledgements.adoc[]
 
 include::preface.adoc[]
