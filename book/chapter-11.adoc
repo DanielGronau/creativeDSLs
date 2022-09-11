@@ -1,42 +1,42 @@
 == Code Generation for DSLs
 
-Sometimes you are prototyping a DSl and find a nice syntax, but it turns out that would need to write a lot of boilerplate code to make it work. One common reason is a combinatorial explosion, or you need many classes following the same pattern (e.g. tuple classes, or fixed length vectors). In such cases, you might consider using code generation.
+Sometimes you are prototyping a DSL and find a nice syntax, but it turns out it would need a lot of boilerplate code to make it work. One common reason is a combinatorial explosion, or there are many classes needed which follow the same pattern (e.g. tuple classes, or fixed length vectors). In such cases, you might consider using code generation.
 
 A popular library for generating Kotlin code is https://square.github.io/kotlinpoet[KotlinPoet]. If you work with Java, too, you might also check out its sister project https://github.com/square/javapoet[JavaPoet]. There is even some interoperability between the libraries.
 
-=== Case Study: Physical Units
+=== Case Study: Physical Quantities
 
-Let's assume you have already defined amounts of physical units, like seconds, square meters, or Watt:
+Let's assume you have already defined quantities for physical units, like seconds, square meters, or Watt:
 
 [source,kotlin]
 ----
-sealed interface Amount {
+sealed interface Quantity {
     val amount: Double
 }
 
 // base units
-data class Second(override val amount: Double) : Amount
-data class Meter(override val amount: Double) : Amount
-data class Kilogram(override val amount: Double) : Amount
+data class Second(override val amount: Double) : Quantity
+data class Meter(override val amount: Double) : Quantity
+data class Kilogram(override val amount: Double) : Quantity
 
 // derived units
-data class SquareMeter(override val amount: Double) : Amount
-data class CubicMeter(override val amount: Double) : Amount
-data class MeterPerSecond(override val amount: Double) : Amount
-data class MeterPerSecondSquared(override val amount: Double) : Amount
-data class Newton(override val amount: Double) : Amount
-data class Joule(override val amount: Double) : Amount
-data class Watt(override val amount: Double) : Amount
-data class Pascal(override val amount: Double) : Amount
+data class SquareMeter(override val amount: Double) : Quantity
+data class CubicMeter(override val amount: Double) : Quantity
+data class MeterPerSecond(override val amount: Double) : Quantity
+data class MeterPerSecondSquared(override val amount: Double) : Quantity
+data class Newton(override val amount: Double) : Quantity
+data class Joule(override val amount: Double) : Quantity
+data class Watt(override val amount: Double) : Quantity
+data class Pascal(override val amount: Double) : Quantity
 ----
 
 WARNING: You should always consider whether the precision provided by `Double` is sufficient for the kind of calculations required by your application, and switch e.g. to `BigDecimal` if not.
 
-At this point, we can't even add two amounts together. It would be nice if we could write this function only once in `Amount`, but of course only amounts of the same unit are allowed to be added. There are techniques to make this safe, but would require the use of generics in Kotlin. Instead, we will use https://square.github.io/kotlinpoet[KotlinPoet] to add some extension functions for us:
+At this point, we can't even add two quantities together. It would be nice if we could write this function only once in `Quantity`, but of course only quantities of the same unit are allowed to be added. There are techniques to make this safe, but would require the use of generics in Kotlin. Instead, we will use https://square.github.io/kotlinpoet[KotlinPoet] to add some extension functions for us:
 
 [source,kotlin]
 ----
-fun makeAddition(kClass: KClass<out Amount>) =
+fun makeAddition(kClass: KClass<out Quantity>) =
     FunSpec.builder("plus")
         .addModifiers(KModifier.OPERATOR)
         .receiver(kClass)
@@ -45,10 +45,10 @@ fun makeAddition(kClass: KClass<out Amount>) =
         .build()
 
 fun makeAdditions() =
-    Amount::class.sealedSubclasses.map { makeAddition(it) }
+    Quantity::class.sealedSubclasses.map { makeAddition(it) }
 ----
 
-As you can see, KotlinPoet relies heavily on the Builder Pattern. In the `makeAdditions()` method, we use the fact that a sealed class - here `Amount` - "knows" about its subclasses. As a result, we get a list of `FunSpec` instances, which represent functions, constructors, getters or setters. You can simply print the content in the console to see what the code would look like. Later we will add these instances to a `FileSpec`, which can be written to the file system. The generated functions will look like this:
+As you can see, KotlinPoet relies heavily on the Builder Pattern. In the `makeAdditions()` method, we use the fact that a sealed class - here `Quantity` - "knows" about its subclasses. As a result, we get a list of `FunSpec` instances, which represent functions, constructors, getters or setters. You can simply print the content in the console to see what the code would look like. Later we will add these instances to a `FileSpec`, which can be written to the file system. The generated functions will look like this:
 
 [source,kotlin]
 ----
@@ -60,7 +60,7 @@ The next operations follow pretty much the same pattern. They define subtraction
 
 [source,kotlin]
 ----
-fun makeSubtraction(kClass: KClass<out Amount>) =
+fun makeSubtraction(kClass: KClass<out Quantity>) =
     FunSpec.builder("minus")
         .addModifiers(KModifier.OPERATOR)
         .receiver(kClass)
@@ -68,14 +68,14 @@ fun makeSubtraction(kClass: KClass<out Amount>) =
         .addStatement("return copy(amount = this.amount - that.amount)")
         .build()
 
-fun makeNegation(kClass: KClass<out Amount>) =
+fun makeNegation(kClass: KClass<out Quantity>) =
     FunSpec.builder("unaryMinus")
         .addModifiers(KModifier.OPERATOR)
         .receiver(kClass)
         .addStatement("return copy(amount = -this.amount)")
         .build()
 
-fun makeScalarMultiplication(kClass: KClass<out Amount>) =
+fun makeScalarMultiplication(kClass: KClass<out Quantity>) =
     FunSpec.builder("times")
         .addModifiers(KModifier.OPERATOR)
         .receiver(Double::class)
@@ -84,7 +84,7 @@ fun makeScalarMultiplication(kClass: KClass<out Amount>) =
         .build()
 ----
 
-The following part is more interesting: We need conversions from and back to `Double`. Note that we can define these conversions for more units than we have classes defined for, e.g. we can not only define `5.0.s` to give us `Second(5.0)`, but also `1.0.min` to give us `Seconds(60.0)`. And conversely, we want to be able to get from a `Second` instance not only the seconds, but also minutes etc. It is clear that we need additional information to write the conversions for a certain unit: We need its name, the amount class, and a factor to apply.
+The following part is more interesting: We need conversions from and back to `Double`. Note that we can define these conversions for more units than we have classes defined for, e.g. we can not only define `5.0.s` to give us `Second(5.0)`, but also `1.0.min` to give us `Seconds(60.0)`. And conversely, we want to be able to get from a `Second` instance not only the seconds, but also minutes etc. It is clear that we need additional information to write the conversions for a certain unit: We need its name, the quantity class, and a factor to apply.
 
 [source,kotlin]
 ----
@@ -111,7 +111,7 @@ In order to make the DSL slightly more readable, we will generate extension prop
 
 [source,kotlin]
 ----
-fun makeDoubleToAmount(unit: String, kClass: KClass<out Amount>, factor: Double) =
+fun makeDoubleToQuantity(unit: String, kClass: KClass<out Quantity>, factor: Double) =
     PropertySpec.builder(unit, kClass)
         .receiver(Double::class)
         .getter(
@@ -121,7 +121,7 @@ fun makeDoubleToAmount(unit: String, kClass: KClass<out Amount>, factor: Double)
         )
         .build()
 
-fun makeAmountToDouble(unit: String, kClass: KClass<out Amount>, factor: Double) =
+fun makeQuantityToDouble(unit: String, kClass: KClass<out Quantity>, factor: Double) =
     PropertySpec.builder(unit, Double::class)
         .receiver(kClass)
         .getter(
@@ -131,11 +131,11 @@ fun makeAmountToDouble(unit: String, kClass: KClass<out Amount>, factor: Double)
         )
         .build()
 
-fun makeDoubleToAmounts() =
-    fromToDouble.map { (u, k, f) -> makeDoubleToAmount(u, k, f) }
+fun makeDoubleToQuantities() =
+    fromToDouble.map { (u, k, f) -> makeDoubleToQuantity(u, k, f) }
 
-fun makeAmountToDoubles() =
-    fromToDouble.map { (u, k, f) -> makeAmountToDouble(u, k, f) }
+fun makeQuantityToDoubles() =
+    fromToDouble.map { (u, k, f) -> makeQuantityToDouble(u, k, f) }
 
 ----
 
@@ -150,7 +150,7 @@ public val Joule.kJ: Double
   get() = this.amount / 1000.0
 ----
 
-So far, we can already generate a lot of boilerplate code, but for the next task - the multiplication and division of amounts - even for our modest example it would be extremely tedious to write the necessary code manually, as we are dealing with a combinatorial explosion.
+So far, we can already generate a lot of boilerplate code, but for the next task - the multiplication and division of quantities - even for our modest example it would be extremely tedious to write the necessary code manually, as we are dealing with a combinatorial explosion.
 
 
 

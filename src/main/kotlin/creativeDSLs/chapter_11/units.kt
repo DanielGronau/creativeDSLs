@@ -7,24 +7,24 @@ import com.squareup.kotlinpoet.PropertySpec
 import java.nio.file.Path
 import kotlin.reflect.KClass
 
-sealed interface Amount {
+sealed interface Quantity {
     val amount: Double
 }
 
 // base units
-data class Second(override val amount: Double) : Amount
-data class Meter(override val amount: Double) : Amount
-data class Kilogram(override val amount: Double) : Amount
+data class Second(override val amount: Double) : Quantity
+data class Meter(override val amount: Double) : Quantity
+data class Kilogram(override val amount: Double) : Quantity
 
 // derived units
-data class SquareMeter(override val amount: Double) : Amount
-data class CubicMeter(override val amount: Double) : Amount
-data class MeterPerSecond(override val amount: Double) : Amount
-data class MeterPerSecondSquared(override val amount: Double) : Amount
-data class Newton(override val amount: Double) : Amount
-data class Joule(override val amount: Double) : Amount
-data class Watt(override val amount: Double) : Amount
-data class Pascal(override val amount: Double) : Amount
+data class SquareMeter(override val amount: Double) : Quantity
+data class CubicMeter(override val amount: Double) : Quantity
+data class MeterPerSecond(override val amount: Double) : Quantity
+data class MeterPerSecondSquared(override val amount: Double) : Quantity
+data class Newton(override val amount: Double) : Quantity
+data class Joule(override val amount: Double) : Quantity
+data class Watt(override val amount: Double) : Quantity
+data class Pascal(override val amount: Double) : Quantity
 
 private val fromToDouble = listOf(
     Triple("s", Second::class, 1.0),
@@ -80,7 +80,7 @@ private val fromToDouble = listOf(
     Triple("MegaP", Pascal::class, 1_000_000.0),
 )
 
-private fun makeDoubleToAmount(unit: String, kClass: KClass<out Amount>, factor: Double) =
+private fun makeDoubleToQuantity(unit: String, kClass: KClass<out Quantity>, factor: Double) =
     PropertySpec.builder(unit, kClass)
         .receiver(Double::class)
         .getter(
@@ -90,7 +90,7 @@ private fun makeDoubleToAmount(unit: String, kClass: KClass<out Amount>, factor:
         )
         .build()
 
-private fun makeAmountToDouble(unit: String, kClass: KClass<out Amount>, factor: Double) =
+private fun makeQuantityToDouble(unit: String, kClass: KClass<out Quantity>, factor: Double) =
     PropertySpec.builder(unit, Double::class)
         .receiver(kClass)
         .getter(
@@ -100,7 +100,7 @@ private fun makeAmountToDouble(unit: String, kClass: KClass<out Amount>, factor:
         )
         .build()
 
-private fun makeAddition(kClass: KClass<out Amount>) =
+private fun makeAddition(kClass: KClass<out Quantity>) =
     FunSpec.builder("plus")
         .addModifiers(KModifier.OPERATOR)
         .receiver(kClass)
@@ -108,7 +108,7 @@ private fun makeAddition(kClass: KClass<out Amount>) =
         .addStatement("return copy(amount = this.amount + that.amount)")
         .build()
 
-private fun makeSubtraction(kClass: KClass<out Amount>) =
+private fun makeSubtraction(kClass: KClass<out Quantity>) =
     FunSpec.builder("minus")
         .addModifiers(KModifier.OPERATOR)
         .receiver(kClass)
@@ -116,14 +116,14 @@ private fun makeSubtraction(kClass: KClass<out Amount>) =
         .addStatement("return copy(amount = this.amount - that.amount)")
         .build()
 
-private fun makeNegation(kClass: KClass<out Amount>) =
+private fun makeNegation(kClass: KClass<out Quantity>) =
     FunSpec.builder("unaryMinus")
         .addModifiers(KModifier.OPERATOR)
         .receiver(kClass)
         .addStatement("return copy(amount = -this.amount)")
         .build()
 
-private fun makeScalarMultiplication(kClass: KClass<out Amount>) =
+private fun makeScalarMultiplication(kClass: KClass<out Quantity>) =
     FunSpec.builder("times")
         .addModifiers(KModifier.OPERATOR)
         .receiver(Double::class)
@@ -131,30 +131,30 @@ private fun makeScalarMultiplication(kClass: KClass<out Amount>) =
         .addStatement("return that.copy(amount = this * that.amount)")
         .build()
 
-private fun makeDoubleToAmounts() =
-    fromToDouble.map { (u, k, f) -> makeDoubleToAmount(u, k, f) }
+private fun makeQuantityToAmounts() =
+    fromToDouble.map { (u, k, f) -> makeDoubleToQuantity(u, k, f) }
 
-private fun makeAmountToDoubles() =
-    fromToDouble.map { (u, k, f) -> makeAmountToDouble(u, k, f) }
+private fun makeAmountToQuantities() =
+    fromToDouble.map { (u, k, f) -> makeQuantityToDouble(u, k, f) }
 
 private fun makeAdditions() =
-    Amount::class.sealedSubclasses.map { makeAddition(it) }
+    Quantity::class.sealedSubclasses.map { makeAddition(it) }
 
 private fun makeSubtractions() =
-    Amount::class.sealedSubclasses.map { makeSubtraction(it) }
+    Quantity::class.sealedSubclasses.map { makeSubtraction(it) }
 
 private fun makeNegations() =
-    Amount::class.sealedSubclasses.map { makeNegation(it) }
+    Quantity::class.sealedSubclasses.map { makeNegation(it) }
 
 private fun makeScalarMultiplications() =
-    Amount::class.sealedSubclasses.map { makeScalarMultiplication(it) }
+    Quantity::class.sealedSubclasses.map { makeScalarMultiplication(it) }
 
 fun main() {
     val builder = FileSpec.builder("creativeDSLs.chapter_11", "generated")
 
-    makeDoubleToAmounts().forEach { builder.addProperty(it) }
+    makeQuantityToAmounts().forEach { builder.addProperty(it) }
 
-    makeAmountToDoubles().forEach { builder.addProperty(it) }
+    makeAmountToQuantities().forEach { builder.addProperty(it) }
 
     makeAdditions().forEach { builder.addFunction(it) }
 
