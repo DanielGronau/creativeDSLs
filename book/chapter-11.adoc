@@ -6,14 +6,151 @@ A popular library for generating Kotlin code is https://square.github.io/kotlinp
 
 === Case Study: Physical Units
 
-Let's assume you have already defined a DSL for physical units, like length, area, time, speed etc, and want now be able to multiply and divide between them. Here is some code showing examples for these unit classes:
+Let's assume you have already defined amounts of physical units, like seconds, square meters, or Watt:
 
+[source,kotlin]
+----
+sealed interface Amount {
+    val amount: Double
+}
 
-What we would like to have are methods looking like this:
+// base units
+data class Second(override val amount: Double) : Amount
+data class Meter(override val amount: Double) : Amount
+data class Kilogram(override val amount: Double) : Amount
 
+// derived units
+data class SquareMeter(override val amount: Double) : Amount
+data class CubicMeter(override val amount: Double) : Amount
+data class MeterPerSecond(override val amount: Double) : Amount
+data class MeterPerSecondSquared(override val amount: Double) : Amount
+data class Newton(override val amount: Double) : Amount
+data class Joule(override val amount: Double) : Amount
+data class Watt(override val amount: Double) : Amount
+data class Pascal(override val amount: Double) : Amount
+----
 
+WARNING: You should always consider whether the precision provided by `Double` is sufficient for the kind of calculations required by your application, and switch e.g. to `BigDecimal` if not.
 
-Even with a moderate number of units, this task gets quickly out of hand - we are dealing with a combinatorial explosion.
+At this point, we can't even add two amounts together. It would be nice if we could write this function only once in `Amount`, but of course only amounts of the same unit are allowed to be added. There are techniques to make this safe, but would require the use of generics in Kotlin. Instead, we will use https://square.github.io/kotlinpoet[KotlinPoet] to add some extension functions for us:
+
+[source,kotlin]
+----
+fun makeAddition(kClass: KClass<out Amount>) =
+    FunSpec.builder("plus")
+        .addModifiers(KModifier.OPERATOR)
+        .receiver(kClass)
+        .addParameter("that", kClass)
+        .addStatement("return copy(amount = this.amount + that.amount)")
+        .build()
+
+fun makeAdditions() =
+    Amount::class.sealedSubclasses.map { makeAddition(it) }
+----
+
+As you can see, KotlinPoet relies heavily on the Builder Pattern. In the `makeAdditions()` method, we use the fact that a sealed class - here `Amount` - "knows" about its subclasses. As a result, we get a list of `FunSpec` instances, which represent functions, constructors, getters or setters. You can simply print the content in the console to see what the code would look like. Later we will add these instances to a `FileSpec`, which can be written to the file system. The generated functions will look like this:
+
+[source,kotlin]
+----
+public operator fun Second.plus(that: Second) =
+   copy(amount = this.amount + that.amount)
+----
+
+The next operations follow pretty much the same pattern. They define subtraction, negation and scalar multiplication:
+
+[source,kotlin]
+----
+fun makeSubtraction(kClass: KClass<out Amount>) =
+    FunSpec.builder("minus")
+        .addModifiers(KModifier.OPERATOR)
+        .receiver(kClass)
+        .addParameter("that", kClass)
+        .addStatement("return copy(amount = this.amount - that.amount)")
+        .build()
+
+fun makeNegation(kClass: KClass<out Amount>) =
+    FunSpec.builder("unaryMinus")
+        .addModifiers(KModifier.OPERATOR)
+        .receiver(kClass)
+        .addStatement("return copy(amount = -this.amount)")
+        .build()
+
+fun makeScalarMultiplication(kClass: KClass<out Amount>) =
+    FunSpec.builder("times")
+        .addModifiers(KModifier.OPERATOR)
+        .receiver(Double::class)
+        .addParameter("that", kClass)
+        .addStatement("return that.copy(amount = this * that.amount)")
+        .build()
+----
+
+The following part is more interesting: We need conversions from and back to `Double`. Note that we can define these conversions for more units than we have classes defined for, e.g. we can not only define `5.0.s` to give us `Second(5.0)`, but also `1.0.min` to give us `Seconds(60.0)`. And conversely, we want to be able to get from a `Second` instance not only the seconds, but also minutes etc. It is clear that we need additional information to write the conversions for a certain unit: We need its name, the amount class, and a factor to apply.
+
+[source,kotlin]
+----
+private val fromToDouble = listOf(
+    Triple("s", Second::class, 1.0),
+    Triple("min", Second::class, 60.0),
+    Triple("h", Second::class, 3600.0),
+    Triple("yr", Second::class, 31_556_925.216),
+
+    Triple("mm", Meter::class, 0.001),
+    Triple("cm", Meter::class, 0.01),
+    Triple("in", Meter::class, 0.0254),
+    Triple("ft", Meter::class, 0.3048),
+    Triple("yd", Meter::class, 0.9144),
+    Triple("m", Meter::class, 1.0),
+    Triple("km", Meter::class, 1000.0),
+    Triple("mi", Meter::class, 1609.344),
+
+    // etc.
+)
+----
+
+In order to make the DSL slightly more readable, we will generate extension properties instead of extension functions, so we don't have parenthesis. The generating functions look like this:
+
+[source,kotlin]
+----
+fun makeDoubleToAmount(unit: String, kClass: KClass<out Amount>, factor: Double) =
+    PropertySpec.builder(unit, kClass)
+        .receiver(Double::class)
+        .getter(
+            FunSpec.getterBuilder()
+                .addStatement("return %T(this * %L)", kClass, factor)
+                .build()
+        )
+        .build()
+
+fun makeAmountToDouble(unit: String, kClass: KClass<out Amount>, factor: Double) =
+    PropertySpec.builder(unit, Double::class)
+        .receiver(kClass)
+        .getter(
+            FunSpec.getterBuilder()
+                .addStatement("return this.amount / %L", factor)
+                .build()
+        )
+        .build()
+
+fun makeDoubleToAmounts() =
+    fromToDouble.map { (u, k, f) -> makeDoubleToAmount(u, k, f) }
+
+fun makeAmountToDoubles() =
+    fromToDouble.map { (u, k, f) -> makeAmountToDouble(u, k, f) }
+
+----
+
+In case you are wondering about the `(u, k, f)` part: This is the destructuring syntax, which works e.g. for `Pair`, `Triple` and data classes. Here is an example for a generated pair of conversions:
+
+[source,kotlin]
+----
+public val Double.kJ: Joule
+  get() = Joule(this * 1000.0)
+
+public val Joule.kJ: Double
+  get() = this.amount / 1000.0
+----
+
+So far, we can already generate a lot of boilerplate code, but for the next task - the multiplication and division of amounts - even for our modest example it would be extremely tedious to write the necessary code manually, as we are dealing with a combinatorial explosion.
 
 
 
@@ -30,11 +167,12 @@ Using code generation means bringing out the big guns, it certainly requires som
 |* automatize writing of boilerplate code
 * very flexible and adaptable
 * intuitive libraries like https://square.github.io/kotlinpoet[Kotlin-Poet] are available
+* if the generator function is correct, so are all the outputs, e.g. no typos or copy-paste errors
 
 |* requires some up-front effort and setup
-* strong dependency on the used tool
-* introduces an extra build-step
-* longer build times (when done every time) or danger of getting out of sync (when done on request)
+* strong dependency on the used library
+* longer build times when generation is done for every build
+* code can get out of sync when generation is done only on request
 |===
 
 

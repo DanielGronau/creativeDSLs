@@ -103,5 +103,10 @@
             <version>3.23.1</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.squareup</groupId>
+            <artifactId>kotlinpoet</artifactId>
+            <version>1.12.0</version>
+        </dependency>
     </dependencies>
 </project>
