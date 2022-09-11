@@ -42,6 +42,10 @@ include::chapter-09.adoc[]
 
 include::chapter-10.adoc[]
 
+include::chapter-11.adoc[]
+
+include::chapter-12.adoc[]
+
 include::bibliography.adoc[]
 
 include::index.adoc[]

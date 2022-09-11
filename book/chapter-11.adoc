@@ -1,0 +1,40 @@
+== Code Generation for DSLs
+
+Sometimes you are prototyping a DSl and find a nice syntax, but it turns out that would need to write a lot of boilerplate code to make it work. One common reason is a combinatorial explosion, or you need many classes following the same pattern (e.g. tuple classes, or fixed length vectors). In such cases, you might consider using code generation.
+
+A popular library for generating Kotlin code is https://square.github.io/kotlinpoet[KotlinPoet]. If you work with Java, too, you might also check out its sister project https://github.com/square/javapoet[JavaPoet]. There is even some interoperability between the libraries.
+
+=== Case Study: Physical Units
+
+Let's assume you have already defined a DSL for physical units, like length, area, time, speed etc, and want now be able to multiply and divide between them. Here is some code showing examples for these unit classes:
+
+
+What we would like to have are methods looking like this:
+
+
+
+Even with a moderate number of units, this task gets quickly out of hand - we are dealing with a combinatorial explosion.
+
+
+
+
+
+=== Conclusion
+
+Using code generation means bringing out the big guns, it certainly requires some planning and setup. However, this technique allows you to implement DSLs that would be just too much overhead without. And with libraries like https://square.github.io/kotlinpoet[KotlinPoet], it is quite intuitive to generate the code you want. Kotlin-Poet is itself a nice example for a real-world DSL, and will be explored as such in the next chapter.
+
+[cols="2a,2a"]
+|===
+|Pros |Cons
+
+|* automatize writing of boilerplate code
+* very flexible and adaptable
+* intuitive libraries like https://square.github.io/kotlinpoet[Kotlin-Poet] are available
+
+|* requires some up-front effort and setup
+* strong dependency on the used tool
+* introduces an extra build-step
+* longer build times (when done every time) or danger of getting out of sync (when done on request)
+|===
+
+
