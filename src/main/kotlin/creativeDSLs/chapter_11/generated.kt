@@ -340,3 +340,67 @@ public operator fun Double.times(that: Second) = that.copy(amount = this * that.
 public operator fun Double.times(that: SquareMeter) = that.copy(amount = this * that.amount)
 
 public operator fun Double.times(that: Watt) = that.copy(amount = this * that.amount)
+
+public operator fun Meter.times(that: Meter) = SquareMeter(this.amount * that.amount)
+
+public operator fun Meter.times(that: SquareMeter) = CubicMeter(this.amount * that.amount)
+
+public operator fun SquareMeter.times(that: Meter) = CubicMeter(this.amount * that.amount)
+
+public operator fun MeterPerSecond.times(that: Second) = Meter(this.amount * that.amount)
+
+public operator fun Second.times(that: MeterPerSecond) = Meter(this.amount * that.amount)
+
+public operator fun MeterPerSecondSquared.times(that: Second) = MeterPerSecond(this.amount *
+    that.amount)
+
+public operator fun Second.times(that: MeterPerSecondSquared) = MeterPerSecond(this.amount *
+    that.amount)
+
+public operator fun MeterPerSecondSquared.times(that: Kilogram) = Newton(this.amount * that.amount)
+
+public operator fun Kilogram.times(that: MeterPerSecondSquared) = Newton(this.amount * that.amount)
+
+public operator fun Pascal.times(that: SquareMeter) = Newton(this.amount * that.amount)
+
+public operator fun SquareMeter.times(that: Pascal) = Newton(this.amount * that.amount)
+
+public operator fun Newton.times(that: Meter) = Joule(this.amount * that.amount)
+
+public operator fun Meter.times(that: Newton) = Joule(this.amount * that.amount)
+
+public operator fun Watt.times(that: Second) = Joule(this.amount * that.amount)
+
+public operator fun Second.times(that: Watt) = Joule(this.amount * that.amount)
+
+public operator fun SquareMeter.div(that: Meter) = Meter(this.amount / that.amount)
+
+public operator fun CubicMeter.div(that: Meter) = SquareMeter(this.amount / that.amount)
+
+public operator fun CubicMeter.div(that: SquareMeter) = Meter(this.amount / that.amount)
+
+public operator fun Meter.div(that: MeterPerSecond) = Second(this.amount / that.amount)
+
+public operator fun Meter.div(that: Second) = MeterPerSecond(this.amount / that.amount)
+
+public operator fun MeterPerSecond.div(that: MeterPerSecondSquared) = Second(this.amount /
+    that.amount)
+
+public operator fun MeterPerSecond.div(that: Second) = MeterPerSecondSquared(this.amount /
+    that.amount)
+
+public operator fun Newton.div(that: MeterPerSecondSquared) = Kilogram(this.amount / that.amount)
+
+public operator fun Newton.div(that: Kilogram) = MeterPerSecondSquared(this.amount / that.amount)
+
+public operator fun Newton.div(that: Pascal) = SquareMeter(this.amount / that.amount)
+
+public operator fun Newton.div(that: SquareMeter) = Pascal(this.amount / that.amount)
+
+public operator fun Joule.div(that: Newton) = Meter(this.amount / that.amount)
+
+public operator fun Joule.div(that: Meter) = Newton(this.amount / that.amount)
+
+public operator fun Joule.div(that: Watt) = Second(this.amount / that.amount)
+
+public operator fun Joule.div(that: Second) = Watt(this.amount / that.amount)

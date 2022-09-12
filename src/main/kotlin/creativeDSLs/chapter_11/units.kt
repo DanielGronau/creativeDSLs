@@ -80,6 +80,17 @@ private val fromToDouble = listOf(
     Triple("MegaP", Pascal::class, 1_000_000.0),
 )
 
+private val multiply = listOf(
+    Triple(Meter::class, Meter::class, SquareMeter::class),
+    Triple(Meter::class, SquareMeter::class, CubicMeter::class),
+    Triple(MeterPerSecond::class, Second::class, Meter::class),
+    Triple(MeterPerSecondSquared::class, Second::class, MeterPerSecond::class),
+    Triple(MeterPerSecondSquared::class, Kilogram::class, Newton::class),
+    Triple(Pascal::class, SquareMeter::class, Newton::class),
+    Triple(Newton::class, Meter::class, Joule::class),
+    Triple(Watt::class, Second::class, Joule::class)
+)
+
 private fun makeDoubleToQuantity(unit: String, kClass: KClass<out Quantity>, factor: Double) =
     PropertySpec.builder(unit, kClass)
         .receiver(Double::class)
@@ -131,6 +142,22 @@ private fun makeScalarMultiplication(kClass: KClass<out Quantity>) =
         .addStatement("return that.copy(amount = this * that.amount)")
         .build()
 
+private fun makeMultiplication(in1: KClass<out Quantity>, in2: KClass<out Quantity>, out: KClass<out Quantity>) =
+    FunSpec.builder("times")
+        .addModifiers(KModifier.OPERATOR)
+        .receiver(in1)
+        .addParameter("that", in2)
+        .addStatement("return %T(this.amount * that.amount)", out)
+        .build()
+
+private fun makeDivision(in1: KClass<out Quantity>, in2: KClass<out Quantity>, out: KClass<out Quantity>) =
+    FunSpec.builder("div")
+        .addModifiers(KModifier.OPERATOR)
+        .receiver(in1)
+        .addParameter("that", in2)
+        .addStatement("return %T(this.amount / that.amount)", out)
+        .build()
+
 private fun makeQuantityToAmounts() =
     fromToDouble.map { (u, k, f) -> makeDoubleToQuantity(u, k, f) }
 
@@ -149,22 +176,45 @@ private fun makeNegations() =
 private fun makeScalarMultiplications() =
     Quantity::class.sealedSubclasses.map { makeScalarMultiplication(it) }
 
+private fun makeMultiplications() =
+    multiply.flatMap { (in1, in2, out) ->
+        when {
+            in1 == in2 -> listOf(makeMultiplication(in1, in2, out))
+            else -> listOf(makeMultiplication(in1, in2, out), makeMultiplication(in2, in1, out))
+        }
+    }
+
+private fun makeDivisions() =
+    multiply.flatMap { (in1, in2, out) ->
+        when {
+            in1 == in2 -> listOf(makeDivision(out, in1, in2))
+            else -> listOf(makeDivision(out, in1, in2), makeDivision(out, in2, in1))
+        }
+    }
+
 fun main() {
-    val builder = FileSpec.builder("creativeDSLs.chapter_11", "generated")
-
-    makeQuantityToAmounts().forEach { builder.addProperty(it) }
-
-    makeAmountToQuantities().forEach { builder.addProperty(it) }
-
-    makeAdditions().forEach { builder.addFunction(it) }
-
-    makeSubtractions().forEach { builder.addFunction(it) }
-
-    makeNegations().forEach { builder.addFunction(it)}
-
-    makeScalarMultiplications().forEach { builder.addFunction(it)}
-
-    builder.build()
+    FileSpec.builder("creativeDSLs.chapter_11", "generated")
+        .addProperties(makeQuantityToAmounts())
+        .addProperties(makeAmountToQuantities())
+        .addFunctions(makeAdditions())
+        .addFunctions(makeSubtractions())
+        .addFunctions(makeNegations())
+        .addFunctions(makeScalarMultiplications())
+        .addFunctions(makeMultiplications())
+        .addFunctions(makeDivisions())
+        .build()
         .writeTo(Path.of("./src/main/kotlin/"))
 }
 
+fun test() {
+    val acceleration = 30.0.m_s / 1.0.s
+    val force = acceleration * 64.0.kg
+    val energy = force * 5.0.m
+    println("this is ${energy.kJ} kiloJoule")
+}
+
+private fun FileSpec.Builder.addProperties(properties: List<PropertySpec>) =
+    this.also { properties.forEach { this.addProperty(it) } }
+
+private fun FileSpec.Builder.addFunctions(functions: List<FunSpec>) =
+    this.also { functions.forEach { this.addFunction(it) } }

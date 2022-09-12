@@ -32,7 +32,17 @@ data class Pascal(override val amount: Double) : Quantity
 
 WARNING: You should always consider whether the precision provided by `Double` is sufficient for the kind of calculations required by your application, and switch e.g. to `BigDecimal` if not.
 
-At this point, we can't even add two quantities together. It would be nice if we could write this function only once in `Quantity`, but of course only quantities of the same unit are allowed to be added. There are techniques to make this safe, but would require the use of generics in Kotlin. Instead, we will use https://square.github.io/kotlinpoet[KotlinPoet] to add some extension functions for us:
+At this point, we can't even add two quantities together. It would be nice if we could write this function only once in `Quantity`, but of course only quantities of the same unit are allowed to be added. There are techniques to make this safe, but would require the use of generics in Kotlin.
+
+Instead, we will use https://square.github.io/kotlinpoet[KotlinPoet]. You need to add a dependency to your project, e.g.:
+
+[source,kotlin]
+.Gradle .kts
+----
+implementation("com.squareup:kotlinpoet:1.12.0")
+----
+
+First, we will generate some extension functions for the missing addition:
 
 [source,kotlin]
 ----
@@ -82,6 +92,15 @@ fun makeScalarMultiplication(kClass: KClass<out Quantity>) =
         .addParameter("that", kClass)
         .addStatement("return that.copy(amount = this * that.amount)")
         .build()
+
+fun makeSubtractions() =
+    Quantity::class.sealedSubclasses.map { makeSubtraction(it) }
+
+fun makeNegations() =
+    Quantity::class.sealedSubclasses.map { makeNegation(it) }
+
+fun makeScalarMultiplications() =
+    Quantity::class.sealedSubclasses.map { makeScalarMultiplication(it) }
 ----
 
 The following part is more interesting: We need conversions from and back to `Double`. Note that we can define these conversions for more units than we have classes defined for, e.g. we can not only define `5.0.s` to give us `Second(5.0)`, but also `1.0.min` to give us `Seconds(60.0)`. And conversely, we want to be able to get from a `Second` instance not only the seconds, but also minutes etc. It is clear that we need additional information to write the conversions for a certain unit: We need its name, the quantity class, and a factor to apply.
@@ -150,11 +169,126 @@ public val Joule.kJ: Double
   get() = this.amount / 1000.0
 ----
 
-So far, we can already generate a lot of boilerplate code, but for the next task - the multiplication and division of quantities - even for our modest example it would be extremely tedious to write the necessary code manually, as we are dealing with a combinatorial explosion.
+So far, we can already generate a lot of boilerplate code, but for the next task - the multiplication and division of quantities - it would be extremely tedious to write the necessary code manually, even for our modest example. When we have N physical units, the number of possible multiplications and divisions is of order of N² (we won't implement all possible combinations, but still). When we have such polynomial or even exponential growth, we are dealing with a combinatorial explosion.
 
+To tackle this problem, we first need all valid multiplication equations. This could look like this, where the first two values of a triple are the types of the factors, and the third is the product type:
 
+[source,kotlin]
+----
+val multiply = listOf(
+    Triple(Meter::class, Meter::class, SquareMeter::class),
+    Triple(Meter::class, SquareMeter::class, CubicMeter::class),
+    Triple(MeterPerSecond::class, Second::class, Meter::class),
+    Triple(MeterPerSecondSquared::class, Second::class, MeterPerSecond::class),
+    Triple(MeterPerSecondSquared::class, Kilogram::class, Newton::class),
+    Triple(Pascal::class, SquareMeter::class, Newton::class),
+    Triple(Newton::class, Meter::class, Joule::class),
+    Triple(Watt::class, Second::class, Joule::class)
+)
+----
 
+Now we evaluate these equations both for multiplications and divisions. A slight complication is that we also want to add functions with the operands switched, but only if they have different types:
 
+[source,kotlin]
+----
+fun makeMultiplication(
+    in1: KClass<out Quantity>,
+    in2: KClass<out Quantity>,
+    out: KClass<out Quantity>) = FunSpec
+        .builder("times")
+        .addModifiers(KModifier.OPERATOR)
+        .receiver(in1)
+        .addParameter("that", in2)
+        .addStatement("return %T(this.amount * that.amount)", out)
+        .build()
+
+fun makeDivision(
+    in1: KClass<out Quantity>,
+    in2: KClass<out Quantity>,
+    out: KClass<out Quantity>) = FunSpec
+        .builder("div")
+        .addModifiers(KModifier.OPERATOR)
+        .receiver(in1)
+        .addParameter("that", in2)
+        .addStatement("return %T(this.amount / that.amount)", out)
+        .build()
+
+fun makeMultiplications() =
+    multiply.flatMap { (in1, in2, out) ->
+        when {
+            in1 == in2 -> listOf(makeMultiplication(in1, in2, out))
+            else -> listOf(
+                makeMultiplication(in1, in2, out),
+                makeMultiplication(in2, in1, out))
+        }
+    }
+
+fun makeDivisions() =
+    multiply.flatMap { (in1, in2, out) ->
+        when {
+            in1 == in2 -> listOf(makeDivision(out, in1, in2))
+            else -> listOf(
+                makeDivision(out, in1, in2),
+                makeDivision(out, in2, in1))
+        }
+    }
+----
+
+This is how the generated functions look like:
+
+[source,kotlin]
+----
+public operator fun Newton.times(that: Meter) =
+    Joule(this.amount * that.amount)
+
+public operator fun Meter.times(that: Newton) =
+    Joule(this.amount * that.amount)
+
+public operator fun Joule.div(that: Meter) =
+    Newton(this.amount / that.amount)
+
+public operator fun Joule.div(that: Newton) =
+    Meter(this.amount / that.amount)
+----
+
+In order to finish the DSL, we need to write the generated code in a file. For simplicity, I decided to write it directly next to the generating file, but it is common to have separate directories for generated code. For convenience, I added two extension functions for `FileSpec`, which allow to add multiple properties or functions at once:
+
+[source,kotlin]
+----
+fun main() {
+    FileSpec.builder("creativeDSLs.chapter_11", "generated")
+        .addProperties(makeQuantityToAmounts())
+        .addProperties(makeAmountToQuantities())
+        .addFunctions(makeAdditions())
+        .addFunctions(makeSubtractions())
+        .addFunctions(makeNegations())
+        .addFunctions(makeScalarMultiplications())
+        .addFunctions(makeMultiplications())
+        .addFunctions(makeDivisions())
+        .build()
+        .writeTo(Path.of("./src/main/kotlin/"))
+}
+
+fun FileSpec.Builder.addProperties(properties: List<PropertySpec>) =
+    this.also { properties.forEach { this.addProperty(it) } }
+
+fun FileSpec.Builder.addFunctions(functions: List<FunSpec>) =
+    this.also { functions.forEach { this.addFunction(it) } }
+----
+
+As you can see, working with KotlinPoet is quite straightforward. You use the different spec classes to assemble your code, and the `FileSpec` and `ClassSpec` classes allow you to write the file or class to the filesystem. Behind the scenes, KotlinPoet does a lot of work for you, e.g. managing imports or simplifying your code (e.g. turning function bodies with curly braces into expression syntax if possible).
+
+With our DSL, we can now calculate physical quantities in a safe and convenient way, e.g.:
+
+[source,kotlin]
+----
+val acceleration = 30.0.m_s / 1.0.s
+val force = acceleration * 64.0.kg
+val energy = force * 5.0.m
+println("${energy.kJ} kiloJoule")
+----
+
+The example code is written in a way where you generate the code manually when the DSL has changed. This is a simple approach when you know that code changes don't happen very often. If this isn't the case, KotlinPoet can be also integrated with the https://kotlinlang.org/docs/ksp-overview.html[Kotlin Symbol Processing API] (KSP), so that the code generation happens on every build. For the details I have to refer to the documentations of KotlinPoet and KSP.
 
 === Conclusion
 
