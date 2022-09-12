@@ -42,6 +42,8 @@ Insufficient extensibility is a common pitfall when designing internal DSLs, whi
 
 Therefore, it makes sense to get upfront a rough idea which extensions could be requested after the first version of the DSL. In the implementation phase, this knowledge helps to avoid techniques that are not flexible enough to handle future requirements.
 
+Another kind of extensibility, which is often overlooked, is the extensibility by users. E.g. consider a DSL for working with physical quantities: There are way too many units include them all, but a user might have a special set of units that he needs in his daily work, so it would be great if the DSL allows to add custom units. Such considerations can make a DSL much more useful and successful, so please think of ways a user might want to extend your DSL, and also document how to do it.
+
 === Performance and Memory Requirements
 
 Often performance considerations get not much attention. However, in most cases DSLs invoke additional operations, instantiate objects and may trigger garbage collections. When working with big data, or having a wasteful DSL, you might run in performance and memory problems. That's why it is relevant to estimate performance requirements.
