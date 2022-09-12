@@ -96,6 +96,26 @@ abstract class Mapper<S : Any, T : Any> {
 }
 ----
 
-As it uses reflection, you need to include a dependency to the `kotlin-reflect` library, as described in chapter 4.10. "Reflection". Of course, the example could be improved in many ways, e.g. sometimes you would need multiple source fields to calculate a target field.
+As it uses reflection, you need to include a dependency to the `kotlin-reflect` library, as described in chapter link:chapter-04#reflection[4.10 Reflection]. Of course, the example could be improved in many ways, e.g. sometimes you would need multiple source fields to calculate a target field.
+
+For serious applications, I would suggest to give https://mapstruct.org[MapStruct] a try. It is a Java library, but seems to work well with Kotlin, and has much more functionality than our example DSL. One main difference is that MapStruct generates sourcecode, avoiding the performance hit of using reflection, and making debugging much more convenient.
 
 === Conclusion
+
+In some cases, it can feel very natural to integrate a DSL in the existing user code, and use it to influence how certain structures are processed or translated. In these cases, annotation-based DSLs are a good choice. While these DSLs are often easy to use, the implementation overhead can be substantial.
+
+[cols="2a,2a"]
+|===
+|Pros |Cons
+
+|* usage can feel very natural and intuitive
+* uses a dedicated syntax
+* can be a good way to mark exceptions (e.g. "don't serialize this field")
+
+|* pollutes the host code
+* can clash with other annotation-based DSLs
+* relies often heavily on reflection
+* hard to debug in case of problems
+|===
+
+

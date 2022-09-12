@@ -169,7 +169,7 @@ public val Joule.kJ: Double
   get() = this.amount / 1000.0
 ----
 
-So far, we can already generate a lot of boilerplate code, but for the next task - the multiplication and division of quantities - it would be extremely tedious to write the necessary code manually, even for our modest example. When we have N physical units, the number of possible multiplications and divisions is of order of N² (we won't implement all possible combinations, but still). When we have such polynomial or even exponential growth, we are dealing with a combinatorial explosion.
+So far, we can already generate a lot of boilerplate code, but for the next task - the multiplication and division of quantities - it would be extremely tedious to write the necessary code manually, even for our modest example. When we have N physical units, the number of possible multiplications and divisions is of order N² (we won't implement all possible combinations, but it is still a lot). When we have such polynomial or even exponential growth, we are dealing with a combinatorial explosion.
 
 To tackle this problem, we first need all valid multiplication equations. This could look like this, where the first two values of a triple are the types of the factors, and the third is the product type:
 
@@ -278,7 +278,7 @@ fun FileSpec.Builder.addFunctions(functions: List<FunSpec>) =
 
 As you can see, working with KotlinPoet is quite straightforward. You use the different spec classes to assemble your code, and the `FileSpec` and `ClassSpec` classes allow you to write the file or class to the filesystem. Behind the scenes, KotlinPoet does a lot of work for you, e.g. managing imports or simplifying your code (e.g. turning function bodies with curly braces into expression syntax if possible).
 
-With our DSL, we can now calculate physical quantities in a safe and convenient way, e.g.:
+With our generated DSL in place, we can now calculate physical quantities in a safe and convenient way, e.g.:
 
 [source,kotlin]
 ----

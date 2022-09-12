@@ -1,1 +1,1 @@
-== Semantic DSLs
+== Hybrid DSLs

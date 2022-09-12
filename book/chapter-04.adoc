@@ -259,13 +259,14 @@ Note the expression `T::class`, which shouldn't work considering type erasure. H
 
 === Annotations
 
-You can write whole DSLs using annotations, but more often annotations can support DSLs, e.g. by pointing out how certain fields or classes should be handled. They are especially powerful when your DSL shows a certain default behavior, but needs to consider some edge cases or exceptions, like "don't persist this property".
+You can write whole DSLs using annotations, but more often annotations can support DSLs, e.g. by pointing out how certain fields or classes should be handled.They are especially powerful when your DSL shows a certain default behavior, but needs to consider some edge cases or exceptions, like "don't persist this property".
 
-Another useful application for annotations is code generation. E.g. the already mentioned AutoDSL library uses the information provided via annotations to construct the DSL classes.
+Another useful application for annotations is code generation.E.g. the already mentioned AutoDSL library uses the information provided via annotations to construct the DSL classes.
 
+[#reflection]
 === Reflection
 
-Sometimes you need to inspect or deconstruct classes, call unknown methods, react to annotations etc., which can be done using reflection. If you need more than the most basic reflection in Kotlin, you have to import a separate dependency:
+Sometimes you need to inspect or deconstruct classes, call unknown methods, react to annotations etc., which can be done using reflection.If you need more than the most basic reflection in Kotlin, you have to import a separate dependency:
 
 [source,kotlin]
 .Gradle (.kts)
