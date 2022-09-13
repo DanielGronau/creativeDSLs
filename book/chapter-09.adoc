@@ -1,1 +1,12 @@
 == String-Parsing DSLs
+
+In some cases, the host language doesn't allow the syntax you would like to use for a DSL. A string-parsing DSL gives you the freedom to write basically anything, but the downside is that you can't perform compile time checks, and that dissecting a string is usually more involved than collecting the data from other types of DSLs.
+
+=== Case Study: Chemical Equations as Strings
+
+In the last chapter, we dealt with a DSL for chemical formulas, but the result wasn't as concise as a chemist would hope for. Wouldn't it be nice to just write `"2CH3OH -{zwsp}> (CH3)2O + H2O"` and be done with it?
+
+
+
+
+=== Conclusion
