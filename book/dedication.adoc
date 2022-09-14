@@ -12,7 +12,8 @@
 {empty} +
 {empty} +
 
-__-- To my parents Eva and Wolfgang Gronau --__
+[.text-center]
+-- To my parents Eva and Wolfgang Gronau --
 
 {empty} +
 {empty} +

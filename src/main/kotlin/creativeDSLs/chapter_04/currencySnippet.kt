@@ -2,15 +2,15 @@ package creativeDSLs.chapter_04
 
 import java.math.BigDecimal
 
-interface Eur
-interface Gbp
+interface Euro
+interface BritishPound
 
 data class Currency<T>(val value: BigDecimal)
 
 val Double.EUR
-    get() = Currency<Eur>(this.toBigDecimal())
+    get() = Currency<Euro>(this.toBigDecimal())
 val Double.GBP
-    get() = Currency<Gbp>(this.toBigDecimal())
+    get() = Currency<BritishPound>(this.toBigDecimal())
 
 operator fun <T> Currency<T>.plus(that: Currency<T>) =
     copy(value = this.value + that.value)

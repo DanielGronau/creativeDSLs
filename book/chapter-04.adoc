@@ -155,7 +155,7 @@ That said, you can do some sneaky things with operators. E.g. the invoke operato
 
 === Extensions
 
-One of the most important features for DSL design are functions and lambdas with receivers. This can be understood of putting the function body in the scope of the receiver, so you can access its public fields, methods etc., and also refer to the receiver via `this`. In case of extension functions, the call looks like a normal method call on a receiver instance.
+One of the most important features for DSL design are functions and lambdas with receivers. This can be understood as putting the function body in the scope of the receiver, so you can access its public fields, methods etc., and also refer to the receiver itself using `this`. In case of extension functions, the call looks like a normal method call on a receiver instance.
 
 ==== Type narrowing
 
@@ -171,10 +171,10 @@ The call to `Double::times` is only possible because the receiver is not just an
 ==== Loan Pattern
 
 ****
-The idea of the Loan Pattern is to hide construction and disposal of an instance (e.g. often a resource) from client code. The caller gets only access to the already initialized instance, and isn't responsible for things like closing connections at the end.
+The idea of the Loan Pattern is to hide construction and disposal of an instance (often a resource) from client code. The caller gets only access to the already initialized instance, and isn't responsible for things like closing connections at the end.
 ****
 
-Lambdas can have receivers too, and this plays nicely with the Loan Pattern.  This is very useful for DSLs, because it helps to control the life-cycle of the receiver class. Take this example:
+Lambdas can have receivers too, and this plays nicely with the Loan Pattern. This is very useful for DSLs, because it helps to control the life-cycle of the receiver class. Take this example:
 
 [source,kotlin]
 ----
@@ -183,7 +183,7 @@ include::{srcdir}/chapter_04/stringBuilderSnippet.kt[lines=3..]
 
 This may look a little confusing at first, but the main point is that you can use extension methods to create a block where `this` is a certain receiver class (here `StringBuilder`), and you don't have to care about its construction or final steps (like calling a `build()` - or here `toString()` - method).
 
-Building DSLs using this feature is very common, as it has several advantages over the classic Builder Pattern.
+Building DSLs based on this feature is very common, as it has several advantages over the classic Builder Pattern.
 
 ==== The @DslMarker annotation
 
@@ -206,7 +206,9 @@ To avoid this problem, there is a mechanism for scope control:
 * Mark all involved receiver classes (or a common super class) with your annotation
 * After this, you can't directly access things from the outer scope. You still can refer them indirectly, like with `this@html.head{...}`
 
-It should be noted that you can also define extension properties. Generally, they aren't used nearly as much as extension functions, but they can help to make DSLs prettier, as they don't require the empty parentheses an equivalent extension function would need:
+==== Extension properties
+
+You can not only define extension functions and lambdas, but also extension properties. Generally, they aren't used nearly as much as extension functions, but they can help to make DSLs prettier, as they don't require to write empty parentheses:
 
 [source,kotlin]
 ----
@@ -219,7 +221,7 @@ The infix notation covered in the next paragraph uses extension function syntax 
 
 The infix notation allows names of functions to be used like binary operators. Well-known examples in the Kotlin API include `to` for creating pairs, and `until` and `downTo` for creating ranges.
 
-The function must be a receiver function, and have one argument. The receiver-`this` becomes the left-hand side, and the argument the right-hand side of the operator. Note that you can still use the normal function call syntax. Here is an example for checking preconditions:
+The function must be a receiver function, and have one argument. The receiver-`this` becomes the left-hand side, and the argument becomes the right-hand side of the operator. Note that you can still use the normal function call syntax. Here is an example for checking preconditions:
 
 [source,kotlin]
 ----
@@ -255,18 +257,24 @@ One great feature of Kotlin is reified generics. The JVM implements generics usi
 include::{srcdir}/chapter_04/reifiedSnippet.kt[lines=3..]
 ----
 
-Note the expression `T::class`, which shouldn't work considering type erasure. However, the function is defined as an `inline` function, and the generic parameter `T` is marked as "reified". The details are beyond the scope of this book, but basically the inlining allows the compiler to gather the generic type information already at compile time, and make it look like as there is no type erasure happening. It should be noted that inline functions are subjected to some restrictions, and show subtle differences to not inlined functions.
+Note the expression `T::class`, which shouldn't work considering type erasure. However, the function is defined as an `inline` function, and the generic parameter `T` is marked as "reified". The details are beyond the scope of this book, but basically the inlining allows the compiler to gather the generic type information already at compile time, and make it look like as there is no type erasure happening. It should be noted that inline functions are subjected to some restrictions, and show differences to "normal" functions regarding their return behavior.
 
+[#annotations]
 === Annotations
 
-You can write whole DSLs using annotations, but more often annotations can support DSLs, e.g. by pointing out how certain fields or classes should be handled.They are especially powerful when your DSL shows a certain default behavior, but needs to consider some edge cases or exceptions, like "don't persist this property".
+You can write whole DSLs using annotations, but more often annotations can support DSLs, e.g. by pointing out how certain fields or classes should be handled. They are especially powerful when your DSL shows a certain default behavior, but needs to consider some edge cases or exceptions, like "don't persist this property".
 
-Another useful application for annotations is code generation.E.g. the already mentioned AutoDSL library uses the information provided via annotations to construct the DSL classes.
+Another useful application for annotations is code generation.E.g. the already mentioned AutoDSL library uses the information provided via annotations to construct the DSL classes for you.
+
+.Annotation Processors
+****
+Annotation processors allow to execute custom processor code during the build process, according to the annotations present in the application code. Kotlin features two annotation processors, the older https://kotlinlang.org/docs/kapt.html[kapt], which won't be developed further, and the recommended https://kotlinlang.org/docs/ksp-overview.html[Kotlin Symbol Processing API] (KSP). While the topic is beyond the scope of this book, it might be a good idea to get familiar with this concept, especially when developing annotation-based DSLs.
+****
 
 [#reflection]
 === Reflection
 
-Sometimes you need to inspect or deconstruct classes, call unknown methods, react to annotations etc., which can be done using reflection.If you need more than the most basic reflection in Kotlin, you have to import a separate dependency:
+Sometimes you need to inspect or deconstruct classes, call unknown methods, react to annotations etc., which can be done using reflection. If you need more than the most basic reflection in Kotlin, you have to import a separate dependency:
 
 [source,kotlin]
 .Gradle (.kts)

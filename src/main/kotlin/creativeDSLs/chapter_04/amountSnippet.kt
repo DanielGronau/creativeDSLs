@@ -8,4 +8,4 @@ val Double.USD
     get() = Amount(this.toBigDecimal(), "USD")
 
 // with an extension function, this would be 22.46.USD()
-val money = 22.46.USD
+val money: Amount = 22.46.USD

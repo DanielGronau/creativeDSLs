@@ -13,16 +13,30 @@ Chapters
 1. Algebraic DSLs
 1. Builder Pattern DSLs 
 1. Loan Pattern DSLs (with AutoDSL)
-1. Semantic DSLs (chemical formula, pattern matcher)
-1. String-Parsing DSLs (chemical formula)
+1. Hybrid DSLs (chemical formula, pattern matcher) 
+1. String-Parsing DSLs (chemical formula with and without parser generator)
 1. Annotation based DSL (data class mapper)
-1. Code Generation with KotlinPoet 
+1. Code Generation with KotlinPoet (physical quantities)
 1. Dissecting common DSLs (kotest, gradle .kts, Kotlin Poet)
 
-## Publishers
+TODO:
+- AutoDSL, chapter 7
+- pattern matcher, chapter 8
+- String parser, chapter 9 
+- chapter 12
+
+## Publishing
 
 https://indie-autoren-buecher.de/selfpublishing-blog/buch-veroeffentlichen-als-selfpublisher-anbietervergleich/
 
 https://blog.buuk.app/selfpublishing-distributoren-und-plattformen-im-vergleich-ausfuehrlich/
 
 https://www.savethestudent.org/make-money/best-ebook-publishing-companies.html
+
+https://selbst-schuld.com/mit-e-books-uber-amazon-kdp-erfolgreich-werden/
+
+https://www.epubli.de/
+
+## Taxes and Legalese
+
+:(

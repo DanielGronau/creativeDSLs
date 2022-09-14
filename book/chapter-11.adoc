@@ -37,7 +37,7 @@ At this point, we can't even add two quantities together. It would be nice if we
 Instead, we will use https://square.github.io/kotlinpoet[KotlinPoet]. You need to add a dependency to your project, e.g.:
 
 [source,kotlin]
-.Gradle .kts
+.Gradle (.kts)
 ----
 implementation("com.squareup:kotlinpoet:1.12.0")
 ----

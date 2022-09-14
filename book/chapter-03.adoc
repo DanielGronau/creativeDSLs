@@ -1,16 +1,16 @@
 == Writing a DSL
 
-So, we defined the requirements, and want finally dive into designing and implementing the DSL. I totally get the excitement, but I can tell from experience that it still makes a lot of sense to give this process a little structure. The process outlined here is very simple, with just four steps, but it addresses some problems you might run into when you start coding right away.
+So, you defined the requirements, and want finally dive into designing and implementing the DSL. I totally get this excitement, but I can tell from experience that it still makes a lot of sense to add a little structure to this process. The method outlined here is very simple, with just four steps, but it addresses some problems you might run into when you start coding right away.
 
 === Dream up the Ideal Syntax
 
 This might sound weird, especially if you come from Java, where your options are usually limited. And after the requirement analysis, we should have already a pretty clear picture of how the syntax should look like, right? Yes, in some cases, the ideal syntax is pretty much given, e.g. if there is already an established standard for it. But in cases where you have some creative freedom, I would recommend to give this step a try.
 
-Thinking about language features and implementation details limits your creativity. Try to put off your programming glasses. If possible, invite domain experts. Get some brainstorming vibes going. The goal is to sketch how an ideal DSL syntax could look like, without any regard about how to get there. If you can't agree on one syntax, it might be okay to have two candidates, but probably not more.
+Thinking about language features and implementation details limits your creativity. Try to put away your programming glasses. If possible, invite domain experts. Get some brainstorming vibes going. The goal is to sketch how an ideal DSL syntax could look like, without any regard about how to get there. If you can't agree on one syntax, it might be okay to have two candidates, but probably not more.
 
-Usually it isn't necessary to specify a formal grammar. Instead, write lots of examples, comment those, and make sure that there are no inconsistencies or gaps. A crucial part of information is how the output for the respective example should look like.
+Usually it isn't necessary to specify a formal grammar. Instead, write lots of examples, comment these, and make sure that there are no inconsistencies or gaps. Don't forget to specify how the output for the respective example should look like, this is crucial information.
 
-If you have the chance, get feedback from domain experts or future users.
+Again, if you have the chance, get feedback from domain experts or future users. Few things are more frustrating than presenting a new shiny implementation, only to be told you missed some crucial part.
 
 === Prototyping
 
@@ -20,41 +20,44 @@ You should check regularly whether the syntax of the prototype is acceptable, an
 
 === Formalization and Documentation
 
-Once a prototype has shown how a realistic syntax meeting the requirements could look like, you should formalize the syntax. This doesn't have to be a big process, it really depends on the scope of the project. Sometimes a simple wiki page might be enough, sometimes you have to define a formal grammar. Even more important as in case of the ideal syntax is the documentation of the mapping from the DSL to its output.
+Once a prototype has shown how a realistic syntax could look like, you should formalize the syntax. This doesn't have to be a big process, it really depends on the scope of the project. Sometimes a simple wiki page might be enough, sometimes you have to define a formal grammar. Even more important as in case of the ideal syntax is the documentation of the mapping from the DSL to its output.
 
-This step shouldn't be skipped: A prototype is no documentation, the real implementation needs exact specifications, and later users will need a documentation anyway.
+WARNING: This step shouldn't be skipped: A prototype is no documentation, the final implementation needs exact specifications, and later users require a documentation as well. Doing it now makes the most sense.
 
-One aspect deserving special attention is completeness. You should ensure that the DSL can actually express all "allowed" configurations. Sometimes rare cases are simply overlooked, or some features are not orthogonal. An example for the latter case would be a syntax for describing animals that doesn't allow to choose both "mammal" and "lays eggs" at the same time, even though this combination of properties actually exists.
+One aspect deserving special attention is completeness. You should ensure that the DSL can actually express all "allowed" configurations. Sometimes rare cases are simply overlooked, or some features are not orthogonal footnote:[An example for missing orthogonality would be a syntax for describing animals, which doesn't allow to choose both "mammal" and "lays eggs", even though this combination of properties actually exists.], even though they should.
 
 === Implementation
 
-The last step is of course the implementation. Often parts of the prototype can be reused, but don't be afraid to throw it away, and to write better structured, more flexible or faster code instead. If you encounter a lot of boilerplate, you might consider using a source code generator. In contrast to the prototype, now is the time to shine and to follow all the best practices, e.g. writing tests and sanity checks.
+The last step is of course the implementation. Often parts of the prototype can be reused, but don't be afraid to throw it away, and to write better structured, more flexible or faster code instead. If you encounter a lot of boilerplate, you might consider using a source code generator. In contrast to the prototype, now it is time to shine and to follow all best practices, e.g. writing tests and sanity checks.
 
-In some cases, you discover that your prototype wasn't thorough enough, and hit a wall. When this happens, and you can't find an immediate workaround, consider going back to the prototype phase. Staying in "full implementation mode" is heavy-weight, and limits you field of view. Taking a step back and exploring other approaches is often more productive then trying to power through.
+In some cases, you may discover that your prototype wasn't thorough enough, and hit a wall. When this happens, don't panic. If you can't find an immediate workaround, consider going back to the prototype phase. Staying in "full implementation mode" is heavy-weight, and limits you field of view. Taking a step back and exploring other approaches is often more productive than trying to power through.
 
-Generally, the implementation of a DSL can be quite different from the usual programming tasks, and comes with its own problems and pitfalls. Therefore, I'll list some points where you might want to pay special attention.
+The implementation of a DSL is quite often different from the usual programming tasks, therefore it comes with its own problems and pitfalls. Below, I'll list some points that deserve special attention.
 
 ==== Name Clashes
 
-A good DSL can be widely used in a code base, and of course that's a great thing. However, this also increases the possibility of name clashes. That's why it might be e.g. problematic to add extension methods to often used classes like `Int` or `String`. Sometimes two DSLs can clash, e.g. when trying to define the same operator.
+A good DSL can be used extensively in a code base, and of course that's a great thing. However, this also increases the likelihood of name clashes. That's why it might be  problematic to add extension methods to often used classes like `Int` or `String`. Sometimes two DSLs can clash, e.g. when trying to define the same operator. Sometimes, you can limit the scope of a function etc. by pulling it in one of the DSL classes.
 
 ==== Coupling
 
-When writing a DSL for creating classes that are also under your control, you might be tempted to integrate the DSL tightly into these classes. This is very likely a bad idea, for various reasons:
+When writing a DSL for creating classes that are also under your control, you might be tempted to integrate the DSL tightly into these classes. This can backfire, for various reasons:
 
 * DSL code gets entangled with business logic
-* the DSL becomes part of the classes' API, making it bloated and inflexible
-* In many cases it is important that the result classes can work on its own. This might be the case for code generation or analysis tools, for working with big data or for testing
+* the DSL becomes part of the business API, making it bloated and inflexible
+* In many cases it is important that the result classes can work on its own. Examples for this can be when code generation or analysis tools are involved, for working with big data, or for testing
 * at some point in time, the DSL may get obsolete
 
-In Java, this kind of tight coupling might be excused because there often is no other way to make the DSL convenient to use. But Kotlin is much more expressive, most notably it has extension methods, so you don't have this excuse.
+In Java, this kind of tight coupling might be excusable because often there is no other way to write a convenient DSL. But Kotlin is much more expressive by having features like extension methods, so this excuse doesn't count.
 
 ==== Code Conventions
 
-A point where you might need to compromise is following code conventions, things like rules for writing upper- and lowercase. Of course, you should stick to code conventions whenever possible, but in the context of DSL design some deviations are acceptable. But if you have to break the rules, please document that this was a conscious decision.
+A point where you might need to compromise is following code conventions, things like rules for writing upper- and lowercase. Of course, you should stick to code conventions whenever possible, but in the context of DSL design some deviations are acceptable. But if you have to break the rules, you should document this decision.
 
 ==== Documentation
 
-Often it turns out that you have to deviate a bit from the original specification, or you added some new details. Please don't forget to update the documentation accordingly.
+Many people don't like to write documentations, but it is important. A DSL is per definition an own language, and people might need a helping hand to use it correctly and effectively. Don't presume too much prior knowledge of the DSL, and don't be too lazy to show a few good examples, or to visualize core concepts. To be frank, if you find it very difficult to write a documentation for your own DSL, it might be an indication that the DSL has some improvement potential.
+
+Often, you have to deviate a bit from the original specification, or you added some new details. Please don't forget to update the documentation.
+
 
 
