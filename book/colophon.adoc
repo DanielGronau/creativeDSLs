@@ -2,17 +2,21 @@
 
 == Creative DSLs in Kotlin
 
-(C) {revyear} {author}. All rights reserved. Version {revnumber}.
+[%hardbreaks]
+Text (C) {revyear} by {author}
+Cover Design (C) {revyear} by {author}
 
-Published by Daniel Gronau.
-
-No part of this publication may be reproduced, stored in a retrieval system or transmitted in any form or by any means, electronic, mechanical, photocopying, recording, scanning or otherwise without the prior written permission of the publisher.
+Published by:
 
 [%hardbreaks]
-Production Editor: Daniel Gronau
-Copy Editor: Daniel Gronau
-Technical Editor: Daniel Gronau
-Cover and Interior Design: Daniel Gronau
+Daniel Gronau
+Ramsiner Str. 35
+06792 Sandersdorf-Brehna
+Germany
+
+Email: creativeDSLs@protonmail.com
 
 [%hardbreaks]
-ISBN: XXX-X-XXX-XXXXX-X
+Distribution: epubli – a service of the neopubli GmbH, Berlin, Germany
+eBook ISBN: XXX-X-XXX-XXXXX-X
+Paperback ISBN: XXX-X-XXX-XXXXX-X
