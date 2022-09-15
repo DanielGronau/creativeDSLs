@@ -133,7 +133,7 @@ So, how does our DLS look like in action? Here are a few examples:
 ----
 //2H2 + O2 <-> 2H2O
 val makingWater =
-    2 * !H[2] + !O[2] reactsReversible 2 * (H[2]-O)
+    2*!H[2] + !O[2] reactsReversible 2*(H[2]-O)
 
 //3Ba(HO)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2
 val makingBariumPhosphate =
@@ -148,3 +148,18 @@ Simulating the dense chemical notation is hard, and while using operator overloa
 
 === Conclusion
 
+Writing good hybrid DSLs is challenging. In most cases it is the better choice to stick with a certain style, when it is possible. On the other hand, a well-designed hybrid DSL can combine the most fitting techniques in a way that feels intuitive and organic.
+
+[cols="2a,2a"]
+|===
+|Pros |Cons
+
+|* can support a wide range of problems
+* allows to get creative with different techniques
+* can get very concise by having many implementation options
+
+|* might look incoherent
+* high perceptual complexity -> steeper learning curve
+* difficult to control and predict the outcome
+* higher maintenance effort needed
+|===

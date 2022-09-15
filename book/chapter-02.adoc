@@ -4,7 +4,7 @@ For a software engineer, writing DSLs often feels exciting and fun, and it is ea
 
 === Defining the Problem Domain
 
-The first question to answer is obviously which domain to tackle. For small domains and areas with existing standards, this question is usually easy to answer. For larger domains it can be tempting to over-generalize. Try to be specific. Sometimes, the deliberate decision to drop some lesser used and harder to implement parts of the problem domain can make the DSL more flexible and lean.
+The first question to answer is obviously which domain to tackle. For small domains and areas with existing standards, this question is usually easy to answer. For larger domains it can be tempting to over-generalize. Try to be specific. Sometimes, the deliberate decision to drop some lesser used and harder to implement parts of the problem domain can make the DSL more flexible and lean. As in other areas of software development, it can be helpful to specify non-goals explicitly. Also, don't forget to specify the target platform, the language level etc.
 
 Generally, it is a good practice to construct your DSL in layers, so that the lower layers don't rely on the higher ones, and can be used independently. E.g. if you design a DSL for linear algebra, the DSL part for matrices could be independent of the rest of the system, and therefore you can use this part in other contexts as well.
 
@@ -24,11 +24,19 @@ In most cases it is rather obvious which kind of output is expected. Sometimes y
 
 Another potential question is whether to generate the target entities of an external API directly, or to follow the Adapter Pattern or similar approaches. In this case the decision depends on the intended architecture of your application (like Hexagonal Architecture, Onion Architecture etc.), but generally you should try to use non-essential external APIs only at the boundaries of the application, and DSLs should follow this guideline as well.
 
-=== Distance to the Ideal Syntax
+=== Syntactical Gap
 
 Usually, an internal DSL can only get close to the syntax we really wish for. It is tempting to subordinate everything else in order to come as close as possible to our ideal syntax. But of course beauty has its price, pushing the limits of the host language's syntax can be problematic, and neglecting the other requirements can render your beautiful DSL useless.
 
 That's why it is important to have already from the very beginning a rough idea how close the internal DSL needs to come the ideal syntax, and when to start compromising. One relevant question in this context is how "tech-savvy" users of the DSL are. Generally, people without coding experience need more streamlined DSLs than software engineers, who will often tolerate a few warts in the DSL syntax.
+
+=== Learning Experience
+
+Having a beautiful and concise Syntax for your DSL doesn't necessarily mean that it is easy to master. Once a DSL reaches a certain size and complexity, it is naive to assume that people just use it without assistance. The learning experience of the users is often just an afterthought, but I think it is important to account for it already in the analysis process.
+
+The DSL itself can be designed in a way to have a shallow learning curve, e.g. by mimicking known systems, or by emphasizing consistency over conciseness footnote:[One could argue that Regular Expressions are an example for a "too concise" DSL, as most users - including me - have to look up the syntax over and over again]. Of course, training and documentation are major factors for a good learning experience as well. In order to get this right, you have to know your target audience and their skill-set.
+
+TIP: In the end it's not the DSL itself which generates value, but the people using it effectively, and this is something we should never forget. Planning for the required assistance upfront can help to improve the DSL, and empower the users to get the most out of it.
 
 === Safety of Use Requirements
 
@@ -40,12 +48,16 @@ Some level of unsafe behaviour might be acceptable for tech-savvy or experienced
 
 === Ensuring Extensibility
 
-Insufficient extensibility is a common pitfall when designing internal DSLs, which usually operate with quite specialized techniques and language features. Sometimes new DSL requirement can't be properly integrated with the initially selected means, which may render the whole DSL useless.
+Insufficient extensibility is a common pitfall when designing internal DSLs, which usually operate with quite specialized techniques and language features. Sometimes new DSL requirement can't be properly implemented with the chosen feature set, which may render the whole DSL useless.
 
 Therefore, it makes sense to get upfront a rough idea which extensions could be requested after the first version of the DSL. Later, in the implementation phase, this information helps to avoid using techniques that are not flexible enough to handle future requirements.
 
 Another kind of extensibility, which is often overlooked, is extensibility by users. E.g. consider a DSL for working with physical quantities: There are way too many units to cover them all, but users might have a special set of units that they need in their daily work, so it would be great if the DSL allows to add custom units. Such considerations can make a DSL much more useful and successful. When possible, open your  DSL for extension by users, and also document how to do it. On the other hand, when you can already predict that extending the DSL may lead to unexpected or unsafe results, try to prevent it.
 
+=== Maintainability
+
+The DSL has to be not only implemented, but must be maintained as well. It should be estimated how many resources are necessary to keep the code running and to update it. Knowing these expectations can help to decide e.g. which dependencies are acceptable, or if code generation is required.
+
 === Performance and Memory Requirements
 
-Often performance considerations get not much attention. However, in most cases DSLs invoke additional operations, instantiate extra classes and may trigger garbage collections. When working with big data, or having a wasteful DSL design, you might run in performance and memory problems. That's why it is necessary to estimate performance requirements upfront, and to employ load tests and metrics accordingly.
+Often performance considerations don't get much attention. However, in most cases DSLs invoke additional operations, instantiate extra classes and may trigger garbage collections. When working with big data, or having a wasteful DSL design, you might run in performance and memory problems. That's why it is necessary to estimate performance requirements upfront, and to employ load tests and metrics accordingly.

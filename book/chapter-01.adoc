@@ -20,3 +20,19 @@ One disadvantage of internal DSLs is the limitation of the syntax inherited by t
 A common problem in DSL design is combinatorial explosion: Take for example a DSL for physical quantities, and all the possible results when multiplying or dividing them. In order to achieve a pleasing syntax, but avoid illegal conversions you might have to write lots of boilerplate code. In such cases, code generation can help to get the job done, even if it seemed hopeless at the first glance.
 
 There are also libraries creating DSLs for you. If you need a well-known style of DSL, you just have to describe what you need (e.g. by annotating your business classes accordingly), and the library will generate the DSL code for you. An example for this approach is https://github.com/F43nd1r/autodsl[AutoDSL for Kotlin]
+
+=== DSL Design Principles
+
+There are a few general principles an internal DSL should follow:
+
+* *Conciseness*: The DSL syntax should be shorter than the original one
+* *Consistency*: The DSL syntax should stick to a certain style, similar tasks should require a similar syntax
+* *Coverage*: The DSL needs to cover the problem domain, there should be no gaps, but also no overreach into other areas
+* *Usability*: The DSL should be easy and intuitive to use, without exposing pitfalls
+* *Modularity*: If it makes sense to use a part of the DSL on its own, it should be easy to do so
+* *Extensibility*: The DSL should allow custom extensions where it makes sense
+* *Maintainability*: The DSL code should be easy to maintain
+
+
+
+

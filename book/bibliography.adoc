@@ -1,5 +1,5 @@
 [bibliography]
-== Example Bibliography
+== Bibliography
 
 The bibliography list is a style of AsciiDoc bulleted list.
 
@@ -10,3 +10,6 @@ The bibliography list is a style of AsciiDoc bulleted list.
 - [[[walsh-muellner]]] Norman Walsh & Leonard Muellner.
   'DocBook - The Definitive Guide'. O'Reilly & Associates. 1999.
   ISBN 1-56592-580-7.
+
+.Articles
+- [[[prokopov]]] Nikita Prokopov: 'Designing good DSL', https://tonsky.me/blog/dsl/
