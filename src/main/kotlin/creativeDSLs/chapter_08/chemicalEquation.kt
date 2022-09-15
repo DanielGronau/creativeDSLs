@@ -2,36 +2,25 @@ package creativeDSLs.chapter_08
 
 interface Part
 
-data class Element private constructor(val symbol: String, val count: Int) : Part {
+data class Element(val symbol: String, val count: Int) : Part {
     constructor(symbol: String) : this(symbol, 1)
-
     override fun toString() = when (count) {
         1 -> symbol
         else -> symbol + count
     }
-
-    operator fun get(count: Int) =
-        apply { require(this.count == 1 && count > 1) }
-            .copy(count = count)
 }
 
-data class Group private constructor(val parts: List<Part>, val count: Int) : Part {
+data class Group(val parts: List<Part>, val count: Int) : Part {
     constructor(vararg parts: Part) : this(parts.asList(), 1)
-
     override fun toString() = when (count) {
         1 -> parts.joinToString("", "(", ")")
         else -> parts.joinToString("", "(", ")") + count
     }
-
-    operator fun get(count: Int) =
-        apply { require(this.count == 1 && count > 1) }
-            .copy(count = count)
 }
 
 data class Molecule(val factor: Int, val parts: List<Part>) {
     constructor(vararg parts: Part) : this(1, parts.asList())
     constructor(factor: Int, vararg parts: Part) : this(factor, parts.asList())
-
     override fun toString() = when (factor) {
         1 -> parts.joinToString("")
         else -> "$factor${parts.joinToString("")}"
@@ -44,7 +33,48 @@ data class Equation(val leftSide: List<Molecule>, val rightSide: List<Molecule>,
             rightSide.joinToString(" + ")
 }
 
-operator fun Part.not() = Molecule(this)
+operator fun Element.get(count: Int) =
+    apply { require(this.count == 1 && count > 1) }
+        .copy(count = count)
+operator fun Group.get(count: Int) =
+    apply { require(this.count == 1 && count > 1) }
+        .copy(count = count)
+
+val Element._2
+    get() = this.apply { require(count == 1) }.copy(count = 2)
+val Element._3
+    get() = this.apply { require(count == 1) }.copy(count = 3)
+val Element._4
+    get() = this.apply { require(count == 1) }.copy(count = 4)
+val Element._5
+    get() = this.apply { require(count == 1) }.copy(count = 5)
+val Element._6
+    get() = this.apply { require(count == 1) }.copy(count = 6)
+val Element._7
+    get() = this.apply { require(count == 1) }.copy(count = 7)
+val Element._8
+    get() = this.apply { require(count == 1) }.copy(count = 8)
+val Element._9
+    get() = this.apply { require(count == 1) }.copy(count = 9)
+
+val Group._2
+    get() = this.apply { require(count == 1) }.copy(count = 2)
+val Group._3
+    get() = this.apply { require(count == 1) }.copy(count = 3)
+val Group._4
+    get() = this.apply { require(count == 1) }.copy(count = 4)
+val Group._5
+    get() = this.apply { require(count == 1) }.copy(count = 5)
+val Group._6
+    get() = this.apply { require(count == 1) }.copy(count = 6)
+val Group._7
+    get() = this.apply { require(count == 1) }.copy(count = 7)
+val Group._8
+    get() = this.apply { require(count == 1) }.copy(count = 8)
+val Group._9
+    get() = this.apply { require(count == 1) }.copy(count = 9)
+
+
 operator fun Part.minus(that: Part) = Molecule(this, that)
 operator fun Molecule.minus(that: Part) = copy(parts = parts + that)
 operator fun Element.rangeTo(that: Part) = Group(this, that)
@@ -53,17 +83,33 @@ operator fun Group.rangeTo(that: Part) = copy(parts = parts + that)
 operator fun Int.times(that: Molecule) =
     that.apply { require(factor == 1 && this@times > 1) }
         .copy(factor = this)
+operator fun Int.times(that: Part) =
+    Molecule(this, that)
+        .apply { require(factor > 1) }
 operator fun Molecule.plus(that: Molecule) = listOf(this, that)
+operator fun Molecule.plus(that: Part) = listOf(this, Molecule(that))
+operator fun Part.plus(that: Molecule) = listOf(Molecule(this), that)
+operator fun List<Molecule>.plus(that: Part) = this + Molecule( that)
 
 infix fun List<Molecule>.reactsTo(that: List<Molecule>) = Equation(this, that, false)
 infix fun Molecule.reactsTo(that: List<Molecule>) = Equation(listOf(this), that, false)
 infix fun List<Molecule>.reactsTo(that: Molecule) = Equation(this, listOf(that), false)
 infix fun Molecule.reactsTo(that: Molecule) = Equation(listOf(this), listOf(that), false)
+infix fun Part.reactsTo(that: List<Molecule>) = Equation(listOf(Molecule(this)), that, false)
+infix fun List<Molecule>.reactsTo(that: Part) = Equation(this, listOf(Molecule(that)), false)
+infix fun Part.reactsTo(that: Part) = Equation(listOf(Molecule(this)), listOf(Molecule(that)), false)
+infix fun Part.reactsTo(that: Molecule) = Equation(listOf(Molecule(this)), listOf(that), false)
+infix fun Molecule.reactsTo(that: Part) = Equation(listOf(this), listOf(Molecule(that)), false)
 
-infix fun List<Molecule>.reactsReversible(that: List<Molecule>) = Equation(this, that, false)
-infix fun Molecule.reactsReversible(that: List<Molecule>) = Equation(listOf(this), that, false)
-infix fun List<Molecule>.reactsReversible(that: Molecule) = Equation(this, listOf(that), false)
-infix fun Molecule.reactsReversible(that: Molecule) = Equation(listOf(this), listOf(that), false)
+infix fun List<Molecule>.reversibleTo(that: List<Molecule>) = Equation(this, that, false)
+infix fun Molecule.reversibleTo(that: List<Molecule>) = Equation(listOf(this), that, false)
+infix fun List<Molecule>.reversibleTo(that: Molecule) = Equation(this, listOf(that), false)
+infix fun Molecule.reversibleTo(that: Molecule) = Equation(listOf(this), listOf(that), false)
+infix fun Part.reversibleTo(that: List<Molecule>) = Equation(listOf(Molecule(1,this)), that, false)
+infix fun List<Molecule>.reversibleTo(that: Part) = Equation(this, listOf(Molecule(1,that)), false)
+infix fun Part.reversibleTo(that: Part) = Equation(listOf(Molecule(this)), listOf(Molecule(that)), false)
+infix fun Part.reversibleTo(that: Molecule) = Equation(listOf(Molecule(this)), listOf(that), false)
+infix fun Molecule.reversibleTo(that: Part) = Equation(listOf(this), listOf(Molecule(that)), false)
 
 fun main() {
     val bariumHydroxide = Molecule(3, Ba, Group(O, H)[2])
@@ -81,6 +127,13 @@ fun main() {
     val equation2 = 3 * (Ba - (O..H)[2]) + 2 * (H[3] - P - O[4]) reactsTo
             6 * (H[2] - O) + (Ba[3] - (P..O[4])[2])
     println(equation2)
+
+    val equation3 = 2*H[2] + O[2] reversibleTo 2*(H[2]-O)
+
+    val equation4 = H[2] reactsTo 2 * H[2]
+
+    val equation5 = 3 * (Ba - (O..H)._2) + 2 * (H._3 - P - O._4) reactsTo
+            6 * (H._2 - O) + (Ba._3 - (P..O._4)._2)
 }
 
 val H = Element("H")

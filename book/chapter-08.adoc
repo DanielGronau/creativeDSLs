@@ -14,38 +14,25 @@ A simple chemical equation looks like this: `3Ba(OH)2 + 2H3PO4 -{zwsp}> 6H2O + B
 
 [source,kotlin]
 ----
-interface Part
-
-data class Element private constructor(val symbol: String, val count: Int) : Part {
+data class Element(val symbol: String, val count: Int) : Part {
     constructor(symbol: String) : this(symbol, 1)
-
     override fun toString() = when (count) {
         1 -> symbol
         else -> symbol + count
     }
-
-    operator fun get(count: Int) =
-        apply { require(this.count == 1 && count > 1) }
-            .copy(count = count)
 }
 
-data class Group private constructor(val parts: List<Part>, val count: Int) : Part {
+data class Group(val parts: List<Part>, val count: Int) : Part {
     constructor(vararg parts: Part) : this(parts.asList(), 1)
-
     override fun toString() = when (count) {
         1 -> parts.joinToString("", "(", ")")
         else -> parts.joinToString("", "(", ")") + count
     }
-
-    operator fun get(count: Int) =
-        apply { require(this.count == 1 && count > 1) }
-            .copy(count = count)
 }
 
 data class Molecule(val factor: Int, val parts: List<Part>) {
     constructor(vararg parts: Part) : this(1, parts.asList())
     constructor(factor: Int, vararg parts: Part) : this(factor, parts.asList())
-
     override fun toString() = when (factor) {
         1 -> parts.joinToString("")
         else -> "$factor${parts.joinToString("")}"
@@ -59,7 +46,7 @@ data class Equation(val leftSide: List<Molecule>, val rightSide: List<Molecule>,
 }
 ----
 
-An `Element` contains just the chemical symbol, like `"H"` (hydrogen) or `"Ba"` (barium). A feature of the chemical notation is that you can also define groups like `"(OH)2"` in a molecule, which is why we need the `Group` class as well. If you want to increase the count of an `Element` and `Group` , you can use the index access operator, e.g. `Element("H")[2]`. The index access functions contain a sanity check, which won't allow calls like `Element("H")[-5]` or `Element("H")[2][7]`
+An `Element` contains just the chemical symbol, like `"H"` (hydrogen) or `"Ba"` (barium), and optionally a count index. A feature of the chemical notation is that you can also define groups like `"(OH)2"` in a molecule, which is why we need the `Group` class as well.
 
 A `Molecule` is a collection of elements or groups, and can also have a factor in front. An equation consists of two sides and either an arrow `-{zwsp}>` or in case of reversible reactions a double arrow `<{zwsp}-{zwsp}>` in the middle, while every side is either a single molecule or a sum of molecules.
 
@@ -86,7 +73,7 @@ println(equation)
 //3Ba(HO)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2
 ----
 
-This looks like it might need a little improvement. This is a suggestion how a DSL could look like:
+This looks like it might need a little improvement. This is a suggestion how a DSL could look like. First, we predefine all elements:
 
 [source,kotlin]
 ----
@@ -94,57 +81,127 @@ val H = Element("H")
 val He = Element("He")
 val Li = Element("Li")
 // etc.
+----
 
-operator fun Part.not() = Molecule(this)
+Next, we need a convenient way to add the count to an element or a group. For this, we could use the invoke-operator `()` or the index access operator `[]`. As we will need parentheses in other places as well, the index access operator seems to be the better choice. We can now write `H[2]` to denote `H2`:
+
+[source,kotlin]
+----
+operator fun Element.get(count: Int) =
+    apply { require(this.count == 1 && count > 1) }
+        .copy(count = count)
+operator fun Group.get(count: Int) =
+    apply { require(this.count == 1 && count > 1) }
+        .copy(count = count)
+----
+
+The code for both functions contains a sanity check, which won't allow nonsensical calls like `H[-5]` or `H[2][7]`.
+
+The next task is to assemble molecules from elemental or group parts. We can use the minus operator `-` to represent a chemical bond, e.g. a water molecule could be written as `(H[2]-O)`. We also need to assemble groups, and from the few remaining operators the range operator `..` seems like a good fit, so we can write e.g. a carboxyl group as `(C..O..O..H)`:
+
+[source,kotlin]
+----
 operator fun Part.minus(that: Part) = Molecule(this, that)
 operator fun Molecule.minus(that: Part) = copy(parts = parts + that)
 operator fun Element.rangeTo(that: Part) = Group(this, that)
 operator fun Group.rangeTo(that: Part) = copy(parts = parts + that)
+----
 
+Generally, you need to put molecules and groups in parentheses because of the precedence rules.
+
+A molecule can have an optional factor in front. Also, the same operation should  "promote" a molecule part to a molecule, allowing e.g. to write `2*O[2]` resulting in two oxygen molecules. Again, we need sanity checks, rendering calls like `-2*!H[2]` or `3*(2*!O[2])` invalid:
+
+[source,kotlin]
+----
 operator fun Int.times(that: Molecule) =
     that.apply { require(factor == 1 && this@times > 1) }
         .copy(factor = this)
-operator fun Molecule.plus(that: Molecule) = listOf(this, that)
-
-infix fun List<Molecule>.reactsTo(that: List<Molecule>) =
-    Equation(this, that, false)
-infix fun Molecule.reactsTo(that: List<Molecule>) =
-    Equation(listOf(this), that, false)
-infix fun List<Molecule>.reactsTo(that: Molecule) =
-    Equation(this, listOf(that), false)
-
-infix fun List<Molecule>.reactsReversible(that: List<Molecule>) =
-    Equation(this, that, false)
-infix fun Molecule.reactsReversible(that: List<Molecule>) =
-    Equation(listOf(this), that, false)
-infix fun List<Molecule>.reactsReversible(that: Molecule) =
-    Equation(this, listOf(that), false)
+operator fun Int.times(that: Part) =
+    Molecule(this, that)
+        .apply { require(factor > 1) }
 ----
 
-First, we predefine all chemical elements. Then, we define the `!` operator to "promote" an element like `H[2]` or a group like `(CH[3])[2]` to a molecule. Next we use the minus operator `-` to represent a chemical bond, e.g. a water molecule could be written as `(H[2]-O)`. We still have a similar problem to assemble groups, and from the few remaining operators the range operator `..` seems like a good fit, so we can write e.g. a carboxyl group as `(C..O..O..H)`. Generally, you need to put molecules and groups in parentheses (except for molecules generated with `!`) because of the precedence rules.
+Next, we need a way to group the left and right side of an equation to a list of molecules, and the obvious choice for an operator is `+`. Again, we "promote" molecule parts to full molecules when necessary. This time the precedence rules for `*` and `+` play nicely along with the intended use, so we won't need parentheses on this level.
 
-The next function allows us to write factors in front of molecules. The sanity check in this function makes calls like `-2*!H[2]` or `3*(2*!O[2])` invalid. Then there is a `+` function for converting two molecules into a list. We don't need an extra function for adding a molecule to an existing list of molecules, as there is already an extension function for adding elements to lists in the standard library. Also, note that this time the precedence rules for `*` and `+` play nicely along with the intended use.
+[source,kotlin]
+----
+operator fun Molecule.plus(that: Molecule) = listOf(this, that)
+operator fun Molecule.plus(that: Part) = listOf(this, Molecule(that))
+operator fun Part.plus(that: Molecule) = listOf(Molecule(this), that)
+operator fun List<Molecule>.plus(that: Part) = this + Molecule( that)
+----
 
-The next eight function simply assemble the equation. The high number of functions comes from the fact that we need to decide whether we need a single or double arrow, and because we can have either single molecules or lists of them on either side. As infix functions have lower precedence than any operators, we don't need parentheses on this level.
+In case you wonder why there is no `List<Molecule>.plus(that: Molecule)` function: There is already an operator overloading for adding elements to lists in the standard library.
 
-So, how does our DLS look like in action? Here are a few examples:
+The last part is collecting everything in an equation. This is not complicated, but lengthy, because we might encounter not only lists of molecules, but single molecules or molecule parts on both sides of the equation. Further, we have to account for the two different equation types:
+
+[source,kotlin]
+----
+infix fun List<Molecule>.reactsTo(that: List<Molecule>) = Equation(this, that, false)
+infix fun Molecule.reactsTo(that: List<Molecule>) = Equation(listOf(this), that, false)
+infix fun List<Molecule>.reactsTo(that: Molecule) = Equation(this, listOf(that), false)
+infix fun Molecule.reactsTo(that: Molecule) = Equation(listOf(this), listOf(that), false)
+infix fun Part.reactsTo(that: List<Molecule>) = Equation(listOf(Molecule(this)), that, false)
+infix fun List<Molecule>.reactsTo(that: Part) = Equation(this, listOf(Molecule(that)), false)
+infix fun Part.reactsTo(that: Part) = Equation(listOf(Molecule(this)), listOf(Molecule(that)), false)
+infix fun Part.reactsTo(that: Molecule) = Equation(listOf(Molecule(this)), listOf(that), false)
+infix fun Molecule.reactsTo(that: Part) = Equation(listOf(this), listOf(Molecule(that)), false)
+
+infix fun List<Molecule>.reversibleTo(that: List<Molecule>) = Equation(this, that, false)
+infix fun Molecule.reversibleTo(that: List<Molecule>) = Equation(listOf(this), that, false)
+infix fun List<Molecule>.reversibleTo(that: Molecule) = Equation(this, listOf(that), false)
+infix fun Molecule.reversibleTo(that: Molecule) = Equation(listOf(this), listOf(that), false)
+infix fun Part.reversibleTo(that: List<Molecule>) = Equation(listOf(Molecule(1,this)), that, false)
+infix fun List<Molecule>.reversibleTo(that: Part) = Equation(this, listOf(Molecule(1,that)), false)
+infix fun Part.reversibleTo(that: Part) = Equation(listOf(Molecule(this)), listOf(Molecule(that)), false)
+infix fun Part.reversibleTo(that: Molecule) = Equation(listOf(Molecule(this)), listOf(that), false)
+infix fun Molecule.reversibleTo(that: Part) = Equation(listOf(this), listOf(Molecule(that)), false)
+----
+
+Unfortunately, we have to resort to infix functions, as there seems to be no suitable operator available. A common trick is to use the backtick syntax to mimic an operator, but `{backtick}-{zwsp}>{backtick}` and `{backtick}<{zwsp}-{zwsp}>{backtick}` won't work: `<` and `>` are two of the very few characters that are not allowed in backtick syntax on the JVM.
+
+So, how does our DSL look like in action? Here are a few examples:
 
 [source,kotlin]
 ----
 //2H2 + O2 <-> 2H2O
 val makingWater =
-    2*!H[2] + !O[2] reactsReversible 2*(H[2]-O)
+    2*H[2] + O[2] reversibleTo 2*(H[2]-O)
 
 //3Ba(HO)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2
 val makingBariumPhosphate =
-    3*(Ba-(O..H)[2]) + 2*(H[3]-P-O[4]) reactsTo 6*(H[2]-O) + (Ba[3]-(P..O[4])[2])
+    3*(Ba-(O..H)[2]) + 2*(H[3]-P-O[4]) reactsTo
+        6*(H[2]-O) + (Ba[3]-(P..O[4])[2])
 
 //H2SO4 + 8HI <-> H2S + 4I2 + 4H2O
 val sulfuricAcidAndHydrogenIodide =
-    (H[2]-S-O[4]) + 8*(H-I) reactsReversible (H[2]-S) + 4*!I[2] + 4*(H[2]-O)
+    (H[2]-S-O[4]) + 8*(H-I) reversibleTo (H[2]-S) + 4*I[2] + 4*(H[2]-O)
 ----
 
-Simulating the dense chemical notation is hard, and while using operator overloading and infix notation made our example substantially shorter, it still contains a lot of clutter. Of course, after some time one would get used to the DSL, but there is clearly a learning curve involved. To get to this DSL, we had to push the boundaries of the Kotlin syntax, and it shows. In the next chapter, we will have another look at the problem, and attack it from a totally different angle.
+There is one optional improvement, which is more a matter of taste: We could add some extension properties for low counts of elements and groups, which would allow to write e.g. `N._2` instead of `N[2]`:
+
+[source,kotlin]
+----
+val Element._2
+    get() = this.apply { require(count == 1) }.copy(count = 2)
+val Element._3
+    get() = this.apply { require(count == 1) }.copy(count = 3)
+// etc.
+
+val Group._2
+    get() = this.apply { require(count == 1) }.copy(count = 2)
+val Group._3
+    get() = this.apply { require(count == 1) }.copy(count = 3)
+// etc.
+
+// new syntax
+val eq = 3*(Ba-(O..H)._2) + 2*(H._3-P-O._4) reactsTo
+            6*(H._2-O) + (Ba._3-(P..O._4)._2)
+----
+
+Please decide for yourself which version you prefer. Personally, I find the first syntax more readable.
+
+Simulating the dense chemical notation is hard, and while using operator overloading and infix notation made our example substantially shorter, it still contains a lot of clutter. Of course, after some time one would get used to the DSL, but there is clearly a learning curve involved. In the next chapter, we will have another look at the problem, and attack it from a totally different angle.
 
 === Conclusion
 
