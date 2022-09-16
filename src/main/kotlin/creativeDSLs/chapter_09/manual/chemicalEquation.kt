@@ -66,93 +66,76 @@ fun parseEquation(string: String): ParseResult<Equation> {
     }
 }
 
-fun parseSide(string: String): ParseResult<List<Molecule>> {
-    val list = mutableListOf<Molecule>()
-    var foundPlus: Boolean
-    var s = string
-    do {
-        foundPlus = false
-        val moleculePair = parseMolecule(s)
-        if (moleculePair.isEmpty) {
-            return Optional.empty()
-        }
-        moleculePair.ifPresent {
-            list += it.first
-            s = it.second
-        }
-        parsePattern(s, "+").ifPresent {
-            foundPlus = true
-            s = it.second
-        }
-    } while (foundPlus)
-    return Optional.of(list.toList() to s)
-             .filter{list.isNotEmpty()}
-}
+fun parseSide(string: String): ParseResult<List<Molecule>> =
+    Optional.of(
+        generateSequence(parseMolecule(string).orElse(null)) { (_, s1) ->
+            parsePattern(s1, "+")
+                .flatMap { (_, s2) -> parseMolecule(s2) }
+                .orElse(null)
+        }.toList()
+    ).filter {
+        it.isNotEmpty()
+    }.map { list ->
+        list.map { it.first } to list.last().second
+    }
 
-fun parseMolecule(string: String): ParseResult<Molecule> {
-    var s = string
-    var factor = 1
-    val parts = mutableListOf<Part>()
-    parseNum(string).ifPresent {
-        factor = it.first
-        s = it.second
-    }
-    var foundPart: Boolean
-    do {
-        foundPart = false
-        parsePart(s).ifPresent {
-            parts += it.first
-            s = it.second
-            foundPart = true
+fun parseMolecule(string: String): ParseResult<Molecule> =
+    parseNum(string).or {
+        Optional.of(1 to string)
+    }.flatMap { (factor, s) ->
+        Optional.of(
+            generateSequence(parsePart(s).orElse(null)) { (_, s1) ->
+                parsePart(s1).orElse(null)
+            }.toList()
+        ).filter {
+            it.isNotEmpty()
+        }.map { parts ->
+            Molecule(factor, parts.map { it.first }) to parts.last().second
         }
-    } while (foundPart)
-    return when {
-        parts.isEmpty() -> Optional.empty()
-        else -> Optional.of(Molecule(factor, parts) to s)
     }
-}
 
 fun parsePart(string: String): ParseResult<Part> =
     Optional.empty<Pair<Part, String>>()
         .or { parseElement(string) }
         .or { parseGroup(string) }
 
-fun parseElement(string: String): ParseResult<Element> = when {
-    string.length >= 2 && elements.contains(string.substring(0, 2)) ->
-        Optional.of(string.substring(0, 2) to string.substring(2))
+fun parseElement(string: String): ParseResult<Element> =
+    findElement(string, 2).or {
+        findElement(string, 1)
+    }.map { (symbol, s) ->
+        parseNum(s).map { (count, s1) ->
+            Element(symbol, count) to s1
+        }.orElseGet {
+            Element(symbol, 1) to s
+        }
+    }
 
-    string.length >= 1 && elements.contains(string.substring(0, 1)) ->
-        Optional.of(string.substring(0, 1) to string.substring(1))
-
-    else -> Optional.empty()
-}.map { (symbol, s) ->
-    parseNum(s).map { (count, s1) ->
-        Element(symbol, count) to s1
-    }.orElse(Element(symbol,1) to s)
-}
+fun findElement(string: String, charCount: Int): ParseResult<String> =
+    Optional.of(
+        "$string!!".substring(0, charCount)
+    ).filter {
+        elements.contains("$string!!".substring(0, charCount))
+    }.map { symbol ->
+        symbol to string.substring(charCount)
+    }
 
 fun parseGroup(string: String): ParseResult<Group> =
-    parsePattern(string, "(").flatMap { (_,s1) ->
-        var s = s1
-        val parts = mutableListOf<Part>()
-        var foundPart: Boolean
-        do {
-            foundPart = false
-            parsePart(s).ifPresent {
-                parts += it.first
-                s = it.second
-                foundPart = true
-            }
-        } while(foundPart)
-        parsePattern(s, ")").map {
-            parts to it.second
+    parsePattern(string, "(").map { (_, s1) ->
+        generateSequence(parsePart(s1).orElse(null)) { (_, s2) ->
+            parsePart(s2).orElse(null)
+        }.toList()
+    }.filter {
+        it.isNotEmpty()
+    }.flatMap { parts ->
+        parsePattern(parts.last().second, ")").map { (_, s3) ->
+            parts.map { it.first } to s3
         }
-    }.filter{ (parts, _) -> parts.isNotEmpty()
     }.map { (parts, s) ->
-        val count = parseNum(s)
-        count.map { (count, s1) ->
+        parseNum(s).map { (count, s1) ->
             Group(parts, count) to s1
-        }.orElse(Group(parts, 1) to s)
+        }.orElseGet {
+            Group(parts, 1) to s
+        }
     }
 
 fun parseArrow(string: String): ParseResult<String> =
@@ -164,16 +147,14 @@ fun parsePattern(string: String, pattern: String): ParseResult<String> = when {
     else -> Optional.empty()
 }
 
-fun parseNum(string: String): ParseResult<Int> {
-    var i = 0
-    while (string.length > i && string[i].isDigit()) {
-        i++
+fun parseNum(string: String): ParseResult<Int> =
+    Optional.of(
+        string.takeWhile { it.isDigit() }.length
+    ).filter { digitCount ->
+        digitCount > 0
+    }.map { digitCount ->
+        string.substring(0, digitCount).toInt() to string.substring(digitCount)
     }
-    return when (i) {
-        0 -> Optional.empty()
-        else -> Optional.of(string.substring(0, i).toInt() to string.substring(i))
-    }
-}
 
 fun main() {
     val p = equation("3Ba(OH)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2")
