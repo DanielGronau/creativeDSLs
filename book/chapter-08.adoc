@@ -55,14 +55,18 @@ The code contains secondary constructors for more convenient initialization foot
 [source,kotlin]
 ----
 val Ba = Element("Ba")
+val Ba3 = Element("Ba", 3)
 val O = Element("O")
-val H = Element("H")
+val O2 = Element("O", 2)
+val O4 = Element("O", 4)
+val H2 = Element("H", 2)
+val H3 = Element("H", 3)
 val P = Element("P")
 
-val bariumHydroxide = Molecule(3, Ba, Group(O, H)[2])
-val phosphoricAcid = Molecule(2, H[3], P, O[4])
-val water = Molecule(6, H[2], O)
-val bariumPhosphate = Molecule(Ba[3], Group(P, O[4])[2])
+val bariumHydroxide = Molecule(3, Ba, Group(2, O, H))
+val phosphoricAcid = Molecule(2, H3, P, O4)
+val water = Molecule(6, H2, O)
+val bariumPhosphate = Molecule(Ba3, Group(2, P, O4))
 
 val equation = Equation(
     listOf(bariumHydroxide, phosphoricAcid),
@@ -73,7 +77,7 @@ println(equation)
 //3Ba(HO)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2
 ----
 
-This looks like it might need a little improvement. This is a suggestion how a DSL could look like. First, we predefine all elements:
+This looks like it might need a little improvement. This is how a hybrid DSL could look like. First, we predefine all elements:
 
 [source,kotlin]
 ----
