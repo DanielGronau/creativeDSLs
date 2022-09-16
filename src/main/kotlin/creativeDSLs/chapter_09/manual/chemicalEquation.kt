@@ -1,6 +1,5 @@
-package creativeDSLs.chapter_09
+package creativeDSLs.chapter_09.manual
 
-import java.lang.IllegalArgumentException
 import java.util.*
 
 interface Part
@@ -86,7 +85,8 @@ fun parseSide(string: String): ParseResult<List<Molecule>> {
             s = it.second
         }
     } while (foundPlus)
-    return Optional.of(list to s)
+    return Optional.of(list.toList() to s)
+             .filter{list.isNotEmpty()}
 }
 
 fun parseMolecule(string: String): ParseResult<Molecule> {
@@ -119,17 +119,16 @@ fun parsePart(string: String): ParseResult<Part> =
 
 fun parseElement(string: String): ParseResult<Element> = when {
     string.length >= 2 && elements.contains(string.substring(0, 2)) ->
-        Optional.of(Element(string.substring(0, 2)) to string.substring(2))
+        Optional.of(string.substring(0, 2) to string.substring(2))
 
     string.length >= 1 && elements.contains(string.substring(0, 1)) ->
-        Optional.of(Element(string.substring(0, 1)) to string.substring(1))
+        Optional.of(string.substring(0, 1) to string.substring(1))
 
     else -> Optional.empty()
-}.map { (e, s) ->
-    val count = parseNum(s)
-    count.map {
-        Element(e.symbol, it.first) to it.second
-    }.orElse(e to s)
+}.map { (symbol, s) ->
+    parseNum(s).map { (count, s1) ->
+        Element(symbol, count) to s1
+    }.orElse(Element(symbol,1) to s)
 }
 
 fun parseGroup(string: String): ParseResult<Group> =
@@ -146,13 +145,14 @@ fun parseGroup(string: String): ParseResult<Group> =
             }
         } while(foundPart)
         parsePattern(s, ")").map {
-            Group(parts, 1) to it.second
+            parts to it.second
         }
-    }.map { (g, s) ->
+    }.filter{ (parts, _) -> parts.isNotEmpty()
+    }.map { (parts, s) ->
         val count = parseNum(s)
-        count.map {
-            Group(g.parts, it.first) to it.second
-        }.orElse(g to s)
+        count.map { (count, s1) ->
+            Group(parts, count) to s1
+        }.orElse(Group(parts, 1) to s)
     }
 
 fun parseArrow(string: String): ParseResult<String> =
@@ -179,6 +179,6 @@ fun main() {
     val p = equation("3Ba(OH)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2")
     println(p)
 
-    //println(parseGroup("(OH)2"))
+    //println(parseGroup("()2"))
 }
 

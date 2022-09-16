@@ -6,7 +6,196 @@ In some cases, the host language doesn't allow the syntax you would like to use 
 
 In the last chapter, we dealt with a DSL for chemical formulas, but the result wasn't as concise as a chemist would hope for. Wouldn't it be nice to just write `"2CH3OH -{zwsp}> (CH3)2O + H2O"` and be done with it?
 
+Of course, we need to evaluate the String, or in other words, we need to write a parser. There are many ways to approach this. If you never worked with parsers, it can be a little confusing. Coding them is not really difficult, but boring and tedious, so most of the time using a library will be the better choice.
 
+Nevertheless, I think it is very instructive to see how a simple parser works, so we will go through a naive manual implementation first, where every detail is visible. First, we need to store the element names:
 
+[source,kotlin]
+----
+private val elements = setOf(
+    "H", "He", "Li", "Be", "B", "C", "N", "O", // etc.
+)
+----
+
+Next, we will define a very useful alias:
+
+[source,kotlin]
+----
+typealias ParseResult<T> = Optional<Pair<T, String>>
+----
+
+What does this mean? Well, when trying to parse information from a string, you can be successful or not. In our case, we simply return an empty `Optional` when we got no result, but serious implementations often use more elaborate failure classes, which give detailed information about why and where the operation failed. When we got what we want, we not only have to return the result, but also the remaining string. That's why we have to use a `Pair`.
+
+We will assume that the input string is free of whitespaces, which can be easily done by the top-level function calling the parser. Here are the two most basic functions:
+
+[source,kotlin]
+----
+fun parsePattern(string: String, pattern: String): ParseResult<String> = when {
+    string.startsWith(pattern) -> Optional.of(pattern to string.substring(pattern.length))
+    else -> Optional.empty()
+}
+
+fun parseNum(string: String): ParseResult<Int> {
+    var i = 0
+    while (string.length > i && string[i].isDigit()) {
+        i++
+    }
+    return when (i) {
+        0 -> Optional.empty()
+        else -> Optional.of(string.substring(0, i).toInt() to string.substring(i))
+    }
+}
+----
+
+The easiest function is `parsePattern()`, which just tries to find a given prefix in the string. `parseNum()` is slightly more involved, as we need to find out the number of digits first. Except `parseElement()`, all other functions don't read directly from the string, but use these two and combine the results in certain ways footnote:[That's why this approach is known as "parser combinator"]. The first example for this is the function for reading the equation arrow, which can be either `-{zwsp}>` or `<{zwsp}-{zwsp}>`:
+
+[source,kotlin]
+----
+fun parseArrow(string: String): ParseResult<String> =
+    parsePattern(string, "<->")
+        .or { parsePattern(string, "->") }
+----
+
+Reading an element is not difficult, the only pitfall is that two-letter element symbols must be checked before the one-letter symbols, else we would find e.g. just `H`, even though the string contains `He`.
+
+[source,kotlin]
+----
+fun parseElement(string: String): ParseResult<Element> = when {
+    string.length >= 2 && elements.contains(string.substring(0, 2)) ->
+        Optional.of(string.substring(0, 2) to string.substring(2))
+
+    string.length >= 1 && elements.contains(string.substring(0, 1)) ->
+        Optional.of(string.substring(0, 1) to string.substring(1))
+
+    else -> Optional.empty()
+}.map { (symbol, s) ->
+    parseNum(s).map { (count, s1) ->
+        Element(symbol, count) to s1
+    }.orElse(Element(symbol, 1) to s)
+}
+----
+
+The `map` block tries to find a trailing number. If the number is found, it is used to construct the element, else the default value 1 is used.
+
+Now we need to take care of groups:
+
+[source,kotlin]
+----
+fun parsePart(string: String): ParseResult<Part> =
+    Optional.empty<Pair<Part, String>>()
+        .or { parseElement(string) }
+        .or { parseGroup(string) }
+
+fun parseGroup(string: String): ParseResult<Group> =
+    parsePattern(string, "(").flatMap { (_,s1) ->
+        var s = s1
+        val parts = mutableListOf<Part>()
+        var foundPart: Boolean
+        do {
+            foundPart = false
+            parsePart(s).ifPresent {
+                parts += it.first
+                s = it.second
+                foundPart = true
+            }
+        } while(foundPart)
+        parsePattern(s, ")").map {
+            parts to it.second
+        }
+    }.filter{ (parts, _) -> parts.isNotEmpty()
+    }.map { (parts, s) ->
+        val count = parseNum(s)
+        count.map { (count, s1) ->
+            Group(parts, count) to s1
+        }.orElse(Group(parts, 1) to s)
+    }
+----
+
+The `parsePart()` method reads either an element or a group. The `Optional` chain is started with an empty, but typed optional, which is necessary as `parseElement()` and `parseGroup()` have more specialized return types, so you couldn't chain them directly with `or()`. The `parseGroup()` looks more complicated as it is. First, it looks for an opening parenthesis. Then it tries to read as many parts as possible. After this, it looks for a closing parenthesis. The `filter()` method ensures that an empty group `()` is not accepted. The final `map()` looks for a trailing number, just like in `parseElement()`.
+
+Now we are ready to assemble a molecule:
+
+[source,kotlin]
+----
+fun parseMolecule(string: String): ParseResult<Molecule> {
+    var s = string
+    var factor = 1
+    val parts = mutableListOf<Part>()
+    parseNum(string).ifPresent {
+        factor = it.first
+        s = it.second
+    }
+    var foundPart: Boolean
+    do {
+        foundPart = false
+        parsePart(s).ifPresent {
+            parts += it.first
+            s = it.second
+            foundPart = true
+        }
+    } while (foundPart)
+    return when {
+        parts.isEmpty() -> Optional.empty()
+        else -> Optional.of(Molecule(factor, parts) to s)
+    }
+}
+----
+
+First, the function looks for a possible factor in front, else it uses 1 as default. Then it try to read as many elemental or group parts as possible. If some parts were found, the molecule is build, else the parser fails.
+
+This is the parser for gathering the left hand side and right hand sight of the equation:
+
+[source,kotlin]
+----
+fun parseSide(string: String): ParseResult<List<Molecule>> {
+    val list = mutableListOf<Molecule>()
+    var foundPlus: Boolean
+    var s = string
+    do {
+        foundPlus = false
+        val moleculePair = parseMolecule(s)
+        if (moleculePair.isEmpty) {
+            return Optional.empty()
+        }
+        moleculePair.ifPresent {
+            list += it.first
+            s = it.second
+        }
+        parsePattern(s, "+").ifPresent {
+            foundPlus = true
+            s = it.second
+        }
+    } while (foundPlus)
+    return Optional.of(list.toList() to s)
+             .filter{list.isNotEmpty()}}
+----
+
+The function reads a molecule, stores it in a list, and when it finds a `+` afterwards, it continues reading. At the end, there is a check that the list is not empty, else the parser fails.
+
+Now the parser for the whole equation can be written:
+
+[source,kotlin]
+----
+fun parseEquation(string: String): ParseResult<Equation> {
+    return parseSide(string).flatMap { (lhs, s1) ->
+        parseArrow(s1).flatMap { (arrow, s2) ->
+            parseSide(s2).map { (rhs, s3) ->
+                Equation(lhs, rhs, arrow == "<->") to s3
+            }
+        }
+    }
+}
+----
+
+It just reads the left hand side, the arrow symbol, the right hand side, and combines them. Now the only missing part is a `equation()` function, which is the only part of our DSL which will be exposed to the user:
+
+[source,kotlin]
+----
+fun equation(string: String) = parseEquation(string.replace(" ", ""))
+    .filter { it.second.isEmpty() }
+    .map { it.first }
+----
+
+This function removes all spaces from the input string, calls the parser, checks that no "unparsed" string is left, and returns the result wrapped in an `Optional`. Again, an empty `Optional` indicates that some kind of error occurred. Now we can write e.g. `equation("3Ba(OH)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2")`, which is as concise at it can get for an internal DSL.
 
 === Conclusion
