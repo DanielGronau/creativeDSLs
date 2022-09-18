@@ -1,18 +1,18 @@
 == String-Parsing DSLs
 
-In some cases, the host language doesn't allow the syntax you would like to use for a DSL. A string-parsing DSL gives you the freedom to write basically anything, but the downside is that you can't perform compile time checks, and that dissecting a string is usually more involved than collecting the data from other types of DSLs.
+In some cases, the host language doesn't allow to create the DSL syntax you would like. A string-parsing DSL gives you the freedom to write basically anything, but the downside is that you can't perform compile time checks, and that dissecting a string is usually more involved than collecting the data in other types of DSLs.
 
-WARNING: Kotlin supports like many languages regular expressions, which can be seen as a kind of mini-parser. However, they are known to be hard to maintain, especially they don't scale well. In my opinion, regexes are acceptable for prototypes and tests, but not in production code.
+WARNING: Kotlin supports - like many languages - regular expressions, which can be seen as a kind of mini-parser. However, they are known to be hard to maintain, especially they don't scale well. In my opinion, using regexes as "parsers" is acceptable for prototypes and test environments, but not in production code.
 
 === Case Study: Chemical Equations as Strings
 
-In the last chapter, we dealt with a DSL for chemical formulas, but the result wasn't as concise as a chemist would hope for. Wouldn't it be nice to just write `"2CH3OH -{zwsp}> (CH3)2O + H2O"` as a string and be done with it?
+In the last chapter, a hybrid DSL for chemical formulas was implemented, but the result wasn't as concise as a chemist would hope for. Wouldn't it be nice to just write `"2CH3OH -{zwsp}> (CH3)2O + H2O"` as a string, and be done with it?
 
-Of course, we need to evaluate that string, or in other words, we need to write a parser. There are many approaches for this. If you never worked with parsers, it can be a little confusing. Writing them by yourself is not really difficult, but boring and tedious, so most of the time using a library will be the better choice.
+Of course, that string must be evaluated, or in other words, we need to write a parser. There are many approaches to do this, and a lot of theory concerning different types of parsers, and efficient ways to implement them.
 
-Nevertheless, I think it is instructive to see how a simple parser works, so a naive manual implementation is presented first, before utilizing a parser combinator library.
+If you never worked with parsers, it can be a little confusing. Writing them by yourself is not really difficult, but boring and tedious, so most of the time using a library will be the better choice. Nevertheless, I think it is instructive to see how a simple parser works, so a naive manual implementation is presented first, before utilizing a parser combinator library.
 
-First, we need to store the element names:
+First, the element names must be known:
 
 [source,kotlin]
 ----
@@ -21,14 +21,14 @@ private val elements = setOf(
 )
 ----
 
-Next, we will define a very useful alias:
+All the parser functions will have a similar return type, so this alias is used for convenience:
 
 [source,kotlin]
 ----
 typealias ParseResult<T> = Optional<Pair<T, String>>
 ----
 
-What does this mean? Well, when trying to parse information from a string, you can be successful or not. In our case, we simply return an empty `Optional` when we got no result, but serious implementations often use more elaborate failure classes, which give detailed information about why and where the operation failed. When we got what we want, we not only have to return the result, but also the remaining string. That's why we have to use a `Pair`.
+What does this mean? Well, trying to parse information from a string can be successful or not. In this example, an empty `Optional` is returned when the parser got no result, but serious implementations often use more elaborate failure classes, which give detailed information about why and where the operation failed. When parsing was successful, there must be not only kept track of the result, but also the remaining string. That's why a `Pair` is used in the alias.
 
 We will assume that the input string is free of whitespaces, which can be easily done by the top-level function calling the parser. Here are the two most basic functions:
 
@@ -49,7 +49,7 @@ fun parseNum(string: String): ParseResult<Int> =
     }
 ----
 
-The easiest function is `parsePattern()`, which just tries to find a given prefix in the string. `parseNum()` is slightly more involved, as we need to find out the number of digits first. Except `parseElement()`, all other functions don't read directly from the string, but use these two and combine the results in certain ways footnote:[That's why this approach is known as "parser combinator"]. The first example for this "assembling" is the function for reading the equation arrow, which can be either `-{zwsp}>` or `<{zwsp}-{zwsp}>`:
+The easiest function is `parsePattern()`, which just tries to find a given prefix in the string. `parseNum()` is slightly more involved, as it needs to find out the number of digits first. Except `parseElement()`, all other functions don't read directly from the string, but use these two and combine the results in certain ways footnote:[That's why this approach is known as "parser combinator"]. The first example for this "assembling" is the function for reading the equation arrow, which can be either `-{zwsp}>` or `<{zwsp}-{zwsp}>`:
 
 [source,kotlin]
 ----
@@ -58,7 +58,7 @@ fun parseArrow(string: String): ParseResult<String> =
         .or { parsePattern(string, "->") }
 ----
 
-Reading an element is not difficult, the only pitfall is that two-letter symbols must be checked before the one-letter symbols, else we would just find `H` in a string starting with `He`.footnote:[This is a common problem when parsing. You have to read the longer prefix first when there is a possible overlap]
+Reading an element is not difficult, the only pitfall is that two-letter symbols must be checked before the one-letter symbols, else the function would just find `H` in a string starting with `He`.footnote:[This is a common problem when parsing. You have to read the longer prefix first when there is a possible overlap]
 
 [source,kotlin]
 ----
@@ -85,7 +85,7 @@ fun findElement(string: String, charCount: Int): ParseResult<String> =
 
 First, the `findElement()` function tries to find elements, first with two, and then - if this was unsuccessful - with one character. Prolonging the string with some characters (here `#`) avoids a possible `IndexOutOfBoundException`. The `map` block in `parseElement()` attempts to find a trailing number. If the number is found, it is used to construct the element, else the default count of 1 is used.
 
-Now we need to take care of groups:
+Now the groups can be tackled:
 
 [source,kotlin]
 ----
@@ -114,9 +114,9 @@ fun parseGroup(string: String): ParseResult<Group> =
     }
 ----
 
-The `parsePart()` method reads either an element or a group. The `Optional` chain is started with an empty, but typed optional, which is necessary as `parseElement()` and `parseGroup()` have more specialized return types, so you couldn't chain them directly with `or()`. The `parseGroup()` looks first for an opening parenthesis. Then it tries to read as many parts as possible. The `filter()` method ensures that an empty group `()` is not accepted. After this, it looks for a closing parenthesis. The final `map()` looks for a trailing number, just like in `parseElement()`.
+The `parsePart()` method reads either an element or a group. The chain is started with an empty, but typed `Optional`, which is a trick to avoid casts for the more specialized return types of `parseElement()` and `parseGroup()`. The `parseGroup()` looks first for an opening parenthesis. Then it tries to read as many parts as possible. The `filter()` method ensures that an empty group `()` is not accepted. After this, it looks for a closing parenthesis. The final `map()` call handles an optional trailing number, just like in `parseElement()`.
 
-Now we are ready to assemble a molecule:
+Now everything is there to assemble a molecule:
 
 [source,kotlin]
 ----
@@ -136,9 +136,9 @@ fun parseMolecule(string: String): ParseResult<Molecule> =
     }
 ----
 
-First, the function looks for a possible factor in front, else it uses 1 as default. Then it tries to read as many elemental or group parts as possible. If some parts were found, the molecule is build, else the parser fails.
+First, the function looks for a possible factor in front, else it uses 1 as default. Then it tries to read as many element or group parts as possible. If some parts were found, the molecule is build, else the parser fails.
 
-This is the parser for gathering the left hand side and right hand sight of the equation:
+This is the parser for gathering the left- and right-hand side of the equation:
 
 [source,kotlin]
 ----
@@ -158,7 +158,7 @@ fun parseSide(string: String): ParseResult<List<Molecule>> =
 
 The function generates a sequence of `Pair<Molecule, String>` (while requiring that there is a `+` between the molecules), and converts it to a list. The `filter()` checks that the list is not empty, and the last `map()` call brings the return value in the right shape.
 
-Now the parser for the whole equation can be written:
+Now the parser for the whole equation can be written as follows:
 
 [source,kotlin]
 ----
@@ -173,7 +173,7 @@ fun parseEquation(string: String): ParseResult<Equation> {
 }
 ----
 
-It just reads the left hand side, the arrow symbol, the right hand side, and combines them. Now the only missing part is a `equation()` function, which is the only part of our DSL which will be exposed to the user:
+It just reads the left-hand side, the arrow symbol and the right-hand side, and combines them. Now the only missing part is a `equation()` function, which is the only part of our DSL which will be exposed to the user:
 
 [source,kotlin]
 ----
@@ -186,6 +186,66 @@ This function removes all spaces from the input string, calls the parser, checks
 
 As already stated, writing such a parser manually isn't difficult. However, using a library has many advantages: It improves readability and maintainability, the code is easier to debug, you get more information when the parsing failed, and the library is usually better tested than our manual code.
 
+To give you an impression how using a parser library looks like, I rewrote the example code using the https://github.com/h0tk3y/better-parse[better-parse] project, which is an example for the parser-combinator approach:
+
+[source,kotlin]
+----
+val equationGrammar = object : Grammar<Equation>() {
+    val ws by regexToken("\\s+", ignore = true)
+    val reactsTo by literalToken("->")
+    val reversibleTo by literalToken("<->")
+    val plus by literalToken("+")
+    val leftPar by literalToken("(")
+    val rightPar by literalToken(")")
+    val num by regexToken("\\d+")
+    val symbol by token { cs, from ->
+        when {
+            elements.contains("$cs##".substring(from, from + 2)) -> 2
+            elements.contains("$cs##".substring(from, from + 1)) -> 1
+            else -> 0
+        }
+    }
+
+    val arrow: Parser<Boolean> by (reactsTo asJust false) or
+            (reversibleTo asJust true)
+    val number: Parser<Int> by (num use { text.toInt() })
+    val element: Parser<Element> by (symbol and optional(number))
+        .map { (s, n) -> Element(s.text, n ?: 1) }
+    val group: Parser<Group> by (skip(leftPar) and
+            oneOrMore(parser(this::part)) and
+            skip(rightPar) and
+            optional(number))
+        .map { (parts, n) -> Group(parts, n ?: 1) }
+    val part: Parser<Part> = element or group
+    val molecule: Parser<Molecule> = (optional(number) and oneOrMore(part))
+        .map { (n, parts) -> Molecule(n ?: 1, parts) }
+    val side: Parser<List<Molecule>> = separated(molecule, plus)
+        .map { it.terms }
+    override val rootParser: Parser<Equation> by (side and arrow and side)
+        .map { (lhs, a, rhs) -> Equation(lhs, rhs, a) }
+}
+
+// calling an example string
+val eq = equationGrammar.parseToEnd("3Ba(OH)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2")
+----
+
+Going into the details of this specific library is beyond the scope of this book, the important point is how much using a parser-combinator library has improved readability. However, you can still recognize the same pieces of grammar, which are assembled in a similar way as in our original code.
+
 === Conclusion
 
 String-based DSLs allow to use a very idiomatic syntax. As always, there is a price to pay for this, and here it is lack of compile-time checks and the complexity and overhead of parsing.
+
+[cols="2a,2a"]
+|===
+|Pros |Cons
+
+|* allows almost any syntax
+* very flexible and extendable
+* parser libraries help to write readable parser code
+
+|* no compile time checks
+* no IDE support like code suggestions or autocomplete when using the DSL
+* writing parsers must be learned
+* dependency on a parser library
+* hard to combine with other DSL types
+|===

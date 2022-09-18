@@ -1,9 +1,19 @@
 package creativeDSLs.chapter_09.library
 
+import com.github.h0tk3y.betterParse.combinators.*
+import com.github.h0tk3y.betterParse.grammar.Grammar
+import com.github.h0tk3y.betterParse.grammar.parseToEnd
+import com.github.h0tk3y.betterParse.grammar.parser
+import com.github.h0tk3y.betterParse.lexer.literalToken
+import com.github.h0tk3y.betterParse.lexer.regexToken
+import com.github.h0tk3y.betterParse.lexer.token
+import com.github.h0tk3y.betterParse.parser.Parser
+
 interface Part
 
 data class Element(val symbol: String, val count: Int) : Part {
     constructor(symbol: String) : this(symbol, 1)
+
     override fun toString() = when (count) {
         1 -> symbol
         else -> symbol + count
@@ -12,6 +22,7 @@ data class Element(val symbol: String, val count: Int) : Part {
 
 data class Group(val parts: List<Part>, val count: Int) : Part {
     constructor(vararg parts: Part) : this(parts.asList(), 1)
+
     override fun toString() = when (count) {
         1 -> parts.joinToString("", "(", ")")
         else -> parts.joinToString("", "(", ")") + count
@@ -21,6 +32,7 @@ data class Group(val parts: List<Part>, val count: Int) : Part {
 data class Molecule(val factor: Int, val parts: List<Part>) {
     constructor(vararg parts: Part) : this(1, parts.asList())
     constructor(factor: Int, vararg parts: Part) : this(factor, parts.asList())
+
     override fun toString() = when (factor) {
         1 -> parts.joinToString("")
         else -> "$factor${parts.joinToString("")}"
@@ -45,6 +57,42 @@ private val elements = setOf(
     "Sg", "Bh", "Hs", "Mt", "Ds", "Rg", "Cn", "Nh", "Fl", "Mc", "Lv", "Ts", "Og"
 )
 
-fun main() {
+val equationGrammar = object : Grammar<Equation>() {
+    val ws by regexToken("\\s+", ignore = true)
+    val reactsTo by literalToken("->")
+    val reversibleTo by literalToken("<->")
+    val plus by literalToken("+")
+    val leftPar by literalToken("(")
+    val rightPar by literalToken(")")
+    val num by regexToken("\\d+")
+    val symbol by token { cs, from ->
+        when {
+            elements.contains("$cs##".substring(from, from + 2)) -> 2
+            elements.contains("$cs##".substring(from, from + 1)) -> 1
+            else -> 0
+        }
+    }
 
+    val arrow: Parser<Boolean> by (reactsTo asJust false) or
+            (reversibleTo asJust true)
+    val number: Parser<Int> by (num use { text.toInt() })
+    val element: Parser<Element> by (symbol and optional(number))
+        .map { (s, n) -> Element(s.text, n ?: 1) }
+    val group: Parser<Group> by (skip(leftPar) and
+            oneOrMore(parser(this::part)) and
+            skip(rightPar) and
+            optional(number))
+        .map { (parts, n) -> Group(parts, n ?: 1) }
+    val part: Parser<Part> = element or group
+    val molecule: Parser<Molecule> = (optional(number) and oneOrMore(part))
+        .map { (n, parts) -> Molecule(n ?: 1, parts) }
+    val side: Parser<List<Molecule>> = separated(molecule, plus)
+        .map { it.terms }
+    override val rootParser: Parser<Equation> by (side and arrow and side)
+        .map { (lhs, a, rhs) -> Equation(lhs, rhs, a) }
+}
+
+fun main() {
+    val eq = equationGrammar.parseToEnd("3Ba(OH)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2")
+    println(eq)
 }
