@@ -151,6 +151,11 @@ There are many use cases for operators, but please don't overuse them. There sho
 
 But at some point you need to draw a line, e.g. inverting a matrix by using `!` would be in my opinion a bit of a stretch. Also, it can be confusing when you reuse an operator too often, like "adding" an address, phone number, email or website to a person. Often it is better to use an infix function with a meaningful name instead of letting the users guess what an operator could mean.
 
+.Don't be too clever
+****
+There is a temptation to be too clever when designing a DSL, by assuming that other people will have the same associations as oneself when looking at certain DSL elements. You may think, "A percent sign clearly looks like a little fraction", but others may not. It's the same awkward situation as for a joke not everyone gets. Such "clever" assumptions make it not only harder to learn the DSL, but make people feel dumb for no good reason.
+****
+
 That said, you can do some sneaky things with operators. E.g. the invoke operator can be used to simulate the syntax of a function call, so you can e.g. camouflage objects to look like functions. Similarly, the index access operator can be used to mimic e.g. arrays and maps.
 
 === Extensions

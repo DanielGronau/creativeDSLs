@@ -7,7 +7,7 @@
 Kotlin is very suitable to write DSLs and accordingly there exists already literature about this topic. However, in my opinion many existing books fall short in some ways:
 
 * They focus too much on "toy examples" that give little insight in the process of writing DSLs in practice
-* They present solutions in a "vacuum", without highlighting how an effective  design process looks like, which requirements, constraints and limitations apply, and which trade-offs were made
+* They present solutions in a "vacuum", without highlighting how an effective design process looks like, which requirements, constraints and limitations apply, and which trade-offs were made
 * They don't attempt a categorization of, and comparison between the different DSL types
 
 This book tries to address these shortcomings. It contains a checklist of requirements, which includes less obvious, but nevertheless important aspects of the requirement analysis. It shows, how designing DSLs can be structured. Further, the presented DSLs progress from "boring" default examples to more and more challenging and unwieldy cases, and concludes with a discussion of some complex and successful real-world DSLs.
@@ -28,7 +28,7 @@ I'm a quite open person, and I always try to get feedback and constructive criti
 
 === Prerequisites
 
-To try out code samples from this book or the associated project https://github.com/creativeDsls[], you can use any IDE capable of running Kotlin (obviously IntelliJ IDEA will have an edge regarding Kotlin support), or you can go to https://play.kotlinlang.org/[] for an online sandbox. The Kotlin language version used is 1.7. If not stated otherwise, when discussing Java, language level 11 is assumed.
+To try out code samples from this book or the associated project https://github.com/creativeDsls[github.com/creativeDsls], you can use any IDE capable of running Kotlin (obviously IntelliJ IDEA will have an edge regarding Kotlin support), or you can go to https://play.kotlinlang.org/[play.kotlinlang.org] for an online sandbox. The Kotlin language version used is 1.7. If not stated otherwise, when discussing Java, language level 11 is assumed.
 
 === Typographical Conventions
 

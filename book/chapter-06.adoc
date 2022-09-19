@@ -354,6 +354,22 @@ While the chained builder approach is conceptually simple, it leads to a lot of 
 
 The Builder Pattern is quite popular in Java - there are even libraries like https://projectlombok.org/[Project Lombok] which generate builders for you. The downside is that builders are quite inflexible and might be not very safe to use (although variations like the Typesafe Builder Pattern can help). The next chapter will present an approach which is more common in Kotlin, and has some advantages over the Builder Pattern.
 
+==== Preferable Use Cases
+
+* Creating data
+* Generating code
+* Testing
+* Logging
+
+==== Rating
+
+* DSL-Design: &#9728; &#9728; &#9728; &#9728;
+* Resulting Syntax: &#9728; &#9728;
+* Usage of DSL:  &#9728; &#9728; &#9728;
+* Possible Applications: &#9728; &#9728; &#9728; &#9728;
+
+==== Pros & Cons
+
 [cols="2a,2a"]
 |===
 |Pros |Cons

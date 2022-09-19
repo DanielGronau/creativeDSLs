@@ -17,12 +17,11 @@ Chapters
 1. String-Parsing DSLs (chemical formula with and without parser generator)
 1. Annotation based DSL (data class mapper)
 1. Code Generation with KotlinPoet (physical quantities)
-1. Dissecting common DSLs (kotest, gradle .kts, Kotlin Poet)
+1. Dissecting common DSLs (kotest, gradle .kts, Kotlin Poet, better-parse)
 
 TODO:
 - AutoDSL, chapter 7
 - pattern matcher, chapter 8
-- String parser, chapter 9 
 - chapter 12
 
 ## Publishing
@@ -40,3 +39,9 @@ https://www.epubli.de/
 ## Taxes and Legalese
 
 :(
+
+## Resources
+
+https://languagetool.org/de
+
+https://www.wordtune.com/

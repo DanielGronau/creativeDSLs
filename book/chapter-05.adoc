@@ -116,7 +116,20 @@ This wasn't included in the DSL because it is somewhat dangerous, as it isn't co
 
 === Conclusion
 
-I hope the case study shows that writing algebraic DLSs is generally quite straightforward. There are still a few points to consider when deciding whether to use an algebraic DSL:
+I hope the case study shows that writing algebraic DLSs is generally quite straightforward. There are still a few points to consider when deciding whether to use an algebraic DSL.
+
+==== Preferable Use Cases
+
+* Define operations
+
+==== Rating
+
+* DSL-Design: &#9728; &#9728; &#9728; &#9728; &#9728;
+* Resulting Syntax: &#9728; &#9728; &#9728; &#9728; &#9728;
+* Usage of DSL:  &#9728; &#9728; &#9728; &#9728; &#9728;
+* Possible Applications: &#9728; &#9728;
+
+==== Pros & Cons
 
 [cols="2a,2a"]
 |===
