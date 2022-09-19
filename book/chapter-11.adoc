@@ -294,6 +294,22 @@ The example code is written in a way where you generate the code manually when t
 
 Using code generation means bringing out the big guns, it certainly requires some planning and setup. However, this technique allows you to implement DSLs that would be just too much overhead without. And with libraries like https://square.github.io/kotlinpoet[KotlinPoet], it is quite intuitive to generate the code you want. Kotlin-Poet is itself a nice example for a real-world DSL, and will be explored as such in the next chapter.
 
+==== Preferable Use Cases
+
+* Creating data
+* Transforming data
+* Define operations
+* Testing
+
+==== Rating
+
+* DSL-Design: &#9728; &#9728;
+* Resulting Syntax: &#9728; &#9728; &#9728; &#9728;
+* Usage of DSL:  &#9728; &#9728; &#9728; &#9728;
+* Possible Applications: &#9728; &#9728; &#9728; &#9728;
+
+==== Pros & Cons
+
 [cols="2a,2a"]
 |===
 |Pros |Cons

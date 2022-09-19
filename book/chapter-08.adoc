@@ -211,6 +211,25 @@ Simulating the dense chemical notation is hard, and while using operator overloa
 
 Writing good hybrid DSLs is challenging. In most cases it is the better choice to stick with a certain style, when it is possible. On the other hand, a well-designed hybrid DSL can combine the most fitting techniques in a way that feels intuitive and organic.
 
+==== Preferable Use Cases
+
+* Creating data
+* Transforming data
+* Define operations
+* Execute actions
+* Generating code
+* Testing
+* Logging
+
+==== Rating
+
+* DSL-Design: &#9728; &#9728; &#9728;
+* Resulting Syntax: &#9728; &#9728; &#9728; &#9728;
+* Usage of DSL:  &#9728; &#9728; &#9728; &#9728;
+* Possible Applications: &#9728; &#9728; &#9728; &#9728; &#9728;
+
+==== Pros & Cons
+
 [cols="2a,2a"]
 |===
 |Pros |Cons

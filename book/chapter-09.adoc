@@ -1,8 +1,10 @@
 == String-Parsing DSLs
 
-In some cases, the host language doesn't allow to create the DSL syntax you would like. A string-parsing DSL gives you the freedom to write basically anything, but the downside is that you can't perform compile time checks, and that dissecting a string is usually more involved than collecting the data in other types of DSLs.
+In some cases, the host language doesn't allow to create the DSL syntax you would like. A string-parsing DSL gives you the freedom to write basically anything. One topic where traditional DSL categories are particularly bad is giving the user some leeway, e.g. concerning upper and lower case syntax, or order of operations. String-based DSLs can easily incorporate such leniency.
 
-WARNING: Kotlin supports - like many languages - regular expressions, which can be seen as a kind of mini-parser. However, they are known to be hard to maintain, especially they don't scale well. In my opinion, using regexes as "parsers" is acceptable for prototypes and test environments, but not in production code.
+The downside is that these DSLs are hidden from the scrutiny of the compiler: There are no compile time checks, no hints for auto-completion etc., which means the user has to rely on the documentation. Another issue is writing the parser: Dissecting a string is usually more involved than collecting the data in other DSL types, although it is also no rocket science.
+
+WARNING: Kotlin supports - like many languages - regular expressions, which can be seen as a kind of mini-parser. For small, isolated use cases they can be very convenient. However, employing them for larger problems can lead to code which is very hard to maintain, because this approach doesn't scale well. In my opinion, using regular expressions as full-blown "parsers" may be acceptable for prototypes and test environments, but not in production code.
 
 === Case Study: Chemical Equations as Strings
 
@@ -234,6 +236,24 @@ Going into the details of this specific library is beyond the scope of this book
 === Conclusion
 
 String-based DSLs allow to use a very idiomatic syntax. As always, there is a price to pay for this, and here it is lack of compile-time checks and the complexity and overhead of parsing.
+
+==== Preferable Use Cases
+
+* Creating data
+* Transforming data
+* Define operations
+* Execute actions
+* Generating code
+* Testing
+
+==== Rating
+
+* DSL-Design: &#9728; &#9728; &#9728;
+* Resulting Syntax: &#9728; &#9728; &#9728; &#9728; &#9728;
+* Usage of DSL:  &#9728; &#9728; &#9728; &#9728; &#9728;
+* Possible Applications: &#9728; &#9728; &#9728; &#9728; &#9728;
+
+==== Pros & Cons
 
 [cols="2a,2a"]
 |===

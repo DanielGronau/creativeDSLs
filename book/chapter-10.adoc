@@ -102,9 +102,44 @@ As it uses reflection, you need to include a dependency to the `kotlin-reflect` 
 
 For serious applications, I would suggest to give https://mapstruct.org[MapStruct] a try. It is a Java library, but seems to work well with Kotlin, and has much more functionality than our example DSL. One main difference is that MapStruct generates sourcecode, avoiding the performance hit of using reflection, and making debugging much more convenient.
 
+=== Synergy with String-based DSLs
+
+Syntactically, annotation-based DSLs are quite limited: The structure of an annotation is fixed, and only a few data types are allowed as fields. Thankfully, one of these data types is `String`, and the last chapter showed how expressive string-based DSLs can be. Therefore, it is only natural to overcome the limitations of the annotation-based approach by embedding string-based DSLs in annotations.
+
+Implementing such a DSL wouldn't give much new insights, however, Spring Data JPA can serve as an example:
+
+[source,kotlin]
+----
+@Repository interface UserRepository : JpaRepository<UserEntity, Long> {
+    @Query("FROM UserEntity WHERE last_name = :lastName")
+    fun findAllByLastName(@Param("lastName") lastName: String):
+       List<UserEntity>
+}
+----
+
+The `@Query` annotation doesn't have fields for the `FROM` and `WHERE` clause, it allows to specify the whole query as a string (which is a DSL itself), and I think this is clearly the better solution here.
+
 === Conclusion
 
 In some cases, it can feel very natural to integrate a DSL in the existing user code, and use it to influence how certain structures are processed or translated. In these cases, annotation-based DSLs are a good choice. While these DSLs are often easy to use, the implementation overhead can be substantial.
+
+==== Preferable Use Cases
+
+* Creating data
+* Transforming data
+* Execute actions
+* Generating code
+* Testing
+* Logging
+
+==== Rating
+
+* DSL-Design: &#9728; &#9728;
+* Resulting Syntax: &#9728; &#9728;
+* Usage of DSL:  &#9728; &#9728; &#9728; &#9728;
+* Possible Applications: &#9728; &#9728; &#9728;
+
+==== Pros & Cons
 
 [cols="2a,2a"]
 |===
