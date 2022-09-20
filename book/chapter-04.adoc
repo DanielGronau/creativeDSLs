@@ -9,7 +9,7 @@ Sometimes, you need very descriptive identifiers in a DSL, which shouldn't have 
 
 A typical use case are DSLs for test libraries. While Java limits you to underscores and camelCase, in Kotlin very descriptive names for test function are possible by using the backtick syntax:
 
-[source,kotlin]
+[source]
 ----
 @Test
 fun `check that the slithy toves gyre and gimble in the wabe` {
@@ -244,7 +244,7 @@ Generics are a useful abstraction over concrete types in all kinds of contexts, 
 include::{srcdir}/chapter_04/currencySnippet.kt[lines=5..]
 ----
 
-The `Amount` class holds the `currency` field, which could be used for runtime checks. But with generics, we can do better: Adding amounts of different currencies together isn't possible, because the definition of `+` ensures that both amounts have the same currency type.
+Adding amounts of different currencies together isn't possible, because the definition of `+` ensures that both amounts belong to the same currency.
 
 .Type-level Programming and Phantom Types
 ****
@@ -269,7 +269,7 @@ Note the expression `T::class`, which shouldn't work considering type erasure. H
 
 You can write whole DSLs using annotations, but more often annotations can support DSLs, e.g. by pointing out how certain fields or classes should be handled. They are especially powerful when your DSL shows a certain default behavior, but needs to consider some edge cases or exceptions, like "don't persist this property".
 
-Another useful application for annotations is code generation.E.g. the already mentioned AutoDSL library uses the information provided via annotations to construct the DSL classes for you.
+Another useful application for annotations is code generation(((Code Generation))). E.g. the already mentioned AutoDSL library uses the information provided via annotations to construct the DSL classes for you.
 
 .Annotation Processors
 ****

@@ -8,7 +8,7 @@ The first question to answer is obviously which domain to tackle. For small doma
 
 Generally, it is a good practice to organize your DSL in layers, so that the lower layers don't rely on the higher ones, and can therefore be used independently. E.g. if you design a DSL for linear algebra, the DSL part for matrices could be independent of the rest of the system, which allows to use this part in other contexts as well.
 
-When the application already employs other DSLs, it should be considered whether a parallel use of the new DSL would be confusing or if it could yield unexpected results. In some cases it might be smart to imitate the syntax of an existing DSL in order to facilitate the experience the users already have. footnote:[A real-world example is the KotlinPoet library mimicking the older JavaPoet project, which is very helpful when changing the generated language from Java to Kotlin.]
+When the application already employs other DSLs, it should be considered whether a parallel use of the new DSL would be confusing or if it could yield unexpected results. In some cases it might be smart to imitate the syntax of an existing DSL in order to facilitate the experience the users already have. A real-world example for this approach is the KotlinPoet library mimicking the JavaPoet project.
 
 === Research
 
@@ -34,7 +34,7 @@ That's why it is important to have from the very start a rough idea how close th
 
 Having a beautiful and concise Syntax for a DSL doesn't necessarily mean that it is easy to master. Once a DSL reaches a certain size and complexity, it is naive to assume that people just use it without assistance. The learning experience of the users is often just an afterthought, but I think it is important to account for it already in the analysis process.
 
-The DSL itself can be designed in a way to have a shallow learning curve, e.g. by mimicking known systems, or by emphasizing consistency over conciseness footnote:[One could argue that Regular Expressions are an example for a "too concise" DSL, as most users - including me - have to look up the syntax over and over again]. Of course, training and documentation are major factors for a good learning experience as well. In order to get this right, you have to know your target audience and their skill-set.
+The DSL itself can be designed in a way to have a shallow learning curve, e.g. by mimicking known systems, or by emphasizing consistency over conciseness. An example for a "too concise" DSL might be regular expressions, as many users - including me - have to look up the syntax over and over again. Of course, training and documentation are major factors for a good learning experience as well. In order to get this right, you have to know your target audience and their skill-set.
 
 TIP: In the end it's not the DSL itself which generates value, but the people using it effectively, and this is something we should never forget. Planning for the required assistance upfront can help to improve the DSL, and empower the users to get the most out of it.
 
@@ -56,7 +56,7 @@ Another kind of extensibility, which is often overlooked, is extensibility by us
 
 === Maintainability
 
-The DSL has to be not only implemented, but must be maintained as well. It should be estimated how many resources are necessary to keep the code running and to update it. Knowing these expectations can help to decide e.g. which dependencies are acceptable, or if code generation is required.
+The DSL has to be not only implemented, but must be maintained as well. It should be estimated how many resources are necessary to keep the code running and to update it. Knowing these expectations can help to decide e.g. which dependencies are acceptable, or if code generation (((Code Generation))) is required.
 
 === Performance and Memory Requirements
 

@@ -24,7 +24,7 @@ Once a prototype has shown how a realistic syntax could look like, you should fo
 
 WARNING: This step shouldn't be skipped: A prototype is no documentation, the final implementation needs exact specifications, and later users require a documentation as well. Doing it now makes the most sense.
 
-One aspect deserving special attention is completeness. You should ensure that the DSL can actually express all "allowed" configurations. Sometimes rare cases are simply overlooked, or some features are not orthogonal footnote:[An example for missing orthogonality would be a syntax for describing animals, which doesn't allow to choose both "mammal" and "lays eggs", even though this combination of properties actually exists.], even though they should.
+One aspect deserving special attention is completeness. You should ensure that the DSL can actually express all "allowed" configurations. Sometimes rare cases are simply overlooked, or some features are not orthogonal, even though they should. An example for missing orthogonality would be a syntax for describing animals, which doesn't allow you to choose both "mammal" and "lays eggs", even though this combination of properties actually exists.
 
 === Implementation
 
@@ -36,7 +36,7 @@ The implementation of a DSL is quite often different from the usual programming 
 
 ==== Name Clashes
 
-A good DSL can be used extensively in a code base, and of course that's a great thing. However, this also increases the likelihood of name clashes. That's why it might be  problematic to add extension methods to often used classes like `Int` or `String`. Sometimes two DSLs can clash, e.g. when trying to define the same operator. Sometimes, you can limit the scope of a function etc. by pulling it in one of the DSL classes.
+A good DSL can be used extensively in a code base, and of course that's a great thing. However, this also increases the likelihood of name clashes. That's why it might be  problematic to add extension methods to often used classes like `Int` or `String`. Sometimes two DSLs can clash, e.g. when trying to define the same operator. That's why you should try limit the scope of a function etc. by pulling it in one of the DSL classes, whenever it is possible.
 
 ==== Coupling
 
@@ -44,18 +44,18 @@ When writing a DSL for creating classes that are also under your control, you mi
 
 * DSL code gets entangled with business logic
 * the DSL becomes part of the business API, making it bloated and inflexible
-* In many cases it is important that the result classes can work on its own. Examples for this can be when code generation or analysis tools are involved, for working with big data, or for testing
+* In many cases it is important that the result classes can work on its own. This can be the case when code generation (((Code Generation))) or analysis tools are involved, when working with big data, or for testing
 * at some point in time, the DSL may get obsolete
 
-In Java, this kind of tight coupling might be excusable because often there is no other way to write a convenient DSL. But Kotlin is much more expressive by having features like extension methods, so this excuse doesn't count.
+In Java, this kind of tight coupling might be excusable because there is often no other way to write a convenient DSL. But Kotlin is much more expressive, e.g. due to features like extension methods, so this excuse doesn't count.
 
 ==== Code Conventions
 
-A point where you might need to compromise is following code conventions, things like rules for writing upper- and lowercase. Of course, you should stick to code conventions whenever possible, but in the context of DSL design some deviations are acceptable. But if you have to break the rules, you should document this decision.
+A point where you might need to compromise is following code conventions, e.g. regarding rules for using upper- and lowercase. Of course, you should stick to code conventions whenever possible, but in the context of DSL design some deviations are acceptable. But if you have to break the rules, you should at least document this decision.
 
 ==== Documentation
 
-Many people don't like to write documentations, but it is important. A DSL is per definition an own language, and people might need a helping hand to use it correctly and effectively. Don't presume too much prior knowledge of the DSL, and don't be too lazy to show a few good examples, or to visualize core concepts. To be frank, if you find it very difficult to write a documentation for your own DSL, it might be an indication that the DSL has some improvement potential.
+Many people don't like to write documentations, but it is important. A DSL is per definition an own language, and people might need a helping hand to use it correctly and effectively. Don't presume too much prior knowledge of the DSL, and don't be too lazy to show a few good examples, or to visualize core concepts. To be frank, if you find it very difficult to write a documentation for your own DSL, it might be an indication that the DSL itself has some improvement potential.
 
 Often, you have to deviate a bit from the original specification, or you added some new details. Please don't forget to update the documentation.
 

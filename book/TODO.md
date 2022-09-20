@@ -23,6 +23,7 @@ TODO:
 - AutoDSL, chapter 7
 - pattern matcher, chapter 8
 - chapter 12
+- make the index
 
 ## Publishing
 

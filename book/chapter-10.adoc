@@ -134,10 +134,10 @@ In some cases, it can feel very natural to integrate a DSL in the existing user 
 
 ==== Rating
 
-* DSL-Design: &#9728; &#9728;
-* Resulting Syntax: &#9728; &#9728;
-* Usage of DSL:  &#9728; &#9728; &#9728; &#9728;
-* Possible Applications: &#9728; &#9728; &#9728;
+* image:2_sun.png[] - for Simplicity of DSL design
+* image:2_sun.png[] - for Elegance
+* image:4_sun.png[] - for Usability
+* image:3_sun.png[] - for possible Applications
 
 ==== Pros & Cons
 
@@ -150,6 +150,7 @@ In some cases, it can feel very natural to integrate a DSL in the existing user 
 * can be a good way to mark exceptions (e.g. "don't serialize this field")
 
 |* pollutes the host code
+* can't be used for external code
 * can clash with other annotation-based DSLs
 * relies often heavily on reflection
 * hard to debug in case of problems

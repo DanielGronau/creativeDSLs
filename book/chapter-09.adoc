@@ -37,7 +37,8 @@ We will assume that the input string is free of whitespaces, which can be easily
 [source,kotlin]
 ----
 fun parsePattern(string: String, pattern: String): ParseResult<String> = when {
-    string.startsWith(pattern) -> Optional.of(pattern to string.substring(pattern.length))
+    string.startsWith(pattern) ->
+        Optional.of(pattern to string.substring(pattern.length))
     else -> Optional.empty()
 }
 
@@ -51,7 +52,7 @@ fun parseNum(string: String): ParseResult<Int> =
     }
 ----
 
-The easiest function is `parsePattern()`, which just tries to find a given prefix in the string. `parseNum()` is slightly more involved, as it needs to find out the number of digits first. Except `parseElement()`, all other functions don't read directly from the string, but use these two and combine the results in certain ways footnote:[That's why this approach is known as "parser combinator"]. The first example for this "assembling" is the function for reading the equation arrow, which can be either `-{zwsp}>` or `<{zwsp}-{zwsp}>`:
+The easiest function is `parsePattern()`, which just tries to find a given prefix in the string. `parseNum()` is slightly more involved, as it needs to find out the number of digits first. Except `parseElement()`, all other functions don't read directly from the string, but use these two and combine the results in certain ways - that's why this approach is known as "parser combinator". The first example for this "assembling" is the function for reading the equation arrow, which can be either `-{zwsp}>` or `<{zwsp}-{zwsp}>`:
 
 [source,kotlin]
 ----
@@ -60,7 +61,9 @@ fun parseArrow(string: String): ParseResult<String> =
         .or { parsePattern(string, "->") }
 ----
 
-Reading an element is not difficult, the only pitfall is that two-letter symbols must be checked before the one-letter symbols, else the function would just find `H` in a string starting with `He`.footnote:[This is a common problem when parsing. You have to read the longer prefix first when there is a possible overlap]
+Reading an element is not difficult, the only pitfall is that two-letter symbols must be checked before the one-letter symbols, else the function would just find `H` in a string starting with `He`.
+
+WARNING: It is a common problem that two parsers could match for the same input. In most cases, the rule reading the longer prefix is the one you want, so you have to make sure to evaluate it first.
 
 [source,kotlin]
 ----
@@ -79,7 +82,7 @@ fun findElement(string: String, charCount: Int): ParseResult<String> =
     Optional.of(
         "$string##".substring(0, charCount)
     ).filter {
-        elements.contains("$string!!".substring(0, charCount))
+        elements.contains("$string##".substring(0, charCount))
     }.map { symbol ->
         symbol to string.substring(charCount)
     }
@@ -248,10 +251,10 @@ String-based DSLs allow to use a very idiomatic syntax. As always, there is a pr
 
 ==== Rating
 
-* DSL-Design: &#9728; &#9728; &#9728;
-* Resulting Syntax: &#9728; &#9728; &#9728; &#9728; &#9728;
-* Usage of DSL:  &#9728; &#9728; &#9728; &#9728; &#9728;
-* Possible Applications: &#9728; &#9728; &#9728; &#9728; &#9728;
+* image:2_sun.png[] - for Simplicity of DSL design
+* image:5_sun.png[] - for Elegance
+* image:4_sun.png[] - for Usability
+* image:5_sun.png[] - for possible Applications
 
 ==== Pros & Cons
 

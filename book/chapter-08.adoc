@@ -50,7 +50,7 @@ An `Element` contains just the chemical symbol, like `"H"` (hydrogen) or `"Ba"` 
 
 A `Molecule` is a collection of elements or groups, and can also have a factor in front. An equation consists of two sides and either an arrow `-{zwsp}>` or in case of reversible reactions a double arrow `<{zwsp}-{zwsp}>` in the middle, while every side is either a single molecule or a sum of molecules.
 
-The code contains secondary constructors for more convenient initialization footnote:[Note that data classes don't allow varargs in their primary constructor.], and overwrites the `toString()` methods in order to give the output in chemical notation. The equation mentioned above for making barium phosphate could be written like this:
+The code contains secondary constructors for more convenient initialization (note that data classes don't allow varargs in their primary constructor), and overwrites the `toString()` methods in order to give the output in chemical notation. The equation mentioned above for making barium phosphate could be written like this:
 
 [source,kotlin]
 ----
@@ -113,7 +113,7 @@ operator fun Group.rangeTo(that: Part) = copy(parts = parts + that)
 
 Generally, you need to put molecules and groups in parentheses because of the precedence rules.
 
-A molecule can have an optional factor in front. Also, the same operation should  "promote" a molecule part to a molecule, allowing e.g. to write `2*O[2]` resulting in two oxygen molecules. Again, we need sanity checks, rendering calls like `-2*!H[2]` or `3*(2*!O[2])` invalid:
+A molecule can have an optional factor in front. Also, the same operation should  "promote" a molecule part to a molecule, allowing e.g. to write `2*O[2]` resulting in two oxygen molecules. Again, we need sanity checks, rendering calls like `-2*H[2]` or `3*(2*O[2])` invalid:
 
 [source,kotlin]
 ----
@@ -223,10 +223,10 @@ Writing good hybrid DSLs is challenging. In most cases it is the better choice t
 
 ==== Rating
 
-* DSL-Design: &#9728; &#9728; &#9728;
-* Resulting Syntax: &#9728; &#9728; &#9728; &#9728;
-* Usage of DSL:  &#9728; &#9728; &#9728; &#9728;
-* Possible Applications: &#9728; &#9728; &#9728; &#9728; &#9728;
+* image:3_sun.png[] - for Simplicity of DSL design
+* image:4_sun.png[] - for Elegance
+* image:4_sun.png[] - for Usability
+* image:5_sun.png[] - for possible Applications
 
 ==== Pros & Cons
 

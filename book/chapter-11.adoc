@@ -1,4 +1,4 @@
-== Code Generation for DSLs
+== ((Code Generation)) for DSLs
 
 Sometimes you are prototyping a DSL and find a nice syntax, but it turns out it would need a lot of boilerplate code to make it work. One common reason is a combinatorial explosion, or there are many classes needed which follow the same pattern (e.g. tuple classes, or fixed length vectors). In such cases, you might consider using code generation.
 
@@ -303,10 +303,10 @@ Using code generation means bringing out the big guns, it certainly requires som
 
 ==== Rating
 
-* DSL-Design: &#9728; &#9728;
-* Resulting Syntax: &#9728; &#9728; &#9728; &#9728;
-* Usage of DSL:  &#9728; &#9728; &#9728; &#9728;
-* Possible Applications: &#9728; &#9728; &#9728; &#9728;
+* image:2_sun.png[] - for Simplicity of DSL design
+* image:5_sun.png[] - for Elegance
+* image:4_sun.png[] - for Usability
+* image:5_sun.png[] - for possible Applications
 
 ==== Pros & Cons
 

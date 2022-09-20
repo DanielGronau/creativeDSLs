@@ -15,7 +15,7 @@ This books discusses DSLs which are embedded into Kotlin, and are therefore limi
 
 One disadvantage of internal DSLs is the limitation of the syntax inherited by the host language. Kotlin allows great freedom for DSL design, especially compared to Java. Nevertheless, it is still possible that the language is not expressive enough to design the DSL you need. In this case _external DSLs_ are an option: They have their own rules and syntax, and require lexers, parsers etc. This leads to a larger overhead compared to internal DSLs. However, writing external DSLs has become much easier in the last years by new libraries and frameworks, and improved tooling.
 
-=== Code Generation for Internal DSLs
+=== ((Code Generation)) for Internal DSLs
 
 A common problem in DSL design is combinatorial explosion: Take for example a DSL for physical quantities, and all the possible results when multiplying or dividing them. In order to achieve a pleasing syntax, but avoid illegal conversions you might have to write lots of boilerplate code. In such cases, code generation can help to get the job done, even if it seemed hopeless at the first glance.
 

@@ -124,10 +124,10 @@ I hope the case study shows that writing algebraic DLSs is generally quite strai
 
 ==== Rating
 
-* DSL-Design: &#9728; &#9728; &#9728; &#9728; &#9728;
-* Resulting Syntax: &#9728; &#9728; &#9728; &#9728; &#9728;
-* Usage of DSL:  &#9728; &#9728; &#9728; &#9728; &#9728;
-* Possible Applications: &#9728; &#9728;
+* image:5_sun.png[] - for Simplicity of DSL design
+* image:5_sun.png[] - for Elegance
+* image:5_sun.png[] - for Usability
+* image:2_sun.png[] - for possible Applications
 
 ==== Pros & Cons
 
