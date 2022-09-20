@@ -20,7 +20,7 @@ val request = HttpRequest.newBuilder(URI.create("https://acme.com:9876/products"
 
 This doesn't look too bad, but there is some noise in form of the `newBuilder()` and `build()` calls, and the other method calls are actually assignments in disguise. The question is how we can improve this in Kotlin.
 
-My suggestion for a better syntax looks like this:
+Here is a suggestion for an improved syntax:
 
 [source,kotlin]
 ----
@@ -34,7 +34,7 @@ val request = httpRequest("https://acme.com:9876/products") {
 }
 ----
 
-There are no more `newBuilder()` and `build()` calls, the assignments are assignments, headers became their own section and the duration can be calculated. For convenience, you have now the choice whether to specify the web-address as `String` or `URI` (the example shows only `String`).
+There are no more `newBuilder()` and `build()` calls, the assignments are assignments, headers have their own subsection and durations can be calculated. For convenience, you have now the choice whether to specify the web-address as `String` or `URI` (the example shows only `String`).
 
 As you might have guessed, `httpRequest` is a method employing the Loan Pattern: It initializes a builder class, exposes it as a receiver, and takes care of the final `build()` call. Also note how it takes care of a mandatory field (in our case the address) by requiring it as an explicit argument. We have two versions of the function, depending on how the address is specified:
 
@@ -202,7 +202,7 @@ It is possible to have a chained version of the Loan Pattern, but it depends on 
 
 [source,kotlin]
 ----
-SELECT {
+val query = SELECT {
     +"p.firstName"
     +"p.lastName"
     +"p.income"
@@ -213,11 +213,98 @@ SELECT {
         ON("p.addressId","a.id")
     }
 }.WHERE {
-   "p.age > 20" AND "p.age <= 40" AND "a.city = 'London'"
+    +"p.age > 20"
+    +"p.age <= 40"
+    +"a.city = 'London'"
+}.build()
+----
+
+The code to implement this DSL could look like this (sanity checks were omitted for brevity):
+
+[source,kotlin]
+----
+fun SELECT(body: SelectBody.() -> Unit) =
+    SelectClause(SelectBody().apply(body).columns)
+
+class SelectBody {
+    val columns = mutableListOf<String>()
+    operator fun String.unaryPlus() { columns += this }
+}
+
+class SelectClause(val columns : List<String>) {
+    fun FROM(body: FromBody.() -> Unit) =
+        FromBody().apply(body).let{
+            FromClause(columns, it.tableName, it.joinClauses)
+        }
+}
+
+typealias NameWithAlias = Pair<String, String?>
+
+class FromBody {
+    var tableName: NameWithAlias = "" to null
+    val joinClauses  = mutableListOf<Triple<NameWithAlias, String, String>>()
+
+    operator fun String.unaryPlus() { tableName = this to null }
+    infix fun String.AS(that: String) { tableName = this to that }
+
+    fun JOIN(body: JoinBody.() -> Unit) {
+        JoinBody().apply(body).also {
+            joinClauses += Triple(it.tableName, it.firstColumn, it.secondColumn)
+        }
+    }
+}
+
+data class FromClause(
+    val columns: List<String>,
+    val tableName: NameWithAlias,
+    val joinClauses: List<Triple<NameWithAlias, String, String>>
+) {
+    fun WHERE(body: WhereBody.() -> Unit) =
+        WhereClause(columns, tableName, joinClauses, WhereBody().apply(body).conditions)
+    fun build() = build(columns, tableName, joinClauses, listOf())
+}
+
+class JoinBody {
+    var tableName: NameWithAlias = "" to null
+    var firstColumn = ""
+    var secondColumn = ""
+
+    operator fun String.unaryPlus() { tableName = this to null }
+    infix fun String.AS(that: String) { tableName = this to that }
+
+    fun ON(firstColumn: String, secondColumn: String) {
+        this.firstColumn = firstColumn
+        this.secondColumn = secondColumn
+    }
+}
+
+class WhereBody {
+    val conditions = mutableListOf<String>()
+    operator fun String.unaryPlus() { conditions += this }
+}
+
+data class WhereClause(
+    val columns: List<String>,
+    val tableName: NameWithAlias,
+    val joinClauses: List<Triple<NameWithAlias, String, String>>,
+    val conditions: List<String>
+) {
+    fun build() = build(columns, tableName, joinClauses, conditions)
+}
+
+private fun build(
+    columns: List<String>,
+    tableName: NameWithAlias,
+    joinClauses: List<Triple<NameWithAlias, String, String>>,
+    conditions: List<String>
+): String {
+    // as in chapter 6
 }
 ----
 
-I don't provide an implementation, as there is not much new to learn. The code is very similar to the one from the previous section, with the addition of some infix functions, which were covered in chapter 5.
+It is important to have different classes for the body of a clause, and the result. So the receiver for the `SELECT` function is the `SelectBody` class, but the result of the call is a `SelectClause`. This is because we want to be able to call different functions in both classes, e.g. the `SelectBody` allows to add columns, but `SelectClause` can call the `FROM` function. It would be very confusing and unsafe to have this functionality in a single class.
+
+Also, the explicit call to the `build()` function is necessary in this example, because we don't know if the chain should be stopped after the FROM or after the WHERE. In use cases where there is only one possible exit point, the `build()` call could be performed internally.
 
 === AutoDSL
 
