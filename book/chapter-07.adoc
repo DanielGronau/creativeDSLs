@@ -100,7 +100,7 @@ class HttpRequestBuilder(var uri: URI) {
 }
 ----
 
-Next, there are some cfields and methods required in order to simplify seting the HTTP method. However, you can still define your own ones, e.g. `method = "OPTION" to someBodyPublisher`:
+Next, there are some fields and methods required in order to simplify setting the HTTP method. However, you can still define your own ones, e.g. `method = "OPTION" to someBodyPublisher`:
 
 [source,kotlin]
 ----
@@ -196,9 +196,82 @@ class HttpRequestBuilder(var uri: URI) {
 }
 ----
 
+=== AutoDSL
+
+As this kind of DSL is very common, and its structure is quite predictable, it shouldn't come as a surprise that there exist libraries for deriving such DSLs automatically. At this point we will cover the https://github.com/F43nd1r/autodsl[AutoDSL] library, which has to be added as an annotation processor (either via kapt or KSP). To do this, please follow the description on the GitHub project page.
+
+WARNING: Please make sure to use the right GitHub project. There is an older library called "AutoDsl", which was the inspiration for the project covered here. Unfortunately, it is no longer maintained, and doesn't work for Kotlin 1.4 or newer.
+
+Remember all the work we put into `HttpRequestBuilder` in the last section? Let's see what we can get "for free" instead. Note that we can't annotate the `HttpRequest` class itself, so we are auto-generating a builder class, and hence have to call the `build()` method at the end. Usually, for our own classes we wouldn't do this, but annotate them directly.
+
+[source,kotlin]
+----
+typealias HttpMethod = Pair<String, HttpRequest.BodyPublisher?>
+
+val GET: HttpMethod = "GET" to null
+val DELETE: HttpMethod = "DELETE" to null
+fun PUT(bp: HttpRequest.BodyPublisher): HttpMethod = "PUT" to bp
+fun POST(bp: HttpRequest.BodyPublisher): HttpMethod = "POST" to bp
+
+@AutoDsl
+data class Header(val key: String, val value: String)
+
+@AutoDsl
+data class HttpRequestBuilder(
+    val uri: URI,
+    val method: HttpMethod = GET,
+    val timeout: Duration? = null,
+    val expectContinue: Boolean? = null,
+    val version: HttpClient.Version? = null,
+    @AutoDslSingular("header")
+    val headers: List<Header> = listOf()
+) {
+    fun build(): HttpRequest =
+        with(HttpRequest.newBuilder(uri)) {
+            headers.forEach { (key, value) -> header(key, value) }
+            timeout?.let { timeout(it) }
+            expectContinue?.let { expectContinue(it) }
+            version?.let { version(it) }
+            method.let {
+                when (method) {
+                    GET -> GET()
+                    DELETE -> DELETE()
+                    else -> method(method.first, method.second)
+                }
+            }
+            this.build()
+        }
+}
+----
+
+It can't get much simpler than that: All classes which should be included in the DSL are marked with the `@AutoDsl` annotation, and when there are lists that should be specified element-wise and not as a whole, you add an `@AutoDslSingular` annotation containing the name of the helper method.
+
+If you compile the project using IntelliJ IDEA, you should find the generated classes `HeaderDsl` and `HttpRequestBuilderDsl` somewhere in the `target/generated-sources/...` folder, depending on how you integrated the AutoDSL processor, and how you setup your project).
+
+The example call from the previous section would now like this:
+
+[source,kotlin]
+----
+val request = httpRequestBuilder {
+    uri = URI.create("https://acme.com:9876/products")
+    method = GET
+    header {
+        key = "Content-Type"
+        value = "application/x-www-form-urlencoded; charset=UTF-8"
+    }
+    header {
+        key = "Accept-Encoding"
+        value = "gzip, deflate"
+    }
+    timeout = Duration.ofSeconds(5)
+}.build()
+----
+
+Granted, the code isn't quite as comfortable and concise, but it comes close, and looks definitely nicer and more intuitive than a traditional builder. AutoDSL also checks that mandatory fields like `uri` are set, and throws an `IllegalStateException` otherwise.
+
 === Chained Loan Pattern
 
-It is possible to have a chained version of the Loan Pattern, but it depends on the use case whether it looks better than the chained Builder Pattern. I would argue that in case of the SQL DSL from the last chapter the chained version wouldn't be an improvement. Here is how it could look like:
+It is possible to have a "chained" version of the Loan Pattern, but it depends on the use case whether it looks better than the chained Builder Pattern. I would argue that in case of the SQL DSL from the last chapter the chained version wouldn't be an improvement. Here is how it could look like:
 
 [source,kotlin]
 ----
@@ -305,14 +378,6 @@ private fun build(
 It is important to have different classes for the body of a clause, and the result. So the receiver for the `SELECT` function is the `SelectBody` class, but the result of the call is a `SelectClause`. This is because we want to be able to call different functions in both classes, e.g. the `SelectBody` allows to add columns, but `SelectClause` can call the `FROM` function. It would be very confusing and unsafe to have this functionality in a single class.
 
 Also, the explicit call to the `build()` function is necessary in this example, because we don't know if the chain should be stopped after the FROM or after the WHERE. In use cases where there is only one possible exit point, the `build()` call could be performed internally.
-
-=== AutoDSL
-
-As this kind of DSL is very common, and its structure is quite predictable, it shouldn't come as a surprise that there exist libraries for deriving such DSLs automatically. At this point we will cover the https://github.com/F43nd1r/autodsl[AutoDSL] library.
-
-WARNING: Please make sure to use the right GitHub project. There is an older library called "AutoDsl", which was the inspiration for the project covered here. Unfortunately, it is no longer maintained, and doesn't work for Kotlin 1.4 or newer.
-
-
 
 === Conclusion
 

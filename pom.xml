@@ -34,6 +34,29 @@
                 <version>1.7.10</version>
                 <executions>
                     <execution>
+                        <id>kapt</id>
+                        <goals>
+                            <goal>kapt</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirs>
+                                <sourceDir>src/main/kotlin</sourceDir>
+                            </sourceDirs>
+                            <annotationProcessorPaths>
+                                <annotationProcessorPath>
+                                    <groupId>com.faendir.kotlin.autodsl</groupId>
+                                    <artifactId>processor</artifactId>
+                                    <version>2.2.15</version>
+                                </annotationProcessorPath>
+                                <dependency>
+                                    <groupId>com.squareup</groupId>
+                                    <artifactId>kotlinpoet</artifactId>
+                                    <version>1.12.0</version>
+                                </dependency>
+                            </annotationProcessorPaths>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>compile</id>
                         <phase>compile</phase>
                         <goals>
@@ -112,6 +135,11 @@
             <groupId>com.github.h0tk3y.betterParse</groupId>
             <artifactId>better-parse-jvm</artifactId>
             <version>0.4.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.faendir.kotlin.autodsl</groupId>
+            <artifactId>annotations</artifactId>
+            <version>2.2.15</version>
         </dependency>
     </dependencies>
 </project>

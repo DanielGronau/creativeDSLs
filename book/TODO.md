@@ -24,6 +24,7 @@ TODO:
 - pattern matcher, chapter 8
 - chapter 12
 - make the index
+- FEN as first example in chapter 9?
 
 ## Publishing
 
