@@ -20,11 +20,9 @@ Chapters
 1. Dissecting common DSLs (kotest, gradle .kts, Kotlin Poet, better-parse)
 
 TODO:
-- AutoDSL, chapter 7
 - pattern matcher, chapter 8
 - chapter 12
 - make the index
-- FEN as first example in chapter 9?
 
 ## Publishing
 

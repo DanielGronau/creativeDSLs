@@ -6,6 +6,130 @@ The downside is that these DSLs are hidden from the scrutiny of the compiler: Th
 
 WARNING: Kotlin supports - like many languages - regular expressions, which can be seen as a kind of mini-parser. For small, isolated use cases they can be very convenient. However, employing them for larger problems can lead to code which is very hard to maintain, because this approach doesn't scale well. In my opinion, using regular expressions as full-blown "parsers" may be acceptable for prototypes and test environments, but not in production code.
 
+=== Case Study: Forsyth–Edwards Notation
+
+Before we dive into complicated problems requiring parsers, we will start with an easy example, where we need only a few string functions. If you don't play chess, you probably never heard of the https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation[Forsyth–Edwards Notation] (or short FEN). It is basically a snapshot of a certain chess position: The position of the pieces, who's turn it is, castling rights, some information for the en-passant and 50-move rule, and the number of moves played.
+
+Rows are separated by `/` and pieces have the usual names used in chess notation (like "Q" for a queen), plus "P" for pawn. Black pieces are notated in lower-case and white pieces in upper-case. To keep the string short, empty squares are written with a kind of run-length encoding, e.g. 3 empty fields are represented by a 3. A FEN looks like this: `rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2`. If you put the rows one below the other, and expand the numbers to empty fields, you can "see" the board position:
+
+[source,text]
+----
+rnbqkbnr
+pp.ppppp
+........
+..p.....
+....P...
+.....N..
+PPPP.PPP
+RNBQKB.R
+----
+
+This is the `Position` class we want to create using a FEN string:
+
+[source,kotlin]
+
+----
+enum class Piece(val symbol: String) {
+    WhitePawn("P"), WhiteRook("R"), WhiteKnight("N"),
+    WhiteBishop("B"), WhiteQueen("Q"), WhiteKing("K"),
+    BlackPawn("p"), BlackRook("r"), BlackKnight("n"),
+    BlackBishop("b"), BlackQueen("q"), BlackKing("k")
+}
+
+enum class Color(val symbol: String) {
+    Black("b"), White("w")
+}
+
+data class Position(
+    val pieces: Map<String, Piece>,
+    val toMove: Color,
+    val castling:List<Piece>,
+    val enPassant: String,
+    val fiftyMoves: Int,
+    val move: Int) {
+
+    private fun piecesFen() =
+        (8 downTo 1).map {row ->
+            var count = 0
+            ('a' .. 'h').map { col ->
+                val piece = pieces["$col$row"]
+                when {
+                    piece != null && count == 0 -> piece.symbol
+                    piece != null && count != 0 ->
+                        "$count${piece.symbol}".also { count = 0 }
+                    col == 'h' -> "${count + 1}"
+                    else -> "".also { count++ }
+                }
+            }.joinToString ("")
+        }.joinToString ("/")
+
+    private fun castlingFen() = when {
+        castling.isEmpty() -> "-"
+        else -> castling.map { it.symbol }.joinToString("")
+    }
+
+    fun FEN() = "${piecesFen()} ${toMove.symbol} " +
+        "${castlingFen()} $enPassant $fiftyMoves $move"
+}
+----
+
+There is already a function for generating a FEN - this is not required, but it makes testing much easier.
+
+.Roundtrip Tests
+****
+When you have code that transforms forth and back between two different formats, it is convenient to write roundtrip tests: You're providing test data for the "easier" format, transform it to the other one and back, and compare it with the original. Comparing data in the same format is easier and safer than comparing different formats, sometimes even a simple string comparison is sufficient.
+****
+
+Now we can write the DSL function for parsing a FEN:
+
+[source,kotlin]
+----
+fun readFEN(s: String): Position {
+    operator fun <E> List<E>.component6(): E = this[5]
+    val (piecesStr,
+        toMoveStr,
+        castlingStr,
+        enPassantStr,
+        fiftyMovesStr,
+        movesStr) = s.split(" ")
+    val pieces = mutableMapOf<String, Piece>()
+    piecesStr.split("/").mapIndexed { index, row ->
+        var count = 0
+        row.forEach { ch ->
+            when {
+                ch.isDigit() -> count += ch.toString().toInt()
+                else -> pieces["${"abcdefgh"[count]}${8 - index}"] =
+                    Piece.values().find {
+                        it.symbol == ch.toString()
+                    }!!.also { count++ }
+            }
+        }
+    }
+    val toMove = Color.values().find { it.symbol == toMoveStr }!!
+    val castling = when (castlingStr) {
+        "-" -> emptyList()
+        else -> castlingStr
+            .map { ch ->
+                Piece.values().find {
+                    it.symbol == ch.toString()
+                }!!
+            }
+    }
+    return Position(
+        pieces,
+        toMove,
+        castling,
+        enPassantStr,
+        fiftyMovesStr.toInt(),
+        movesStr.toInt()
+    )
+}
+----
+
+The `component6()` function is needed as Kotlin supports only the destructuring of lists for up to five elements, but we need six (in the next line). The rest of the function deals with the parts individually, and creates the `Position` class. I omitted sanity checks for better readability.
+
+In easy cases like this, it is probably overkill to write a parser or to use a parser library. The hardest part was to read the piece positions correctly, and this was just a few lines.
+
 === Case Study: Chemical Equations as Strings
 
 In the last chapter, a hybrid DSL for chemical formulas was implemented, but the result wasn't as concise as a chemist would hope for. Wouldn't it be nice to just write `"2CH3OH -{zwsp}> (CH3)2O + H2O"` as a string, and be done with it?
@@ -141,9 +265,7 @@ fun parseMolecule(string: String): ParseResult<Molecule> =
     }
 ----
 
-First, the function looks for a possible factor in front, else it uses 1 as default. Then it tries to read as many element or group parts as possible. If some parts were found, the molecule is build, else the parser fails.
-
-This is the parser for gathering the left- and right-hand side of the equation:
+First, the function looks for a possible factor in front, else it uses 1 as default. Then it tries to read as many element or group parts as possible. If some parts were found, the molecule is build, else the parser fails. This is the parser for gathering the left- and right-hand side of the equation:
 
 [source,kotlin]
 ----
@@ -238,7 +360,7 @@ Going into the details of this specific library is beyond the scope of this book
 
 === Conclusion
 
-String-based DSLs allow to use a very idiomatic syntax. As always, there is a price to pay for this, and here it is lack of compile-time checks and the complexity and overhead of parsing.
+String-based DSLs allow to use a very idiomatic syntax. The price to pay for this is a lack of compile-time checks and the complexity and overhead involved with parsing.
 
 ==== Preferable Use Cases
 
