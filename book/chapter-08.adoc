@@ -236,7 +236,7 @@ val result = match(p) {
 
 We have to allow for some compromises to make it work in Kotlin:
 
-* We can't use `Person` in the match cases, but `Person::class` would be okay
+* We can't use `Person` in the match cases, but `Person::class` would be okay. We will assume that `Person` is a `data class`.
 * The arrow is not possible, we will use `then` instead
 * Comparisons as well as `and` and `or` can be only infix functions
 * The right sides should be only evaluated if needed, so we need to have a type of `() -> T`, which also means we need braces
@@ -290,9 +290,114 @@ fun <T> match(obj: Any, body: Matcher<T>.() -> MatchResult<T>): T =
     Matcher<T>(obj).run(body).value
 ----
 
-If you wonder what a `fun interface` is: It's an interface containing only one method, which allows to use a simplified syntax for implementing it. Using this syntax is officially called a https://kotlinlang.org/docs/fun-interfaces.html#sam-conversions[SAM Conversion].
+If you wonder what a `fun interface` is: It's an interface containing only one method, which allows to use a simplified syntax for implementing it. Basically you can replace a class body containing the method by a lambda body. Using this syntax is officially called a https://kotlinlang.org/docs/fun-interfaces.html#sam-conversions[SAM Conversion].
 
-Note that the body argument of the `match()` method requires a `MatchResult` as return value. This is a trick to force the user to call the `otherwise()` method at the end of the block. The capture mechanism is very simple, and a little unsafe because of the cast, but there is not much we can do about, and returning an `Any?` would be very inconvenient for the user.
+Note that the body argument of the `match()` method requires a `MatchResult` as return value. This is a trick in order to force users to call the `otherwise()` method at the end of the block. The capture mechanism is very simple, and somewhat unsafe because of the cast, but there is not much we can do about, and returning an `Any?` would be very inconvenient for the user.
+
+Of course, we are still missing the tests for the left-hand sides of the `then` expressions. Most of them are quite easy to write
+
+[source,kotlin]
+----
+// matches everything
+val any = Test { true }
+// matches nothing
+val none = Test { false }
+// matches null values
+val isNull = Test { it == null }
+// negates a test
+operator fun Test.not() = Test { !this@not(it) }
+// conjunction of tests
+infix fun Test.and(that: Test) = Test { this@and(it) && that(it) }
+// disjunction of tests
+infix fun Test.or(that: Test) = Test { this@or(it) || that(it) }
+// equality to a value
+fun eq(value: Any?) = Test { it == value }
+// equality to one of the values
+fun oneOf(vararg values: Any?) = Test { values.contains(it) }
+// type test
+fun isA(kClass: KClass<*>) = Test { kClass.isInstance(it) }
+// instance equality
+fun isSame(value: Any) = Test { it === value }
+----
+
+For comparing values, some type checks are needed in order to ensure that the value is comparable. That's why we need <<chapter-04.adoc#reifiedGenerics, reified generics>> in this case:
+
+[source,kotlin]
+----
+// greater than
+inline fun <reified C : Comparable<C>> gt(value: C) = Test {
+    when (it) {
+        is C -> it > value
+        else -> false
+    }
+}
+// greater or equal
+inline fun <reified C : Comparable<C>> ge(value: C) = Test {
+    when (it) {
+        is C -> it >= value
+        else -> false
+    }
+}
+// less than
+inline fun <reified C : Comparable<C>> lt(value: C) = Test {
+    when (it) {
+        is C -> it < value
+        else -> false
+    }
+}
+// less or equal
+inline fun <reified C : Comparable<C>> le(value: C) = Test {
+    when (it) {
+        is C -> it <= value
+        else -> false
+    }
+}
+----
+
+Now the only missing test is the one for decomposing a data class, which is more involved, as it relies heavily on reflection:
+
+[source,kotlin]
+----
+operator fun KClass<*>.invoke(vararg patterns: Any?) = Test {
+    fun asTest(p: Any?) = when (p) {
+        is Test -> p
+        else -> eq(p)
+    }
+    when {
+        it == null -> false
+        !this@invoke.isInstance(it) -> false
+        patterns.size != maxComponent(it) -> false
+        else -> patterns.foldIndexed(true) { i, b, p ->
+            b && asTest(p).testComponentN(it, i + 1)
+        }
+    }
+}
+
+private fun Test.testComponentN(obj: Any?, index: Int) =
+    if (index < 0 || obj == null) false
+    else obj::class.memberFunctions.find { f ->
+        f.name == "component$index" &&
+        f.parameters.size == 1 &&
+        f.parameters[0].kind == KParameter.Kind.INSTANCE
+    }
+        ?.call(obj)
+        ?.let { this@testComponentN(it) }
+        ?: false
+
+private fun maxComponent(obj: Any?) = obj?.let {
+    generateSequence(1) { index ->
+        if (obj::class.memberFunctions.any { f ->
+                f.name == "component$index" &&
+                        f.parameters.size == 1 &&
+                        f.parameters[0].kind == KParameter.Kind.INSTANCE
+            }) index + 1 else null
+    }.last() - 1
+} ?: 0
+----
+
+The `invoke()` method checks first that the value is not null and that it has the right type and number of fields. Then the tests given for the fields are applied. If no test is given, but another value, it is assumed that you want to compare the field with this value, so when you write `Person::class("Andy", "Miller", any)`, it is interpreted as `Person::class(eq("Andy"), eq("Miller"), any)`. The details of the reflection code are beyond the scope of this book.
+
+Of course, you can write many more tests, but the DSL is already functional as it is. Unfortunately, there is no way to make the code more type-safe, as we can't know which types the fields of a data class have. So I would advise to be careful when using it, and double-check if the tests make sense. Despite that, I still think this is a cool example which demonstrate the expressiveness of Kotlin.
 
 === Conclusion
 

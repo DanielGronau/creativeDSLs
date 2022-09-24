@@ -253,6 +253,7 @@ Type-level programming is a technique, where the compiler is used to perform che
 A type parameter which doesn't relate to any field, argument, etc. of its  class is called a "phantom type", and is commonly used for type-level programming.
 ****
 
+[#reifiedGenerics]
 ==== Reified Generics
 
 One great feature of Kotlin is reified generics. The JVM implements generics using "type erasure", which means that (while the compiler checks them and even adds type casts and auxiliary methods) at runtime the JVM basically "forgets" them. In Kotlin, you can access that type information under certain circumstances:

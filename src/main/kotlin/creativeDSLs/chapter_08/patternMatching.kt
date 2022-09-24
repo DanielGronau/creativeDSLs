@@ -89,17 +89,22 @@ operator fun KClass<*>.invoke(vararg patterns: Any?) = Test {
         it == null -> false
         !this@invoke.isInstance(it) -> false
         patterns.size != maxComponent(it) -> false
-        it is Iterable<*> -> it.zip(patterns) { elem, p -> if (asTest(p)(elem)) 1 else 0 }
-            .sum() == patterns.size
+        it is Iterable<*> -> it.zip(patterns) { elem, p ->
+            if (asTest(p)(elem)) 1 else 0
+        }.sum() == patterns.size
 
-        else -> patterns.foldIndexed(true) { i, b, p -> b && asTest(p).testComponentN(it, i + 1) }
+        else -> patterns.foldIndexed(true) { i, b, p ->
+            b && asTest(p).testComponentN(it, i + 1)
+        }
     }
 }
 
 private fun Test.testComponentN(obj: Any?, index: Int) =
     if (index < 0 || obj == null) false
     else obj::class.memberFunctions.find { f ->
-        f.name == "component$index" && f.parameters.size == 1 && f.parameters[0].kind == KParameter.Kind.INSTANCE
+        f.name == "component$index" &&
+                f.parameters.size == 1 &&
+                f.parameters[0].kind == KParameter.Kind.INSTANCE
     }
         ?.call(obj)
         ?.let { this@testComponentN(it) }
