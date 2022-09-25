@@ -1,12 +1,28 @@
 == Writing a DSL
 
-So, you defined the requirements, and want finally dive into designing and implementing the DSL. I totally get this excitement, but I can tell from experience that it still makes a lot of sense to add a little structure to this process. The method outlined here is very simple, with just four steps, but it addresses some problems you might run into when you start coding right away.
+So, you defined the requirements, and want finally dive into designing and implementing the DSL. I totally get this excitement, but I can tell from experience that it still makes a lot of sense to add a little structure to this process. The workflow outlined here is very simple, with just four steps, but it addresses some problems you might run into when you start coding right away.
+
+[ditaa,"writing-a-dsl"]
+.DSL Writing Workflow
+....
+
+         +-----------------+
+         |  clarification  |
+         v                 |
+   +--------------+  +-------------+  +---------------+  +----------------+
+   | Ideal Syntax |->| Prototyping |->| Formalization |->| Implementation |
+   +--------------+  +-------------+  +---------------+  +----------------+
+                           ^                                     |
+                           |    chosen approach isn't viable     |
+                           +-------------------------------------+
+
+....
 
 === Dream up the Ideal Syntax
 
-This might sound weird, especially if you come from Java, where your options are usually limited. And after the requirement analysis, we should have already a pretty clear picture of how the syntax should look like, right? Yes, in some cases, the ideal syntax is pretty much given, e.g. if there is already an established standard for it. But in cases where you have some creative freedom, I would recommend to give this step a try.
+This might sound weird at first, especially if you come from Java, where your options are usually limited. And after the requirement analysis, we should have already a pretty clear picture of how the syntax should look like, right? Yes, in some cases, the ideal syntax is pretty much set, e.g. if there is already an established standard for it. But more often than that you have some creative freedom, and then this step becomes really useful.
 
-Thinking about language features and implementation details limits your creativity. Try to put away your programming glasses. If possible, invite domain experts. Get some brainstorming vibes going. The goal is to sketch how an ideal DSL syntax could look like, without any regard about how to get there. If you can't agree on one syntax, it might be okay to have two candidates, but probably not more.
+The problem is that thinking about the DSL in terms of language features and implementation details limits your creativity. Try to put your programming glasses away for a moment. If possible, invite domain experts. Get into brainstorming mood. The goal is to sketch how an ideal DSL syntax could look like, without any regard about how to get there. If you can't agree on one syntax, it might be okay to have two candidates, but probably not more.
 
 Usually it isn't necessary to specify a formal grammar. Instead, write lots of examples, comment these, and make sure that there are no inconsistencies or gaps. Don't forget to specify how the output for the respective example should look like, this is crucial information.
 
@@ -14,9 +30,11 @@ Again, if you have the chance, get feedback from domain experts or future users.
 
 === Prototyping
 
-Now finally the time for coding has come. Usually you have to experiment a lot to get the syntax right, and it's not always clear which solutions will work for the whole problem domain. That's why I would suggest to start with a prototype: If you have multiple similar features, you implement only one of them (a.k.a. "Spike implementation"), and you can skip extensive testing or sanity checks. Sometimes you don't even need to generate the expected output, but write just an empty shell to show the syntax.
+Now finally the time for coding has come. Usually you have to experiment a lot to get the syntax right, and it's not always clear which solutions will work for the whole problem domain. That's why I would suggest to start coding a prototype: If you have multiple similar features, you implement only one of them (a.k.a. "Spike implementation"), and you can skip extensive testing or sanity checks. Sometimes you don't even need to generate the expected output, but write just an empty shell to verify that the chosen syntax is viable.
 
-You should check regularly whether the syntax of the prototype is acceptable, and again feedback from experts or potential users is invaluable. One advantage of the prototyping approach is that you can easily present different versions.
+You should check regularly whether the syntax of the prototype is acceptable. Again, feedback from experts or potential users is invaluable. One advantage of the prototyping approach is that you can easily present different versions.
+
+During prototyping, you might find out that you missed some details when specifying the ideal syntax. In such cases, you should fix the specification instead of just "muddling through". The ideal syntax description is thought as guidance for both the prototyping and implementation phase, and as a benchmark for the quality of the real syntax of the DSL, so it is too important to be left incomplete.
 
 === Formalization and Documentation
 
@@ -24,7 +42,7 @@ Once a prototype has shown how a realistic syntax could look like, you should fo
 
 WARNING: This step shouldn't be skipped: A prototype is no documentation, the final implementation needs exact specifications, and later users require a documentation as well. Doing it now makes the most sense.
 
-One aspect deserving special attention is completeness. You should ensure that the DSL can actually express all "allowed" configurations. Sometimes rare cases are simply overlooked, or some features are not orthogonal, even though they should. An example for missing orthogonality would be a syntax for describing animals, which doesn't allow you to choose both "mammal" and "lays eggs", even though this combination of properties actually exists.
+One aspect deserving special attention is completeness. You should ensure that the DSL can actually express all "allowed" configurations. Sometimes, rare cases are simply overlooked, or some features are not orthogonal, even though they should. An example for missing orthogonality would be a syntax for describing animals, which doesn't allow you to choose both "mammal" and "lays eggs", even though this combination of properties actually exists.
 
 === Implementation
 
@@ -58,6 +76,8 @@ A point where you might need to compromise is following code conventions, e.g. r
 Many people don't like to write documentations, but it is important. A DSL is per definition an own language, and people might need a helping hand to use it correctly and effectively. Don't presume too much prior knowledge of the DSL, and don't be too lazy to show a few good examples, or to visualize core concepts. To be frank, if you find it very difficult to write a documentation for your own DSL, it might be an indication that the DSL itself has some improvement potential.
 
 Often, you have to deviate a bit from the original specification, or you added some new details. Please don't forget to update the documentation.
+
+One of the best things you can do is to write a little example project using the DSL. Listing all the DSL features is well and good, but demonstrating the intended workflow and showing the interplay of the DSL elements gives the user a much better understanding of how to apply the DSL to their problem domain.
 
 
 
