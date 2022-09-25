@@ -2,41 +2,7 @@ package creativeDSLs.chapter_09.manual
 
 import java.util.*
 
-interface Part
-
-data class Element(val symbol: String, val count: Int) : Part {
-    constructor(symbol: String) : this(symbol, 1)
-
-    override fun toString() = when (count) {
-        1 -> symbol
-        else -> symbol + count
-    }
-}
-
-data class Group(val parts: List<Part>, val count: Int) : Part {
-    constructor(vararg parts: Part) : this(parts.asList(), 1)
-
-    override fun toString() = when (count) {
-        1 -> parts.joinToString("", "(", ")")
-        else -> parts.joinToString("", "(", ")") + count
-    }
-}
-
-data class Molecule(val factor: Int, val parts: List<Part>) {
-    constructor(vararg parts: Part) : this(1, parts.asList())
-    constructor(factor: Int, vararg parts: Part) : this(factor, parts.asList())
-
-    override fun toString() = when (factor) {
-        1 -> parts.joinToString("")
-        else -> "$factor${parts.joinToString("")}"
-    }
-}
-
-data class Equation(val leftSide: List<Molecule>, val rightSide: List<Molecule>, val reversible: Boolean = false) {
-    override fun toString() = leftSide.joinToString(" + ") +
-            (if (reversible) " <-> " else " -> ") +
-            rightSide.joinToString(" + ")
-}
+import creativeDSLs.chapter_08.*
 
 private val elements = setOf(
     "H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si",
@@ -50,7 +16,7 @@ private val elements = setOf(
     "Sg", "Bh", "Hs", "Mt", "Ds", "Rg", "Cn", "Nh", "Fl", "Mc", "Lv", "Ts", "Og"
 )
 
-fun equation(string: String) = parseEquation(string.replace(" ", ""))
+fun equation(string: String): Optional<Equation> = parseEquation(string.replace(" ", ""))
     .filter { it.second.isEmpty() }
     .map { it.first }
 
@@ -82,7 +48,7 @@ fun parseSide(string: String): ParseResult<List<Molecule>> =
 fun parseMolecule(string: String): ParseResult<Molecule> =
     parseNum(string).or {
         Optional.of(1 to string)
-    }.flatMap { (factor, s) ->
+    }.flatMap { (coefficient, s) ->
         Optional.of(
             generateSequence(parsePart(s).orElse(null)) { (_, s1) ->
                 parsePart(s1).orElse(null)
@@ -90,7 +56,7 @@ fun parseMolecule(string: String): ParseResult<Molecule> =
         ).filter {
             it.isNotEmpty()
         }.map { parts ->
-            Molecule(factor, parts.map { it.first }) to parts.last().second
+            Molecule(coefficient, parts.map { it.first }) to parts.last().second
         }
     }
 
@@ -103,8 +69,8 @@ fun parseElement(string: String): ParseResult<Element> =
     findElement(string, 2).or {
         findElement(string, 1)
     }.map { (symbol, s) ->
-        parseNum(s).map { (count, s1) ->
-            Element(symbol, count) to s1
+        parseNum(s).map { (subscript, s1) ->
+            Element(symbol, subscript) to s1
         }.orElseGet {
             Element(symbol, 1) to s
         }
@@ -131,8 +97,8 @@ fun parseGroup(string: String): ParseResult<Group> =
             parts.map { it.first } to s3
         }
     }.map { (parts, s) ->
-        parseNum(s).map { (count, s1) ->
-            Group(parts, count) to s1
+        parseNum(s).map { (subscript, s1) ->
+            Group(parts, subscript) to s1
         }.orElseGet {
             Group(parts, 1) to s
         }

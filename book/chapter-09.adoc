@@ -8,9 +8,11 @@ WARNING: Kotlin supports - like many languages - regular expressions, which can 
 
 === Case Study: Forsyth–Edwards Notation
 
-Before we dive into complicated problems requiring parsers, we will start with an easy example, where we need only a few string functions. If you don't play chess, you probably never heard of the https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation[Forsyth–Edwards Notation] (or short FEN). It is basically a snapshot of a certain chess position: The position of the pieces, who's turn it is, castling rights, some information for the en-passant and 50-move rule, and the number of moves played.
+Before we dive into complicated problems requiring parsers, we will start with an easy example, where we need only a few string functions. If you don't play chess, you probably never heard of the https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation[Forsyth–Edwards Notation] (or short FEN). It is basically a snapshot of an ongoing chess game: The position of the pieces, who's turn it is, castling rights, some information for the en-passant and 50-move rule, and the number of moves played.
 
-Rows are separated by `/` and pieces have the usual names used in chess notation (like "Q" for a queen), plus "P" for pawn. Black pieces are notated in lower-case and white pieces in upper-case. To keep the string short, empty squares are written with a kind of run-length encoding, e.g. 3 empty fields are represented by a 3. A FEN looks like this: `rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2`. If you put the rows one below the other, and expand the numbers to empty fields, you can "see" the board position:
+Rows are separated by `/` and pieces have the usual names used in chess notation (like "Q" for a queen), plus "P" for pawn. Black pieces are notated in lower-case and white pieces in upper-case. To keep the string short, empty squares are written with a kind of run-length encoding, e.g. 3 empty fields are represented by a 3. The castling rights are given by "k" for king-side and "q" for queen-side, again upper-case for white and lower-case for black. If nobody can castle, a `-` is written instead. The en-passant field contains either a square like `b3` or again a `-`.
+
+A FEN looks like this: `rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2`. If you put the rows one below the other, and expand the numbers to empty fields, you can "see" the board position:
 
 [source,text]
 ----
@@ -73,11 +75,11 @@ data class Position(
 }
 ----
 
-There is already a function for generating a FEN - this is not required, but it makes testing much easier.
+The class contains already a function for generating a FEN - this is not required, but it makes testing much easier.
 
-.Roundtrip Tests
+.Round-trip Tests
 ****
-When you have code that transforms forth and back between two different formats, it is convenient to write roundtrip tests: You're providing test data for the "easier" format, transform it to the other one and back, and compare it with the original. Comparing data in the same format is easier and safer than comparing different formats, sometimes even a simple string comparison is sufficient.
+When you have code that transforms forth and back between two different formats, it is convenient to write round-trip tests: You're providing test data for the "easier" format, transform it to the other one and back, and compare it with the original. Comparing data in the same format is easier and safer than comparing different formats, sometimes even a simple string comparison is sufficient.
 ****
 
 Now we can write the DSL function for parsing a FEN:
@@ -128,7 +130,7 @@ fun readFEN(s: String): Position {
 
 The `component6()` function is needed as Kotlin supports only the destructuring of lists for up to five elements, but we need six (in the next line). The rest of the function deals with the parts individually, and creates the `Position` class. I omitted sanity checks for better readability.
 
-In easy cases like this, it is probably overkill to write a parser or to use a parser library. The hardest part was to read the piece positions correctly, and this was just a few lines.
+In easy cases like this, it is probably overkill to write a parser or to use a parser library. The hardest part was to read the piece positions correctly, and this took just a few lines.
 
 === Case Study: Chemical Equations as Strings
 
@@ -187,7 +189,7 @@ fun parseArrow(string: String): ParseResult<String> =
 
 Reading an element is not difficult, the only pitfall is that two-letter symbols must be checked before the one-letter symbols, else the function would just find `H` in a string starting with `He`.
 
-WARNING: It is a common problem that two parsers could match for the same input. In most cases, the rule reading the longer prefix is the one you want, so you have to make sure to evaluate it first.
+WARNING: It is a common problem that two parsers could match for the same input. In most cases, the parser reading the longer prefix is the one you want to execute, so you have to make sure to evaluate it first.
 
 [source,kotlin]
 ----
@@ -195,8 +197,8 @@ fun parseElement(string: String): ParseResult<Element> =
     findElement(string, 2).or {
         findElement(string, 1)
     }.map { (symbol, s) ->
-        parseNum(s).map { (count, s1) ->
-            Element(symbol, count) to s1
+        parseNum(s).map { (subscript, s1) ->
+            Element(symbol, subscript) to s1
         }.orElseGet {
             Element(symbol, 1) to s
         }
@@ -212,7 +214,7 @@ fun findElement(string: String, charCount: Int): ParseResult<String> =
     }
 ----
 
-First, the `findElement()` function tries to find elements, first with two, and then - if this was unsuccessful - with one character. Prolonging the string with some characters (here `#`) avoids a possible `IndexOutOfBoundException`. The `map` block in `parseElement()` attempts to find a trailing number. If the number is found, it is used to construct the element, else the default count of 1 is used.
+First, the `findElement()` function tries to find elements, first with two, and then - if this was unsuccessful - with one character. Prolonging the string with some characters (here `#`) avoids a possible `IndexOutOfBoundException`. The `map` block in `parseElement()` attempts to find a trailing number. If the number is found, it is used to construct the element, else the default subscript of 1 is used.
 
 Now the groups can be tackled:
 
@@ -235,15 +237,15 @@ fun parseGroup(string: String): ParseResult<Group> =
             parts.map { it.first } to s3
         }
     }.map { (parts, s) ->
-        parseNum(s).map { (count, s1) ->
-            Group(parts, count) to s1
+        parseNum(s).map { (subscript, s1) ->
+            Group(parts, subscript) to s1
         }.orElseGet {
             Group(parts, 1) to s
         }
     }
 ----
 
-The `parsePart()` method reads either an element or a group. The chain is started with an empty, but typed `Optional`, which is a trick to avoid casts for the more specialized return types of `parseElement()` and `parseGroup()`. The `parseGroup()` looks first for an opening parenthesis. Then it tries to read as many parts as possible. The `filter()` method ensures that an empty group `()` is not accepted. After this, it looks for a closing parenthesis. The final `map()` call handles an optional trailing number, just like in `parseElement()`.
+The `parsePart()` method reads either an element or a group. The chain starts with an empty, but typed `Optional`, which is a trick to avoid casts for the more specialized return types of `parseElement()` and `parseGroup()`. The `parseGroup()` looks first for an opening parenthesis. Then it tries to read as many parts as possible. The `filter()` method ensures that an empty group `()` is not accepted. After this, it looks for a closing parenthesis. The final `map()` call handles an optional subscript, just like in `parseElement()`.
 
 Now everything is there to assemble a molecule:
 
@@ -252,7 +254,7 @@ Now everything is there to assemble a molecule:
 fun parseMolecule(string: String): ParseResult<Molecule> =
     parseNum(string).or {
         Optional.of(1 to string)
-    }.flatMap { (factor, s) ->
+    }.flatMap { (coefficient, s) ->
         Optional.of(
             generateSequence(parsePart(s).orElse(null)) { (_, s1) ->
                 parsePart(s1).orElse(null)
@@ -260,12 +262,15 @@ fun parseMolecule(string: String): ParseResult<Molecule> =
         ).filter {
             it.isNotEmpty()
         }.map { parts ->
-            Molecule(factor, parts.map { it.first }) to parts.last().second
+            Molecule(coefficient, parts.map { it.first }) to
+                parts.last().second
         }
     }
 ----
 
-First, the function looks for a possible factor in front, else it uses 1 as default. Then it tries to read as many element or group parts as possible. If some parts were found, the molecule is build, else the parser fails. This is the parser for gathering the left- and right-hand side of the equation:
+First, the function looks for a possible coefficient in front, else it uses 1 as default. Then it tries to read as many element or group parts as possible. If some parts were found, the molecule is build, else the parser fails.
+
+This is the parser for gathering the left- and right-hand side of the equation:
 
 [source,kotlin]
 ----
@@ -300,7 +305,7 @@ fun parseEquation(string: String): ParseResult<Equation> {
 }
 ----
 
-It just reads the left-hand side, the arrow symbol and the right-hand side, and combines them. Now the only missing part is a `equation()` function, which is the only part of our DSL which will be exposed to the user:
+It just reads the left-hand side, the arrow symbol, the right-hand side, and combines them. Now the only missing part is a `equation()` function, which is the only part of our DSL which will be exposed to the user:
 
 [source,kotlin]
 ----

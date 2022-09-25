@@ -17,34 +17,32 @@ Technically, writing a quasi-lingual DSL is not very different from other Hybrid
 
 === Case Study: Chemical Equations
 
-Writing a DSL for chemical equations is no easy task, because the notation is very concise and can't be imitated easily using Kotlin syntax. For our case study, we won't cover the full notation, e.g. we won't support writing ions, just ordinary molecules.
+Writing a DSL for chemical equations is no easy task, because the notation is very concise and can't be imitated easily using Kotlin syntax. For our case study, we won't cover the full notation, e.g. we won't support writing ions or bonds.
 
 A simple chemical equation looks like this: `3Ba(OH)2 + 2H3PO4 -{zwsp}> 6H2O + Ba3(PO4)2`. To express such an equation, we use the following code:
 
 [source,kotlin]
 ----
-data class Element(val symbol: String, val count: Int) : Part {
-    constructor(symbol: String) : this(symbol, 1)
-    override fun toString() = when (count) {
+sealed interface Part
+
+data class Element(val symbol: String, val subscript: Int) : Part {
+    override fun toString() = when (subscript) {
         1 -> symbol
-        else -> symbol + count
+        else -> symbol + subscript
     }
 }
 
-data class Group(val parts: List<Part>, val count: Int) : Part {
-    constructor(vararg parts: Part) : this(parts.asList(), 1)
-    override fun toString() = when (count) {
+data class Group(val parts: List<Part>, val subscript: Int) : Part {
+    override fun toString() = when (subscript) {
         1 -> parts.joinToString("", "(", ")")
-        else -> parts.joinToString("", "(", ")") + count
+        else -> parts.joinToString("", "(", ")") + subscript
     }
 }
 
-data class Molecule(val factor: Int, val parts: List<Part>) {
-    constructor(vararg parts: Part) : this(1, parts.asList())
-    constructor(factor: Int, vararg parts: Part) : this(factor, parts.asList())
-    override fun toString() = when (factor) {
+data class Molecule(val coefficient: Int, val parts: List<Part>) {
+    override fun toString() = when (coefficient) {
         1 -> parts.joinToString("")
-        else -> "$factor${parts.joinToString("")}"
+        else -> "$coefficient${parts.joinToString("")}"
     }
 }
 
@@ -55,11 +53,50 @@ data class Equation(val leftSide: List<Molecule>, val rightSide: List<Molecule>,
 }
 ----
 
-An `Element` contains just the chemical symbol, like `"H"` (hydrogen) or `"Ba"` (barium), and optionally a count index. A feature of the chemical notation is that you can also define groups like `"(OH)2"` in a molecule, which is why we need the `Group` class as well.
+An `Element` contains a chemical symbol, like `"H"` (hydrogen) or `"Ba"` (barium), and optionally a subscript, which is the small number counting the number of atoms. A feature of the chemical notation is that you can also define groups like `"(OH)2"` in a molecule, which is why we need the `Group` class as well. A group can contain not only elements, but also other groups.
 
-A `Molecule` is a collection of elements or groups, and can also have a factor in front. An equation consists of two sides and either an arrow `-{zwsp}>` or in case of reversible reactions a double arrow `<{zwsp}-{zwsp}>` in the middle, while every side is either a single molecule or a sum of molecules.
+A `Molecule` is a collection of elements or groups, and can also have a coefficient in front. An equation consists of two sides and either an arrow `-{zwsp}>` or - in case of reversible reactions - a double arrow `<{zwsp}-{zwsp}>` in the middle. Both sides consist either of a single molecule or a "sum" of molecules.
 
-The code contains secondary constructors for more convenient initialization (note that data classes don't allow varargs in their primary constructor), and overwrites the `toString()` methods in order to give the output in chemical notation. The equation mentioned above for making barium phosphate could be written like this:
+The code and overwrites the `toString()` methods in order to give the output in chemical notation. Note that lists were used instead of varargs, because data classes don't allow varargs in their primary constructor.
+
+This chart summarizes the structure of our model classes:
+
+[ditaa,"chemicalEquation"]
+.Model for Chemical Equations
+....
+
+         +--------------+
+         |   Chemical   |
+         |              |
+         |   Equation   |
+         +---+------+---+
+             |1     |1
+        LHS  |      |  RHS
+             vn     vn
+         +--------------+
+         |   Molecule   |
+         |              |
+         | e.g. 2CH3OH  |
+         +------+-------+
+                │1
+                |
+                vn
+         +--------------+
+         |   Molecular  |
+         |              +<--+1
+         |     Part     |   |
+         +-+----------+-+   |
+           |          |     |
+           |is-a  is-a|     |n
+    +------+--+    +--+-----+-+
+    | Element |    |  Group   |
+    |         |    |          |
+    | e.g. H2 |    |e.g. (OH)2|
+    +---------+    +----------+
+
+....
+
+The equation mentioned above for making barium phosphate could be written like this:
 
 [source,kotlin]
 ----
@@ -72,10 +109,10 @@ val H2 = Element("H", 2)
 val H3 = Element("H", 3)
 val P = Element("P")
 
-val bariumHydroxide = Molecule(3, Ba, Group(2, O, H))
-val phosphoricAcid = Molecule(2, H3, P, O4)
-val water = Molecule(6, H2, O)
-val bariumPhosphate = Molecule(Ba3, Group(2, P, O4))
+val bariumHydroxide = Molecule(3, listOf(Ba, Group(listOf(O, H), 2)))
+val phosphoricAcid = Molecule(2, listOf(H3, P, O4))
+val water = Molecule(6, listOf(H2, O))
+val bariumPhosphate = Molecule(1, listOf(Ba3, Group(listOf(P, O4), 2)))
 
 val equation = Equation(
     listOf(bariumHydroxide, phosphoricAcid),
@@ -90,58 +127,66 @@ This code works, but a little improvement wouldn't be the worst idea. Let's writ
 
 [source,kotlin]
 ----
-val H = Element("H")
-val He = Element("He")
-val Li = Element("Li")
+val H = Element("H", 1)
+val He = Element("He", 1)
+val Li = Element("Li", 1)
 // etc.
 ----
 
-Next, we need a convenient way to add the multiplier to an element or a group. For this, we could use the invoke-operator `()` or the index access operator `[]`. As we will need parentheses in other places as well, the index access operator seems to be the better choice. We can now write `H[2]` to denote `H2`:
+Next, we need a convenient way to add the subscript to an element or a group. For this, we could use the invoke-operator `()` or the index access operator `[]`. As we will need parentheses in other places as well, the index access operator seems to be the better choice. We can now write `H[2]` to denote `H2`:
 
 [source,kotlin]
 ----
-operator fun Element.get(count: Int) =
-    apply { require(this.count == 1 && count > 1) }
-        .copy(count = count)
-operator fun Group.get(count: Int) =
-    apply { require(this.count == 1 && count > 1) }
-        .copy(count = count)
+operator fun Element.get(subscript: Int) =
+    apply { require(this.subscript == 1 && subscript > 1) }
+        .copy(subscript = subscript)
+operator fun Group.get(subscript: Int) =
+    apply { require(this.subscript == 1 && subscript > 1) }
+        .copy(subscript = subscript)
 ----
 
 The code for both functions contains a sanity check, which won't allow nonsensical calls like `H[-5]` or `H[2][7]`.
 
-The next task is to assemble molecules from elemental or group parts. We can use the minus operator `-` to represent a chemical bond, e.g. a water molecule could be written as `(H[2]-O)`. We also need to assemble groups, and from the few remaining operators the range operator `..` seems like a good fit, so we can write e.g. a carboxyl group as `(C..O..O..H)`:
+The next task is to assemble molecules from either elements or groups. We can use the minus operator `-` to represent a chemical bond, e.g. a water molecule could be written as `(H[2]-O)`. We also need to assemble groups, and from the few remaining operators the range `..` seems like a good fit, so we can write e.g. a carboxyl group as `(C..O..O..H)`:
 
 [source,kotlin]
 ----
-operator fun Part.minus(that: Part) = Molecule(this, that)
-operator fun Molecule.minus(that: Part) = copy(parts = parts + that)
-operator fun Element.rangeTo(that: Part) = Group(this, that)
-operator fun Group.rangeTo(that: Part) = copy(parts = parts + that)
+operator fun Part.minus(that: Part) =
+    Molecule(1,listOf(this, that))
+operator fun Molecule.minus(that: Part) =
+    copy(parts = parts + that)
+operator fun Element.rangeTo(that: Part) =
+    Group(listOf(this, that),1)
+operator fun Group.rangeTo(that: Part) =
+    copy(parts = parts + that)
 ----
 
 Generally, we need to put molecules and groups in parentheses because of the precedence rules.
 
-A molecule can have an optional factor in front. Also, the same operation should "promote" an element or group to a molecule, allowing e.g. to write `2*O[2]` resulting in an oxygen molecule with a factor of two. Again, we need sanity checks, rendering calls like `-2*H[2]` or `3*(2*O[2])` invalid:
+A molecule can have an optional coefficient in front. Also, the same operation should "promote" an element or group to a molecule, allowing e.g. to write `2*O[2]` resulting in an oxygen molecule with a coefficient of two. Again, we need sanity checks, rendering calls like `-2*H[2]` or `3*(2*O[2])` invalid:
 
 [source,kotlin]
 ----
 operator fun Int.times(that: Molecule) =
-    that.apply { require(factor == 1 && this@times > 1) }
+    that.apply { require(coefficient == 1 && this@times > 1) }
         .copy(factor = this)
 operator fun Int.times(that: Part) =
-    Molecule(this, that)
-        .apply { require(factor > 1) }
+    Molecule(this, listOf(that))
+        .apply { require(coefficient > 1) }
 ----
 
 Next, we need a way to group the left and right side of an equation to a list of molecules, and the obvious choice for an operator is `+`. Again, we "promote" molecule parts to full molecules when necessary. This time the precedence rules for `*` and `+` play nicely along with the intended use, so we won't need parentheses on this level.
 
 [source,kotlin]
 ----
-operator fun Molecule.plus(that: Molecule) = listOf(this, that)
-operator fun Molecule.plus(that: Part) = listOf(this, Molecule(that))
-operator fun Part.plus(that: Molecule) = listOf(Molecule(this), that)
-operator fun List<Molecule>.plus(that: Part) = this + Molecule( that)
+operator fun Molecule.plus(that: Molecule) =
+    listOf(this, that)
+operator fun Molecule.plus(that: Part) =
+    listOf(this, Molecule(1,listOf(that)))
+operator fun Part.plus(that: Molecule) =
+    listOf(Molecule(1,listOf(this)), that)
+operator fun List<Molecule>.plus(that: Part) =
+    this + Molecule( 1, listOf( that))
 ----
 
 In case you wonder why there is no `List<Molecule>.plus(that: Molecule)` function: This would be just a special case of adding elements to a list, which is already defined in the standard library.
@@ -150,30 +195,32 @@ The last part is collecting everything in an equation. This is not complicated, 
 
 [source,kotlin]
 ----
-infix fun List<Molecule>.reactsTo(that: List<Molecule>) = Equation(this, that, false)
-infix fun Molecule.reactsTo(that: List<Molecule>) = Equation(listOf(this), that, false)
-infix fun List<Molecule>.reactsTo(that: Molecule) = Equation(this, listOf(that), false)
-infix fun Molecule.reactsTo(that: Molecule) = Equation(listOf(this), listOf(that), false)
-infix fun Part.reactsTo(that: List<Molecule>) = Equation(listOf(Molecule(this)), that, false)
-infix fun List<Molecule>.reactsTo(that: Part) = Equation(this, listOf(Molecule(that)), false)
-infix fun Part.reactsTo(that: Part) = Equation(listOf(Molecule(this)), listOf(Molecule(that)), false)
-infix fun Part.reactsTo(that: Molecule) = Equation(listOf(Molecule(this)), listOf(that), false)
-infix fun Molecule.reactsTo(that: Part) = Equation(listOf(this), listOf(Molecule(that)), false)
+infix fun List<Molecule>.reactsTo(that: List<Molecule>) =
+    Equation(this, that, false)
+infix fun Molecule.reactsTo(that: List<Molecule>) =
+    Equation(listOf(this), that, false)
+infix fun List<Molecule>.reactsTo(that: Molecule) =
+    Equation(this, listOf(that), false)
+infix fun Molecule.reactsTo(that: Molecule) =
+    Equation(listOf(this), listOf(that), false)
+infix fun Part.reactsTo(that: List<Molecule>) =
+    Equation(listOf(Molecule(1,listOf(this))), that, false)
+infix fun List<Molecule>.reactsTo(that: Part) =
+    Equation(this, listOf(Molecule(1, listOf(that))), false)
+infix fun Part.reactsTo(that: Part) =
+    Equation(listOf(Molecule(1,listOf(this))), listOf(Molecule(1,listOf(that))), false)
+infix fun Part.reactsTo(that: Molecule) =
+    Equation(listOf(Molecule(1,listOf(this))), listOf(that), false)
+infix fun Molecule.reactsTo(that: Part) =
+    Equation(listOf(this), listOf(Molecule(1,listOf(that))), false)
 
-infix fun List<Molecule>.reversibleTo(that: List<Molecule>) = Equation(this, that, false)
-infix fun Molecule.reversibleTo(that: List<Molecule>) = Equation(listOf(this), that, false)
-infix fun List<Molecule>.reversibleTo(that: Molecule) = Equation(this, listOf(that), false)
-infix fun Molecule.reversibleTo(that: Molecule) = Equation(listOf(this), listOf(that), false)
-infix fun Part.reversibleTo(that: List<Molecule>) = Equation(listOf(Molecule(1,this)), that, false)
-infix fun List<Molecule>.reversibleTo(that: Part) = Equation(this, listOf(Molecule(1,that)), false)
-infix fun Part.reversibleTo(that: Part) = Equation(listOf(Molecule(this)), listOf(Molecule(that)), false)
-infix fun Part.reversibleTo(that: Molecule) = Equation(listOf(Molecule(this)), listOf(that), false)
-infix fun Molecule.reversibleTo(that: Part) = Equation(listOf(this), listOf(Molecule(that)), false)
+// same functions for reversibleTo,
+// just with an Equation having reversible == true
 ----
 
 Unfortunately, we have to resort to infix functions, as there seems to be no suitable operator available. A common trick is to use the backtick syntax to mimic an operator, but `{backtick}-{zwsp}>{backtick}` and `{backtick}<{zwsp}-{zwsp}>{backtick}` won't work: `<` and `>` are two of the very few characters that are not allowed in backtick syntax on the JVM.
 
-So, how does our DSL look like in action? Here are a few examples:
+So, how does our DSL look in action? Here are a few examples:
 
 [source,kotlin]
 ----
@@ -191,20 +238,20 @@ val sulfuricAcidAndHydrogenIodide =
     (H[2]-S-O[4]) + 8*(H-I) reversibleTo (H[2]-S) + 4*I[2] + 4*(H[2]-O)
 ----
 
-There is one optional improvement, which is more a matter of taste: We could add some extension properties for low counts of elements and groups, which would allow to write e.g. `N._2` instead of `N[2]`:
+There is one optional improvement, which is more a matter of taste: We could add some extension properties for low subscripts of elements and groups, which would allow to write e.g. `N._2` instead of `N[2]`:
 
 [source,kotlin]
 ----
 val Element._2
-    get() = this.apply { require(count == 1) }.copy(count = 2)
+    get() = this.apply { require(subscript == 1) }.copy(subscript = 2)
 val Element._3
-    get() = this.apply { require(count == 1) }.copy(count = 3)
+    get() = this.apply { require(subscript == 1) }.copy(subscript = 3)
 // etc.
 
 val Group._2
-    get() = this.apply { require(count == 1) }.copy(count = 2)
+    get() = this.apply { require(subscript == 1) }.copy(subscript = 2)
 val Group._3
-    get() = this.apply { require(count == 1) }.copy(count = 3)
+    get() = this.apply { require(subscript == 1) }.copy(subscript = 3)
 // etc.
 
 // new syntax
@@ -244,7 +291,7 @@ We have to allow for some compromises to make it work in Kotlin:
 * `else` is a keyword, so we will use `otherwise` instead. Further, we can't know if conditions are exhaustive, so the `otherwise` branch is mandatory
 * The whole construct has only limited type safety, as we can't know which member types a data class has.
 
-That's a long list, let's see how our example looks now:
+That's a rather long list, let's see how our example looks now:
 
 [source,kotlin]
 ----
@@ -292,9 +339,9 @@ fun <T> match(obj: Any, body: Matcher<T>.() -> MatchResult<T>): T =
 
 If you wonder what a `fun interface` is: It's an interface containing only one method, which allows to use a simplified syntax for implementing it. Basically you can replace a class body containing the method by a lambda body. Using this syntax is officially called a https://kotlinlang.org/docs/fun-interfaces.html#sam-conversions[SAM Conversion].
 
-Note that the body argument of the `match()` method requires a `MatchResult` as return value. This is a trick in order to force users to call the `otherwise()` method at the end of the block. The capture mechanism is very simple, and somewhat unsafe because of the cast, but there is not much we can do about, and returning an `Any?` would be very inconvenient for the user.
+Note that the `body` parameter of the `match()` method requires a `MatchResult` as return value. This is a trick to force users to call the `otherwise()` method at the end of the block. The capture mechanism is very simple, and somewhat unsafe because of the cast, but there is not much we can do about, and returning an `Any?` would be very inconvenient for the user.
 
-Of course, we are still missing the tests for the left-hand sides of the `then` expressions. Most of them are quite easy to write
+Of course, there are still tests missing for the left-hand sides of the `then` expressions. Most of them are quite easy to write:
 
 [source,kotlin]
 ----
@@ -395,7 +442,7 @@ private fun maxComponent(obj: Any?) = obj?.let {
 } ?: 0
 ----
 
-The `invoke()` method checks first that the value is not null and that it has the right type and number of fields. Then the tests given for the fields are applied. If no test is given, but another value, it is assumed that you want to compare the field with this value, so when you write `Person::class("Andy", "Miller", any)`, it is interpreted as `Person::class(eq("Andy"), eq("Miller"), any)`. The details of the reflection code are beyond the scope of this book.
+The `invoke()` method checks first that the value is not null and that it has the right type and number of fields. Then the tests given for the fields are applied. If no test is given, but another value, it is assumed that you want to compare the field with this value, so when you write `Person::class("Andy", "Miller", any)`, it is interpreted as `Person::class(eq("Andy"), eq("Miller"), any)`. I won't get into the details of the reflection code, but would refer to TODO.
 
 Of course, you can write many more tests, but the DSL is already functional as it is. Unfortunately, there is no way to make the code more type-safe, as we can't know which types the fields of a data class have. So I would advise to be careful when using it, and double-check if the tests make sense. Despite that, I still think this is a cool example which demonstrate the expressiveness of Kotlin.
 

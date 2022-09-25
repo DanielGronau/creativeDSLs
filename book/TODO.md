@@ -20,12 +20,13 @@ Chapters
 12. Dissecting common DSLs (kotest, gradle .kts, Kotlin Poet, better-parse)
 
 TODO:
-- pattern matcher, chapter 8
 - chapter 12
 - make the index
 - other kinds of DSLs / techniques? E.g. Constructors in kotest?
-- Diagrams: Writing a DSL, Code Generation?
+- More Diagrams: Code Generation?
 - Reorganize Requirements analysis?
+- rename `Test` in pattern matcher to `Pattern` or `Check`?
+- find a good Kotlin reflection book to refer to
 
 ## Research
 

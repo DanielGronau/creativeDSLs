@@ -9,41 +9,7 @@ import com.github.h0tk3y.betterParse.lexer.regexToken
 import com.github.h0tk3y.betterParse.lexer.token
 import com.github.h0tk3y.betterParse.parser.Parser
 
-interface Part
-
-data class Element(val symbol: String, val count: Int) : Part {
-    constructor(symbol: String) : this(symbol, 1)
-
-    override fun toString() = when (count) {
-        1 -> symbol
-        else -> symbol + count
-    }
-}
-
-data class Group(val parts: List<Part>, val count: Int) : Part {
-    constructor(vararg parts: Part) : this(parts.asList(), 1)
-
-    override fun toString() = when (count) {
-        1 -> parts.joinToString("", "(", ")")
-        else -> parts.joinToString("", "(", ")") + count
-    }
-}
-
-data class Molecule(val factor: Int, val parts: List<Part>) {
-    constructor(vararg parts: Part) : this(1, parts.asList())
-    constructor(factor: Int, vararg parts: Part) : this(factor, parts.asList())
-
-    override fun toString() = when (factor) {
-        1 -> parts.joinToString("")
-        else -> "$factor${parts.joinToString("")}"
-    }
-}
-
-data class Equation(val leftSide: List<Molecule>, val rightSide: List<Molecule>, val reversible: Boolean = false) {
-    override fun toString() = leftSide.joinToString(" + ") +
-            (if (reversible) " <-> " else " -> ") +
-            rightSide.joinToString(" + ")
-}
+import creativeDSLs.chapter_08.*
 
 private val elements = setOf(
     "H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si",
