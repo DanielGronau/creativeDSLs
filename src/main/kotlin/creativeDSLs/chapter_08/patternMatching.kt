@@ -2,9 +2,10 @@ package creativeDSLs.chapter_08
 
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
+import kotlin.reflect.cast
 import kotlin.reflect.full.memberFunctions
 
-fun interface Test : (Any?) -> Boolean
+fun interface Pattern : (Any?) -> Boolean
 
 data class MatchResult<T>(val value: T)
 
@@ -14,75 +15,81 @@ class Matcher<T>(private val obj: Any?) {
 
     fun otherwise(default: () -> T) = MatchResult(result ?: default())
 
-    infix fun Test.then(value: () -> T) {
+    infix fun Pattern.then(value: () -> T) {
         if (result == null && this(obj)) {
             result = value()
         }
     }
 
-    fun capture(key: String) = Test {
-        captures[key] = it
-        true
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    fun <R> get(key: String) = captures[key] as? R
 }
+
+class Capture<T : Any>(val kclass: KClass<T>) : Pattern {
+
+    lateinit var value: T
+        private set
+
+    override fun invoke(obj: Any?) = when {
+        kclass.isInstance(obj) -> true.also { value = kclass.cast(obj) }
+        else -> false
+    }
+}
+
+inline fun <reified T : Any> capture() = Capture(T::class)
 
 fun <T> match(obj: Any, body: Matcher<T>.() -> MatchResult<T>): T =
     Matcher<T>(obj).run(body).value
 
-val any = Test { true }
+val any = Pattern { true }
 
-val none = Test { false }
+val none = Pattern { false }
 
-val isNull = Test { it == null }
+val isNull = Pattern { it == null }
 
-operator fun Test.not() = Test { !this@not(it) }
+operator fun Pattern.not() = Pattern { !this@not(it) }
 
-infix fun Test.and(that: Test) = Test { this@and(it) && that(it) }
+infix fun Pattern.and(that: Pattern) = Pattern { this@and(it) && that(it) }
 
-infix fun Test.or(that: Test) = Test { this@or(it) || that(it) }
+infix fun Pattern.or(that: Pattern) = Pattern { this@or(it) || that(it) }
 
-fun eq(value: Any?) = Test { it == value }
+fun eq(value: Any?) = Pattern { it == value }
 
-fun oneOf(vararg values: Any?) = Test { values.contains(it) }
+fun oneOf(vararg values: Any?) = Pattern { values.contains(it) }
 
-fun isA(kClass: KClass<*>) = Test { kClass.isInstance(it) }
+fun isA(kClass: KClass<*>) = Pattern { kClass.isInstance(it) }
 
-fun isSame(value: Any) = Test { it === value }
+fun isSame(value: Any) = Pattern { it === value }
 
-inline fun <reified C : Comparable<C>> gt(value: C) = Test {
+inline fun <reified C : Comparable<C>> gt(value: C) = Pattern {
     when (it) {
         is C -> it > value
         else -> false
     }
 }
 
-inline fun <reified C : Comparable<C>> ge(value: C) = Test {
+inline fun <reified C : Comparable<C>> ge(value: C) = Pattern {
     when (it) {
         is C -> it >= value
         else -> false
     }
 }
 
-inline fun <reified C : Comparable<C>> lt(value: C) = Test {
+inline fun <reified C : Comparable<C>> lt(value: C) = Pattern {
     when (it) {
         is C -> it < value
         else -> false
     }
 }
 
-inline fun <reified C : Comparable<C>> le(value: C) = Test {
+inline fun <reified C : Comparable<C>> le(value: C) = Pattern {
     when (it) {
         is C -> it <= value
         else -> false
     }
 }
 
-operator fun KClass<*>.invoke(vararg patterns: Any?) = Test {
+operator fun KClass<*>.invoke(vararg patterns: Any?) = Pattern {
     fun asTest(p: Any?) = when (p) {
-        is Test -> p
+        is Pattern -> p
         else -> eq(p)
     }
     when {
@@ -99,7 +106,7 @@ operator fun KClass<*>.invoke(vararg patterns: Any?) = Test {
     }
 }
 
-private fun Test.testComponentN(obj: Any?, index: Int) =
+private fun Pattern.testComponentN(obj: Any?, index: Int) =
     if (index < 0 || obj == null) false
     else obj::class.memberFunctions.find { f ->
         f.name == "component$index" &&
@@ -139,8 +146,9 @@ fun main() {
     val result = match(p) {
         Person::class("Andy", "Miller", any) then
                 { "Andy Miller has called!" }
-        Person::class("Andy", !eq("Miller"), capture("age")) then
-                { "Some other Andy of age ${get<Int>("age")!!} has called" }
+        val ageCap = capture<Int>()
+        Person::class("Andy", !eq("Miller"), ageCap) then
+                { "Some other Andy of age ${ageCap.value} has called" }
         otherwise { "Some unknown caller" }
     }
 

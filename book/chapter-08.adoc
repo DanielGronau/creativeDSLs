@@ -265,7 +265,9 @@ Simulating the dense chemical notation is hard, and while using operator overloa
 
 === Case Study: Pattern Matching
 
-Kotlin's `when` is certainly more versatile than Java's `switch`, but languages like Scala or Haskell go one step further and allow pattern matching. This means that you can not only compare or test a value, you can also decompose it, test its parts individually or use the parts in the result expression. An ideal syntax could look like this:
+Kotlin's `when` is certainly more versatile than Java's `switch`, but languages like Scala or Haskell go one step further and allow pattern matching. This means that you can not only compare or test a value, you can also decompose it, check its parts individually or use the values in the result expression. But it is possible to get similar functionality in Kotlin, although not as elegant. The following code is based on the https://github.com/DanielGronau/kopama[kopama] library written by the author.
+
+An ideal syntax could look like this:
 
 [source,text]
 ----
@@ -284,10 +286,10 @@ val result = match(p) {
 We have to allow for some compromises to make it work in Kotlin:
 
 * We can't use `Person` in the match cases, but `Person::class` would be okay. We will assume that `Person` is a `data class`.
-* The arrow is not possible, we will use `then` instead
+* The arrow notation is not possible, we will use `then` instead
 * Comparisons as well as `and` and `or` can be only infix functions
-* The right sides should be only evaluated if needed, so we need to have a type of `() -> T`, which also means we need braces
-* Capturing variables on the left and using them on the right needs some function calls using a string key, also the result of capturing might be `null`, e.g. when a cast to the target type is not possible.
+* The right sides should be only evaluated if needed, so we need braces for a "lazy" lambda.
+* Capturing variables on the left and using them on the right needs to use a separate variable.
 * `else` is a keyword, so we will use `otherwise` instead. Further, we can't know if conditions are exhaustive, so the `otherwise` branch is mandatory
 * The whole construct has only limited type safety, as we can't know which member types a data class has.
 
@@ -298,8 +300,9 @@ That's a rather long list, let's see how our example looks now:
 val result = match(p) {
     Person::class("Andy", "Miller", any) then
         { "Andy Miller has called!" }
-    Person::class("Andy", !eq("Miller"), capture("age")) then
-        { "Some other Andy of age ${get<Int>("age")!!} has called" }
+    val ageCapture = capture<Int>()
+    Person::class("Andy", !eq("Miller"), ageCapture) then
+        { "Some other Andy of age ${ageCapture.value} has called" }
     otherwise { "Some unknown caller" }
 }
 ----
@@ -308,29 +311,20 @@ That doesn't look too bad. The core of the DSL is quite small:
 
 [source,kotlin]
 ----
-fun interface Test : (Any?) -> Boolean
+fun interface Pattern : (Any?) -> Boolean
 
 data class MatchResult<T>(val value: T)
 
 class Matcher<T>(private val obj: Any?) {
-    private val captures = mutableMapOf<String, Any?>()
     private var result: T? = null
 
     fun otherwise(default: () -> T) = MatchResult(result ?: default())
 
-    infix fun Test.then(value: () -> T) {
+    infix fun Pattern.then(value: () -> T) {
         if (result == null && this(obj)) {
             result = value()
         }
     }
-
-    fun capture(key: String) = Test {
-        captures[key] = it
-        true
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    fun <R> get(key: String) = captures[key] as? R
 }
 
 fun <T> match(obj: Any, body: Matcher<T>.() -> MatchResult<T>): T =
@@ -339,32 +333,34 @@ fun <T> match(obj: Any, body: Matcher<T>.() -> MatchResult<T>): T =
 
 If you wonder what a `fun interface` is: It's an interface containing only one method, which allows to use a simplified syntax for implementing it. Basically you can replace a class body containing the method by a lambda body. Using this syntax is officially called a https://kotlinlang.org/docs/fun-interfaces.html#sam-conversions[SAM Conversion].
 
-Note that the `body` parameter of the `match()` method requires a `MatchResult` as return value. This is a trick to force users to call the `otherwise()` method at the end of the block. The capture mechanism is very simple, and somewhat unsafe because of the cast, but there is not much we can do about, and returning an `Any?` would be very inconvenient for the user.
+Note that the `body` parameter of the `match()` method requires a `MatchResult` as return value. This is a trick to force users to call the `otherwise()` method at the end of the block.
 
-Of course, there are still tests missing for the left-hand sides of the `then` expressions. Most of them are quite easy to write:
+Of course, there are still patterns missing for the left-hand sides of the `then` expressions. Most of them are quite easy to write:
 
 [source,kotlin]
 ----
 // matches everything
-val any = Test { true }
+val any = Pattern { true }
 // matches nothing
-val none = Test { false }
+val none = Pattern { false }
 // matches null values
-val isNull = Test { it == null }
-// negates a test
-operator fun Test.not() = Test { !this@not(it) }
-// conjunction of tests
-infix fun Test.and(that: Test) = Test { this@and(it) && that(it) }
-// disjunction of tests
-infix fun Test.or(that: Test) = Test { this@or(it) || that(it) }
+val isNull = Pattern { it == null }
+// negates a pattern
+operator fun Pattern.not() = Pattern { !this@not(it) }
+// conjunction of patterns
+infix fun Pattern.and(that: Pattern) =
+    Pattern { this@and(it) && that(it) }
+// disjunction of patterns
+infix fun Pattern.or(that: Pattern) =
+    Pattern { this@or(it) || that(it) }
 // equality to a value
-fun eq(value: Any?) = Test { it == value }
+fun eq(value: Any?) = Pattern { it == value }
 // equality to one of the values
-fun oneOf(vararg values: Any?) = Test { values.contains(it) }
-// type test
-fun isA(kClass: KClass<*>) = Test { kClass.isInstance(it) }
+fun oneOf(vararg values: Any?) = Pattern { values.contains(it) }
+// type check
+fun isA(kClass: KClass<*>) = Pattern { kClass.isInstance(it) }
 // instance equality
-fun isSame(value: Any) = Test { it === value }
+fun isSame(value: Any) = Pattern { it === value }
 ----
 
 For comparing values, some type checks are needed in order to ensure that the value is comparable. That's why we need <<chapter-04.adoc#reifiedGenerics, reified generics>> in this case:
@@ -372,28 +368,28 @@ For comparing values, some type checks are needed in order to ensure that the va
 [source,kotlin]
 ----
 // greater than
-inline fun <reified C : Comparable<C>> gt(value: C) = Test {
+inline fun <reified C : Comparable<C>> gt(value: C) = Pattern {
     when (it) {
         is C -> it > value
         else -> false
     }
 }
 // greater or equal
-inline fun <reified C : Comparable<C>> ge(value: C) = Test {
+inline fun <reified C : Comparable<C>> ge(value: C) = Pattern {
     when (it) {
         is C -> it >= value
         else -> false
     }
 }
 // less than
-inline fun <reified C : Comparable<C>> lt(value: C) = Test {
+inline fun <reified C : Comparable<C>> lt(value: C) = Pattern {
     when (it) {
         is C -> it < value
         else -> false
     }
 }
 // less or equal
-inline fun <reified C : Comparable<C>> le(value: C) = Test {
+inline fun <reified C : Comparable<C>> le(value: C) = Pattern {
     when (it) {
         is C -> it <= value
         else -> false
@@ -401,13 +397,32 @@ inline fun <reified C : Comparable<C>> le(value: C) = Test {
 }
 ----
 
-Now the only missing test is the one for decomposing a data class, which is more involved, as it relies heavily on reflection:
+For capturing values we need a subclass of `Pattern` which can also hold a value:
 
 [source,kotlin]
 ----
-operator fun KClass<*>.invoke(vararg patterns: Any?) = Test {
-    fun asTest(p: Any?) = when (p) {
-        is Test -> p
+class Capture<T : Any>(val kclass: KClass<T>) : Pattern {
+    lateinit var value: T
+        private set
+
+    override fun invoke(obj: Any?) = when {
+        kclass.isInstance(obj) -> true.also { value = kclass.cast(obj) }
+        else -> false
+    }
+}
+
+inline fun <reified T : Any> capture() = Capture(T::class)
+----
+
+For capturing values, you first define a variable using the `capture<T>()` method. Then you can use this variable on the left-hand side of `then` as a pattern, which checks that the value has the same type `T` as specified, and stores it. On the right-hand side the value can be read from the variable.
+
+Now the only missing pattern is the one for decomposing a data class, which is more involved, as it relies heavily on reflection:
+
+[source,kotlin]
+----
+operator fun KClass<*>.invoke(vararg patterns: Any?) = Pattern {
+    fun asPattern(p: Any?) = when (p) {
+        is Pattern -> p
         else -> eq(p)
     }
     when {
@@ -415,12 +430,12 @@ operator fun KClass<*>.invoke(vararg patterns: Any?) = Test {
         !this@invoke.isInstance(it) -> false
         patterns.size != maxComponent(it) -> false
         else -> patterns.foldIndexed(true) { i, b, p ->
-            b && asTest(p).testComponentN(it, i + 1)
+            b && asPattern(p).testComponentN(it, i + 1)
         }
     }
 }
 
-private fun Test.testComponentN(obj: Any?, index: Int) =
+private fun Pattern.testComponentN(obj: Any?, index: Int) =
     if (index < 0 || obj == null) false
     else obj::class.memberFunctions.find { f ->
         f.name == "component$index" &&
@@ -442,9 +457,9 @@ private fun maxComponent(obj: Any?) = obj?.let {
 } ?: 0
 ----
 
-The `invoke()` method checks first that the value is not null and that it has the right type and number of fields. Then the tests given for the fields are applied. If no test is given, but another value, it is assumed that you want to compare the field with this value, so when you write `Person::class("Andy", "Miller", any)`, it is interpreted as `Person::class(eq("Andy"), eq("Miller"), any)`. I won't get into the details of the reflection code, but would refer to TODO.
+The `invoke()` method checks first that the value is not null and that it has the right type and number of fields. Then the patterns given for the fields are applied. If no pattern is given, but another value, it is assumed that you want to compare the field with this value, so when you write `Person::class("Andy", "Miller", any)`, it is interpreted as `Person::class(eq("Andy"), eq("Miller"), any)`. I won't get into the details of the reflection code, but would refer to TODO.
 
-Of course, you can write many more tests, but the DSL is already functional as it is. Unfortunately, there is no way to make the code more type-safe, as we can't know which types the fields of a data class have. So I would advise to be careful when using it, and double-check if the tests make sense. Despite that, I still think this is a cool example which demonstrate the expressiveness of Kotlin.
+Of course, you can write many more patterns, but the DSL is already functional as it is. Unfortunately, there is no way to make the code more type-safe, as we can't know which types the fields of a data class have. So I would advise to be careful when using it, and double-check if the patterns make sense. Despite that, I still think this is a cool example which demonstrate the expressiveness of Kotlin.
 
 === Conclusion
 
