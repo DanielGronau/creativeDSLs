@@ -78,13 +78,13 @@ This chart summarizes the structure of our model classes:
          |              |
          | e.g. 2CH3OH  |
          +------+-------+
-                │1
+                |1
                 |
                 vn
          +--------------+
          |   Molecular  |
-         |              +<--+1
-         |     Part     |   |
+         |              +<--+
+         |     Part     |   |1
          +-+----------+-+   |
            |          |     |
            |is-a  is-a|     |n

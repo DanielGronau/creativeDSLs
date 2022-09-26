@@ -6,15 +6,15 @@ So, you defined the requirements, and want finally dive into designing and imple
 .DSL Writing Workflow
 ....
 
-         +-----------------+
-         |  clarification  |
+         /-----------------\
+         |  Clarification  |
          v                 |
-   +--------------+  +-------------+  +---------------+  +----------------+
+   /--------------\  /-----+-------\  /---------------\  /----------------\
    | Ideal Syntax |->| Prototyping |->| Formalization |->| Implementation |
-   +--------------+  +-------------+  +---------------+  +----------------+
+   \--------------/  \-------------/  \---------------/  \-------+--------/
                            ^                                     |
-                           |    chosen approach isn't viable     |
-                           +-------------------------------------+
+                           |    Chosen Approach isn't viable     |
+                           \-------------------------------------/
 
 ....
 
