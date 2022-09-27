@@ -5,7 +5,7 @@
 > A Domain-Specific Language (DSL) is a computer language that's targeted to a particular kind of problem, rather than a general purpose language that's aimed at any kind of software problem.
 -- Martin Fowler, Domain-Specific Languages Guide
 
-The intention for writing a DSL is to make a certain domain more accessible, to make it easier to read and write, to avoid mistakes, and sometimes to follow established standards or conventions (e.g. SQL for database access, or mathematical notation). The target audience for DSLs can be the authors themselves, library users, or people who have domain knowledge, but do usually no or just a little programming. Sometimes it is sufficient when experts can read and understand a DSL, in order to check correctness or to get feedback.
+The intention for writing a DSL is to make a certain domain more accessible, to make it easier to read and write, to avoid mistakes, and sometimes to follow established standards or conventions (e.g. SQL for database access, or mathematical notation). The target audience for DSLs can be the authors themselves, library users, or people who have domain knowledge, but do usually no or just a little programming. Sometimes it is sufficient when experts can read and understand a DSL, in order to check correctness or to give feedback.
 
 Typical use cases for DSLs include modelling business logic, e.g. trades for a financial company, and help communicating at the boundaries of the system, which includes database access, serialization, web connectivity or UI. Then there are DSLs that "calculate" something in some sense. Other common applications for DSLs are testing and logging. There are DSLs for code generation, or even for writing DSLs.
 

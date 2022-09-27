@@ -1,13 +1,12 @@
 == Relevant Language Features
-:srcdir: ../src/main/kotlin/creativeDsls
 
 As mentioned in the preface, this book assumes basic Kotlin knowledge from the reader. However, DSLs use often lesser common language features, or they use features in other ways than common code. This chapter wants to give a short overview of language features that are relevant for writing DSLs.
 
-=== Backtick Identifiers
+=== Backtick Identifiers (((Backtick Identifiers)))
 
-Sometimes, you need very descriptive identifiers in a DSL, which shouldn't have to follow the usual rules. Kotlin allows almost arbitrary identifiers, as long as they are enclosed in backticks. For the JVM all characters except `\r\n,.;:\|/[]<>`` are allowed in backtick identifiers.
+Sometimes, you need very descriptive identifiers in a DSL, which shouldn't have to follow the usual rules. Kotlin allows almost arbitrary identifiers, as long as they are enclosed in backticks. For the JVM all characters except `\r\n,.;:\|/[]<>{backtick}` are allowed in backtick identifiers.
 
-A typical use case are DSLs for test libraries. While Java limits you to underscores and camelCase, in Kotlin very descriptive names for test function are possible by using the backtick syntax:
+A typical use case are DSLs for test libraries. While Java limits you to underscores and camelCase, Kotlin allows very descriptive names for test functions by using the backtick syntax:
 
 [source]
 ----
@@ -16,6 +15,8 @@ fun `check that the slithy toves gyre and gimble in the wabe` {
    ...
 }
 ----
+
+Another common use case is to simulate operators with an infix function, e.g. you could define a syntax like `5 {backtick}^{backtick} 3` for exponentiation.
 
 === Named Arguments and Default Values
 
@@ -37,7 +38,7 @@ val person = Person("John", "Doe", 23)
 val happyBirthday = person.copy(age = person.age + 1)
 ----
 
-As you can see, the values of the current object are set as default values of the new instance, and thanks to the named argument feature one can pick the arguments which must be changed, and leave all others untouched.
+As you can see, the values of the current object are set as default values of the new instance, and thanks to the named argument feature one can pick the arguments which should be changed, and leave all others untouched.
 
 === Trailing Lambda Arguments
 
@@ -98,7 +99,7 @@ someMethod(1, 2, 3, someString = "Hi!")
 
 ==== Varargs and Trailing Lambda Syntax
 
-At the first glance, having the choice to put varargs wherever you want doesn't seem to be terribly useful. But there is one use case which makes this feature interesting from a DSL design perspective: You can put a vararg as second to last element before a trailing lambda argument:
+At the first glance, having the choice to put varargs wherever you want doesn't seem to be terribly useful. But there is one use case which makes this feature interesting from a DSL design perspective: You can put a vararg as second to last argument before a trailing lambda argument:
 
 [source,kotlin]
 ----
@@ -168,7 +169,9 @@ Interestingly, generic extension functions have a capability that normal instanc
 
 [source,kotlin]
 ----
-include::{srcdir}/chapter_04/productSnippet.kt[lines=3..]
+fun List<Double>.product() = fold(1.0, Double::times)
+
+val p = listOf(1.0, 2.0, 3.0).product()  // p == 6.0
 ----
 
 The call to `Double::times` is only possible because the receiver is not just any list, but specifically a `List<Double>`, and this additional type information is also applied to the function body. This feature of extension methods can be used in DSLs e.g. for performing compile-time checks.
@@ -183,7 +186,16 @@ Lambdas can have receivers too, and this plays nicely with the Loan Pattern. Thi
 
 [source,kotlin]
 ----
-include::{srcdir}/chapter_04/stringBuilderSnippet.kt[lines=3..]
+fun sb(block: StringBuilder.() -> Unit): String =
+    StringBuilder()
+        .apply { block.invoke(this) }
+        .toString()
+
+val s: String = sb {
+    append("World")
+    insert(0, "Hello ")
+    append('!')
+}
 ----
 
 This may look a little confusing at first, but the main point is that you can use extension methods to create a block where `this` is a certain receiver class (here `StringBuilder`), and you don't have to care about its construction or final steps (like calling a `build()` - or here `toString()` - method).
@@ -217,7 +229,13 @@ You can not only define extension functions and lambdas, but also extension prop
 
 [source,kotlin]
 ----
-include::{srcdir}/chapter_04/amountSnippet.kt[lines=5..]
+data class Amount(val value: BigDecimal, val currency: String)
+
+val Double.USD
+    get() = Amount(this.toBigDecimal(), "USD")
+
+// with an extension function, this would be 22.46.USD()
+val money: Amount = 22.46.USD
 ----
 
 The infix notation covered in the next paragraph uses extension function syntax as well.
@@ -230,10 +248,47 @@ The function must be a receiver function, and have one argument. The receiver-`t
 
 [source,kotlin]
 ----
-include::{srcdir}/chapter_04/shouldBeSnippet.kt[lines=3..]
+infix fun <T> T.shouldBe(expected: T) {
+    require(this == expected)
+}
+
+fun testIfExpected(s: String) {
+    s.shouldBe("expected") // normal syntax
+    s shouldBe "expected" // infix syntax
+}
 ----
 
 A weakness of the infix notation is that you can't explicitly specify generics using this syntax. In this case, you can fall back to the normal function call syntax - but users of the DSL might not know this.
+
+[#functionalInterfaces]
+=== Functional Interfaces
+
+Imagine you have an interface for string tests, with a single abstract function, and you need an anonymous implementation:
+
+[source,kotlin]
+----
+interface Test {
+    fun check(s: String): Boolean
+}
+
+val shortString = object : Test {
+    override fun check(s: String) = s.length < 10
+}
+----
+
+That is quite ugly, and way too verbose to expect a DSL user to implement your interface this way. But as the interface has only a single abstract method (abbreviated as "SAM"), it can be written as functional interface, which allows to use a simplified syntax to implement it anonymously:
+
+[source,kotlin]
+----
+//not the "fun"
+fun interface Test {
+    fun check(s: String): Boolean
+}
+
+val shortString = Test { s -> s.length < 10 }
+----
+
+The lambda will be automatically translated back to an implementation as shown above. This process is called a "SAM conversion". I think you would agree that this syntax looks much better, in fact good enough to make it useful for DSLs.
 
 === Generics
 
@@ -241,7 +296,26 @@ Generics are a useful abstraction over concrete types in all kinds of contexts, 
 
 [source,kotlin]
 ----
-include::{srcdir}/chapter_04/currencySnippet.kt[lines=5..]
+import java.math.BigDecimal
+
+interface Euro
+interface BritishPound
+
+data class Currency<T>(val value: BigDecimal)
+
+val Double.EUR
+    get() = Currency<Euro>(this.toBigDecimal())
+val Double.GBP
+    get() = Currency<BritishPound>(this.toBigDecimal())
+
+operator fun <T> Currency<T>.plus(that: Currency<T>) =
+    copy(value = this.value + that.value)
+
+val works = 3.1.EUR + 4.5.EUR // 7.6 €
+val worksToo = 2.1.GBP + 4.2.GBP // 6.3 £
+
+//this doesn't compile:
+//val oops = 3.1.EUR + 4.5.GBP
 ----
 
 Adding amounts of different currencies together isn't possible, because the definition of `+` ensures that both amounts belong to the same currency.
@@ -260,7 +334,18 @@ One great feature of Kotlin is reified generics. The JVM implements generics usi
 
 [source,kotlin]
 ----
-include::{srcdir}/chapter_04/reifiedSnippet.kt[lines=3..]
+inline fun <reified T> List<T>.combine(): Unit = when(T::class) {
+    Int::class -> (this as List<Int>).sum()
+    String::class -> (this as List<String>).fold("", String::plus)
+    else -> this.toString()
+}.let { println(it) }
+
+fun main() {
+    listOf<Int>().combine() // 0
+    listOf(1,2,3).combine()  // 6
+    listOf("x","y","z").combine() // xyz
+    listOf(true, false).combine() // [true, false]
+}
 ----
 
 Note the expression `T::class`, which shouldn't work considering type erasure. However, the function is defined as an `inline` function, and the generic parameter `T` is marked as "reified". The details are beyond the scope of this book, but basically the inlining allows the compiler to gather the generic type information already at compile time, and make it look like as there is no type erasure happening. It should be noted that inline functions are subjected to some restrictions, and show differences to "normal" functions regarding their return behavior.

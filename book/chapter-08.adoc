@@ -331,11 +331,9 @@ fun <T> match(obj: Any, body: Matcher<T>.() -> MatchResult<T>): T =
     Matcher<T>(obj).run(body).value
 ----
 
-If you wonder what a `fun interface` is: It's an interface containing only one method, which allows to use a simplified syntax for implementing it. Basically you can replace a class body containing the method by a lambda body. Using this syntax is officially called a https://kotlinlang.org/docs/fun-interfaces.html#sam-conversions[SAM Conversion].
+As a reminder, the `fun interface` syntax defines a <<chapter-04.adoc#functionalInterfaces, functional interface>>. Note that the `body` parameter of the `match()` method requires a `MatchResult` as return value. This is a trick to force users to call the `otherwise()` method at the end of the block.
 
-Note that the `body` parameter of the `match()` method requires a `MatchResult` as return value. This is a trick to force users to call the `otherwise()` method at the end of the block.
-
-Of course, there are still patterns missing for the left-hand sides of the `then` expressions. Most of them are quite easy to write:
+Of course, there are still patterns missing for the left-hand sides of the `then` expressions. For implementing them, we can take advantage of the simplified syntax for functional interfaces (a.k.a. SAM conversion). Most of them are quite easy to write:
 
 [source,kotlin]
 ----

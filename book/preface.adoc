@@ -20,7 +20,7 @@ Writing DSLs can be challenging, usually it isn't a good introduction to a host 
 
 So, if you don't feel comfortable in Kotlin yet, take your time and explore the language first, it will save you from a lot of confusion. This book won't go anywhere in the meantime, it can wait until you can get the most out of it.
 
-=== Content of this Book
+=== What's in this Book
 
 _Chapter 1, Introduction_, defines what a DSL is, discusses the differences between internal and external DSLs, and gives a general overview about the usage of DSL and underlying design principles.
 
@@ -83,7 +83,7 @@ Definitions or additional information may be presented as follows:
 
 .The name "Kotlin"
 ****
-"Kotlin" is a small Russian island in the Baltic Sea. Naming languages or projects after islands has been a tradition in the Java ecosystem. Beside Java itself, there exists e.g. project Lombok, and the Ceylon language.
+"Kotlin" is a small Russian island in the Baltic Sea. Naming languages or projects after islands has been a long-standing tradition in the Java ecosystem. Beside Java itself, there are projects like Lombok, the Komodo-IDE and the Ceylon language. The Jakarta project is named after the capital of Indonesia, which is located on the island of Java.
 ****
 
 Quotes look like this:

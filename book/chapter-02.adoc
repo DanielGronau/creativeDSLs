@@ -12,7 +12,7 @@ When the application already employs other DSLs, it should be considered whether
 
 === Research
 
-After the specification of the problem domain, you should check out existing DSLs. You might be surprised by the plethora of existing solutions, and of course it makes little sense to reinvent the wheel. Even if the results don't fit your use case perfectly, they might serve as a base implementation, or as a source of inspiration.
+After specifying the problem domain, you should check out existing DSLs. You might be surprised by the plethora of existing solutions, and of course it makes little sense to reinvent the wheel. Even if the results don't fit your use case perfectly, they might serve as a base implementation, or as a source of inspiration.
 
 TIP: There is an ongoing debate of how much software should depend on libraries, and you should be aware of related problems like the dreaded "dependency hell". On the other hand, you shouldn't fall into the "Not Invented Here" trap, where an organization tries to build everything from scratch. As in most cases, it is important to find a good balance. A decision to use a library or not should be always deliberate, and the decision process should be documented.
 
@@ -28,7 +28,7 @@ Another potential question is whether to generate the target entities of an exte
 
 Usually, an internal DSL can only be an approximation of the syntax we really wish for, there is a "syntactical gap". It is tempting to subordinate everything else in order to come as close as possible to our ideal syntax. But of course beauty has its price, pushing the limits of the host language's syntax can be problematic, and neglecting the other requirements can render a beautiful DSL useless.
 
-That's why it is important to have from the very start a rough idea how close the internal DSL needs to come the ideal syntax, and when to start compromising. One relevant question in this context is how "tech-savvy" users of the DSL are. Generally, people without coding experience need more streamlined DSLs than software engineers, who will often tolerate a few warts in the DSL syntax.
+That's why it is important to have a rough idea how close the internal DSL needs to come the ideal syntax, and when to start compromising. One relevant question in this context is how "tech-savvy" users of the DSL are. Generally, people without coding experience need more streamlined DSLs than software engineers, who will often tolerate a few warts in the DSL syntax.
 
 === Learning Experience
 
@@ -38,7 +38,7 @@ The DSL itself can be designed in a way to have a shallow learning curve, e.g. b
 
 TIP: In the end it's not the DSL itself which generates value, but the people using it effectively, and this is something we should never forget. Planning for the required assistance upfront can help to improve the DSL, and empower the users to get the most out of it.
 
-=== Safety of Use Requirements
+=== Safety of Use
 
 An often overlooked requirement is how and how well the user has to be protected against pitfalls and misuses of the DSL. This includes questions like whether misuses should cause compile time or only runtime errors, or whether it is acceptable that the DSL can express some states that shouldn't be allowed.
 
@@ -52,7 +52,7 @@ Insufficient extensibility is a common pitfall when designing internal DSLs, whi
 
 Therefore, it makes sense to get upfront a rough idea which extensions could be requested after the first version of the DSL. Later, in the implementation phase, this information helps to avoid using techniques that are not flexible enough to handle future requirements.
 
-Another kind of extensibility, which is often overlooked, is extensibility by users. E.g. consider a DSL for working with physical quantities: There are way too many units to cover them all, but users might have a special set of units that they need in their daily work, so it would be great if the DSL allows to add custom units. Such considerations can make a DSL much more useful and successful. When possible, open your  DSL for extension by users, and also document how to do it. On the other hand, when you can already predict that extending the DSL may lead to unexpected or unsafe results, try to prevent it.
+Another kind of extensibility, which is often overlooked, is extensibility by users. E.g. consider a DSL for working with physical quantities: There are way too many units to cover them all, but users might have a special set of units that they need in their daily work, so it would be great if the DSL allows to add custom units. Such considerations can make a DSL much more useful and successful. When possible, open your DSL for extension by users, and also document how to do it. On the other hand, when you can already predict that extending the DSL may lead to unexpected or unsafe results, try to prevent it.
 
 === Maintainability
 
@@ -61,3 +61,9 @@ The DSL has to be not only implemented, but must be maintained as well. It shoul
 === Performance and Memory Requirements
 
 Often performance considerations don't get much attention. However, in most cases DSLs invoke additional operations, instantiate extra classes and may trigger garbage collections. When working with big data, or having a wasteful DSL design, you might run in performance and memory problems. That's why it is necessary to estimate performance requirements upfront, and to employ load tests and metrics accordingly.
+
+=== Ready, Steady, Go?
+
+After you have gathered the requirements, you should have a good idea for the scope, the complexity and the benefits of the project. At this point you should take a deep breath, and decide if you want to go forward. Don't get me wrong, I like DSLs so much that I wrote a book about them. But sometimes the best code is the one that was never written.
+
+A DSL should never be an end in itself, it should have a clear purpose, and add a tangible value for its users. Further, the scope of the project must be manageable for your organization. If you see that the upcoming project won't meet these criteria, cancel it. But hopefully, the project turns out to be both doable and useful, and you can give the green light.
