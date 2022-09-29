@@ -1,4 +1,108 @@
 == Real-World DSL Examples
 
+In this chapter we will have a look of some widely used and successful DSLs, characterize them, look at interesting details, and maybe even suggest some improvements.
 
+=== KotlinPoet
+
+https://square.github.io/kotlinpoet/[KotlinPoet] is a source code generator for Kotlin, and the sister-project to JavaPoet.
+We used it in chapter 11 to generate sources for operations with physical quantities.
+
+The library follows closely the syntax of JavaPoet, which is written in Java, and I think this was the right decision.
+The builder pattern works reasonably well for this purpose.
+This is the introductory example on their home page:
+
+[source,kotlin]
+.https://square.github.io/kotlinpoet
+----
+// Here’s a HelloWorld file:
+
+class Greeter(val name: String) {
+  fun greet() {
+    println("""Hello, $name""")
+  }
+}
+
+fun main(vararg args: String) {
+  Greeter(args[0]).greet()
+}
+
+// And this is the code to generate it with KotlinPoet:
+
+val greeterClass = ClassName("", "Greeter")
+val file = FileSpec.builder("", "HelloWorld")
+  .addType(
+    TypeSpec.classBuilder("Greeter")
+      .primaryConstructor(
+        FunSpec.constructorBuilder()
+          .addParameter("name", String::class)
+          .build()
+      )
+      .addProperty(
+        PropertySpec.builder("name", String::class)
+          .initializer("name")
+          .build()
+      )
+      .addFunction(
+        FunSpec.builder("greet")
+          .addStatement("println(%P)", "Hello, \$name")
+          .build()
+      )
+      .build()
+  )
+  .addFunction(
+    FunSpec.builder("main")
+      .addParameter("args", String::class, VARARG)
+      .addStatement("%T(args[0]).greet()", greeterClass)
+      .build()
+  )
+  .build()
+
+file.writeTo(System.out)
+----
+
+If KotlinPoet were a stand-alone library, I would rather use a Loan Pattern DSL instead:
+
+[source,kotlin]
+----
+// Suggested KotlinPoet DSL
+
+val greeterClass = ClassName("", "Greeter")
+val file = fileSpec("", "HelloWorld") {
+    +classSpec("Greeter") {
+        primaryConstructor = constructorSpec {
+            +parameter("name", String::class)
+        }
+        +propertySpec("name", String::class) {
+            initializer("name")
+        }
+        +functionSpec("greet") {
+            +statement("println(%P)", "Hello, \$name")
+        }
+    }
+    +functionSpec("main") {
+        +parameter("args", String::class, VARARG)
+        +statement("%T(args[0]).greet()", greeterClass)
+    }
+}
+----
+
+=== Gradle .kts
+
+https://gradle.org/[Gradle] is an amazing build system. In contrast to descriptive build systems like the XML-based https://maven.apache.org[Apache Maven], the build process is "programmable", which gives the user a lot of flexibility.
+
+However, the original Gradle implementation was written in Groovy - at the time probably the best choice to write an expressive DSL in the Java ecosystem. But Groovy comes with its own set of problems. It is a scripted language with a weak type system, and as a result, there was no autocompletion support in IDEs. Generally, the use of Groovy declined more and more. The author of Groovy himself said in 2009:
+
+"Though my tip though for the long term replacement of javac is Scala. I'm very impressed with it! I can honestly say if someone had shown me the Programming in Scala book by by Martin Odersky, Lex Spoon & Bill Venners back in 2003 I'd probably have never created Groovy."
+-- James Strachan, https://macstrac.blogspot.com/2009/04/scala-as-long-term-replacement-for.html
+
+For Gradle users, that meant that they had a lot of freedom and a nice DSL - as long as there was no problem. But as soon as they wanted to debug your build script, it got hairy. To overcome these problems, the Gradle team decided to write an alternative DSL, but this time in Kotlin Script (.kts). With a statically typed language, missing autocompletion and debugging were no more a problem.
+
+Obviously, the new DSL should look very similar to the old Groovy style, in order to make the transition as smooth as possible. I think, in this regard, the Kotlin DSL was a resounding success. Here is a comparison, taken from...
+
+
+
+
+=== kotest
+
+=== better-parse
 
