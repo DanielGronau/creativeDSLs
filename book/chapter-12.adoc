@@ -90,7 +90,7 @@ val file = fileSpec("", "HelloWorld") {
 
 https://gradle.org/[Gradle] is an amazing build system. In contrast to descriptive build systems like the XML-based https://maven.apache.org[Apache Maven], the build process is "programmable", which gives the user a lot of flexibility.
 
-However, the original Gradle implementation was written in Groovy - at the time probably the best choice to write an expressive DSL in the Java ecosystem. But Groovy comes with its own set of problems. It is a scripted language with a weak type system, and as a result, there was no autocompletion support in IDEs. Generally, the use of Groovy declined more and more. The author of Groovy himself said in 2009:
+However, the original Gradle implementation was written in Groovy - at the time probably the best choice to write an expressive DSL in the Java ecosystem. Alas, Groovy comes with its own set of problems. It is a scripted language with a weak type system, and as a result, there was limited autocompletion support in IDEs. Generally, the use of Groovy declined more and more. James Strachan, the author of Groovy, said in 2009:
 
 "Though my tip though for the long term replacement of javac is Scala. I'm very impressed with it! I can honestly say if someone had shown me the Programming in Scala book by by Martin Odersky, Lex Spoon & Bill Venners back in 2003 I'd probably have never created Groovy."
 -- James Strachan, https://macstrac.blogspot.com/2009/04/scala-as-long-term-replacement-for.html
@@ -98,7 +98,6 @@ However, the original Gradle implementation was written in Groovy - at the time 
 For Gradle users, that meant that they had a lot of freedom and a nice DSL - as long as there was no problem. But as soon as they wanted to debug your build script, it got hairy. To overcome these problems, the Gradle team decided to write an alternative DSL, but this time in Kotlin Script (.kts). With a statically typed language, missing autocompletion and debugging were no more a problem.
 
 Obviously, the new DSL should look very similar to the old Groovy style, in order to make the transition as smooth as possible. I think, in this regard, the Kotlin DSL was a resounding success. Here is a comparison, taken from...
-
 
 
 
