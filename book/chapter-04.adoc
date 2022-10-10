@@ -1,12 +1,23 @@
 == Relevant Language Features
 
+Kotlin is a great language, with many great features which are missing in Java, including:
+
+* Null-safe type-system
+* short syntax, e.g. optional semicolons or functions with expression body
+* objects instead of static members
+* top-level and local functions
+* trailing lambda syntax
+* compilable to JVM, JavaScript and native applications
+
+At the same time, calling Java code works almost always, and there are annotations to make calling Kotlin code from Java easier. Generally Kotlin is a great choice as a programming language, even though Java improved considerably in the last years.
+
 As mentioned in the preface, this book assumes that the reader has basic Kotlin knowledge. However, DSLs often use little-known language features, or they use some features in other ways than common code. Sometimes, even the users of the DSL might not be aware of the kind of "machinery" used to make it work.
 
 This chapter gives a short overview of language features that might be relevant for writing DSLs. I hope that after reading the chapter, you better understand how some DSL "tricks" work.
 
 === Backtick Identifiers (((Backtick Identifiers)))
 
-Kotlin allows almost arbitrary identifiers, as long as they are enclosed in backticks. The main reason for introducing this feature was to allow the usage e.g. of Java identifiers which are keywords in Kotlin, like `fun` or `when`. For DSLs, we can use them when we need descriptive identifiers which don't follow the usual syntactic rules.
+Kotlin allows almost arbitrary identifiers, as long as they are enclosed in backticks. The main reason for introducing this feature was to allow the usage of identifiers which are keywords in Kotlin but not in Java, like `fun` or `when`. For DSLs, we can use them when we need descriptive identifiers which don't follow the usual syntactic rules.
 
 Backtick identifiers start and end with a backtick `{backtick}` - these are not part of the identifier, but just delimiters - and can contain almost all characters. E.g. for Kotlin on the JVM, all characters except `\r\n,.;:\|/[]<>{backtick}` are allowed.
 
@@ -14,8 +25,7 @@ A typical use case for backticks are DSLs for test libraries. While Java limits 
 
 [source]
 ----
-@Test
-fun `check that the slithy toves gyre and gimble in the wabe`() {
+fun `check that the slithy toves gyre and gimble in the wabe` {
    ...
 }
 ----
@@ -40,9 +50,9 @@ val color2 =
     makeColor(alpha = 128, red = 255, green = 255, blue = 100)
 ----
 
-In Java, this behavior is often imitated by using a builder, but in many cases Kotlin's built-in solution is more convenient.
+In Java, a similar naming behavior is imitated by using the builder pattern, but in many cases Kotlin's built-in solution is more convenient.
 
-Function and constructor arguments can also have default values assigned. E.g. in the example above, it would be sensible to set the alpha value to 255, as it is more common to define an opaque color than a translucent one:
+Function and constructor arguments can also have default values assigned. In Java, you would have to write multiple methods or constructors with different combinations of default values set, which leads to a lot of hard to read, boilerplate code. In the example above, it would be sensible to set the alpha value to 255, as it is more common to define an opaque color than a translucent one:
 
 [source,kotlin]
 ----
