@@ -25,8 +25,8 @@ TODO:
 - other kinds of DSLs / techniques? E.g. Constructors in kotest?
 - More Diagrams: Code Generation?
 - Reorganize Requirements analysis?
-- rename `Test` in pattern matcher to `Pattern` or `Check`?
 - find a good Kotlin reflection book to refer to
+- proper @DslMarker example in chapter 4
 
 ## Research
 
