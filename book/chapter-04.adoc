@@ -192,7 +192,7 @@ Kotlin allows operator overloading, but is conservative in the sense that it per
 * the equality operators `==` and `!=`
 * the comparison operators `<`, `<{zwsp}=`, `>`, `>=`
 
-Note that the boolean operators `&&` and `||` cannot be overloaded.
+Note that the boolean operators `&&` and `||` cannot be overloaded. Kotlin 1.7.20 introduces the _experimental_ `..<` open-ended range operator, which will be enabled by default in language version 1.8.
 
 There are many use cases for operators, but please don't overuse them. There should be at least some association or analogy between the operation and the chosen operator. E.g. for concatenating a path, `/` would be fine, as it is a common path separator. If you want to "add" a single value inside a trailing lambda block in some sense, using the unary `+` has become a kind of standard. It might be also okay to use `..` instead of a `:`, because of the visual similarity.
 
@@ -269,6 +269,16 @@ To avoid this problem, there is a mechanism for scope control:
 * Annotate this annotation with `@DslMarker`
 * Mark all involved receiver classes (or a common super class) with your annotation
 * Now, you can't directly access things from the outer scope. You still can refer them indirectly, e.g. using the syntax `this@html.head{...}`
+
+In our example, such an annotation could look like this:
+
+[source,kotlin]
+----
+@DslMarker
+annotation class HtmlMarker
+----
+
+When the receiver classes of the `head()` and `body()` extension methods are annotated that way, the example above wouldn't compile any longer.
 
 ==== Extension properties
 

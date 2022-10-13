@@ -45,8 +45,7 @@ There are a few general principles an internal DSL should follow:
 * *Openness*: The DSL should interact well with non-DSL code, and should allow custom extensions where it makes sense
 * *Maintainability*: The DSL code should be easy to read and to maintain
 
+=== Kotlin and DSLs
 
-
-
-
+At this point, it makes sense to discuss the relationship of the Kotlin language itself  with DSLs. The language has a very clean and readable syntax, and is often more expressive than Java. Many language features seem to lead naturally to DSLs, there is no clear boundary between "everyday code" and DSLs, and I'm sure this is a conscious design choice. I think this concept plays a big role in the success of the language, especially as it allows to adapt and improve existing Java code very easily and organically by creating miniature DSLs on the fly.
 
