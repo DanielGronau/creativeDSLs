@@ -50,7 +50,7 @@ _Chapter 13, Wrap-up_, collects some bits and pieces of experience which might b
 
 === Prerequisites
 
-To try out code samples from this book or the associated project https://github.com/creativeDsls[github.com/creativeDsls], you can use any IDE capable of running Kotlin (obviously IntelliJ IDEA will have an edge regarding Kotlin support), or you can go to https://play.kotlinlang.org/[play.kotlinlang.org] for an online sandbox. The Kotlin language version used is 1.7. If not stated otherwise, when discussing Java, language level 11 is assumed.
+To try out code samples from this book or the associated project https://github.com/creativeDsls[github.com/creativeDsls], you can use any IDE capable of running Kotlin, JetBrains' IntelliJ IDEA being the obvious choice. You can also use the https://play.kotlinlang.org/[play.kotlinlang.org] online sandbox. The Kotlin language version used is 1.7. If not stated otherwise, when discussing Java, language level 11 is assumed.
 
 In my opinion, the https://kotlinlang.org/docs/home.html[Kotlin Documentation] is really comprehensive, well written, and contains great examples. Every Kotlin programmer should know and use it, and instead of bloating this book, it will often refer to the documentation for very specific or not directly DSL-related topics.
 

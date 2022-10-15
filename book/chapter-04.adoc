@@ -207,11 +207,13 @@ That said, you can do some sneaky things with operators. E.g. the invoke operato
 
 === Extensions
 
-One of the most important features for DSL design are functions, lambdas and properties with receivers. This can be understood as putting the function body in the scope of the receiver, so you can access its public fields, methods etc., and also refer to the receiver itself using `this`. From the user's point of view, the call with receiver looks exactly how a normal method call on the receiver instance would look like. This makes extension methods a great tool to add DSL features to classes that you have no control over.
+One of the most important features for DSL design are extension functions, lambdas and properties. These are stand-alone constructs operating on a so-called receiver, which is the target class they are extending. The function body is put in the scope of the receiver, so you can access its public fields, methods etc., and you can also refer to the receiver itself using `this`. From the user's point of view, the call with receiver looks exactly how a normal method call on a receiver instance would look like. This makes extension methods a great tool to add DSL features to classes that you have no control over.
+
+Extension methods were first introduced in C#. In Kotlin, they particularly allow to adapt existing Java classes, in order to make them more convenient to use. A great example for this are the `apply()`, `run()`, `let()` and `also()` functions, which make it easier to use e.g. expression body syntax for functions, or succinct variable assignments.
 
 ==== Type narrowing
 
-Interestingly, generic extension functions have a capability that normal instance methods haven't: They can "fix" generic parameters to a certain type, narrowing down the range of possible receivers. Here is an example for calculating the product of numbers as an extension function for a list:
+Interestingly, generic extension functions have a capability that normal instance methods haven't: They can fixate generic parameters on a certain type, narrowing down the range of possible receivers. Here is an example for calculating the product of numbers as an extension function for a list:
 
 [source,kotlin]
 ----
@@ -220,13 +222,11 @@ fun List<Double>.product() = fold(1.0, Double::times)
 val p = listOf(1.0, 2.0, 3.0).product()  // p == 6.0
 ----
 
-The call to `Double::times` is only possible because the receiver is not just any list, but specifically a `List<Double>`, and this additional type information is also carried over to the function body. This feature of extension methods can be used in DSLs e.g. for performing compile-time checks, making the DSL safer to use.
+The call to `Double::times` is only possible because the receiver is not just any list, but specifically a `List<Double>`, and this additional type information is also carried over to the function body. This feature of extension methods can be used in DSLs e.g. for performing compile-time checks.
 
 ==== Loan Pattern
 
-****
 The idea of the Loan Pattern is to hide construction and disposal of an instance (often a resource) from client code. The caller gets only access to the already initialized instance, and isn't responsible for terminal operations like closing connections at the end.
-****
 
 Lambdas can have receivers too, which is practical when applying the Loan Pattern. Using this pattern can be beneficial for DSLs, as it helps to control the life-cycle of the receiver class. Take this example:
 
@@ -244,10 +244,7 @@ val s: String = sb {
 }
 ----
 
-This may look a little confusing at first, but the main point is that you can use extension methods to create a block where `this` is a certain receiver class, and you don't have to care about its construction or final steps like calling a `build()` - or
-in the example the `toString()` - method.
-
-Building DSLs based on this feature is very common, as it has several advantages over the classic Builder Pattern.
+This may look a little confusing at first, but the main point is that you can use extension methods to create a block where `this` is a certain receiver class, and you don't have to care about its construction or final steps like calling a `build()` method or something similar (in the example `toString()`). Building DSLs based on this pattern is very common, as it has several advantages over the classic builder pattern.
 
 ==== The @DslMarker annotation
 
@@ -278,7 +275,7 @@ In our example, such an annotation could look like this:
 annotation class HtmlMarker
 ----
 
-When the receiver classes of the `head()` and `body()` extension methods are annotated that way, the example above wouldn't compile any longer.
+When the receiver classes of the lambda arguments of the `head()` and `body()` functions are annotated that way, the example above wouldn't compile any longer.
 
 ==== Extension properties
 
@@ -301,7 +298,7 @@ The infix notation covered in the next paragraph uses extension function syntax 
 
 The infix notation allows names of functions to be used like binary operators. Well-known examples in the Kotlin API include `to` for creating pairs, and `until` and `downTo` for creating ranges.
 
-The function must be a receiver function, and have one argument. The receiver-`this` becomes the left-hand side, and the argument becomes the right-hand side of the operator. Note that you can still use the normal function call syntax. Here is an example for checking preconditions:
+The function must be an extension function with one argument. The receiver-`this` becomes the left-hand side, and the argument becomes the right-hand side of the operator. Note that you can still use the normal function call syntax. Here is an example for checking preconditions:
 
 [source,kotlin]
 ----
@@ -315,7 +312,7 @@ fun testIfExpected(s: String) {
 }
 ----
 
-A weakness of the infix notation is that you can't explicitly specify generics using this syntax. In this case, you can fall back to the normal function call syntax - but users of the DSL might not know this.
+A weakness of the infix notation is that you can't explicitly specify generics. In this case, you can fall back to the normal function call syntax - but users of the DSL might not know this.
 
 [#functionalInterfaces]
 === Functional Interfaces
@@ -345,7 +342,7 @@ fun interface Test {
 val shortString = Test { s -> s.length < 10 }
 ----
 
-The lambda will be automatically translated back to an implementation as shown above. This process is called a "SAM conversion". I think you would agree that this syntax looks much better, in fact good enough to make it useful for DSLs.
+The lambda will be automatically translated back to an implementation as shown above (this process is called a "SAM conversion"). I think you agree that this syntax looks much better, in fact good enough to make it useful for DSLs.
 
 === Generics
 
@@ -387,7 +384,7 @@ A type parameter which doesn't relate to any field, argument, etc. of its  class
 [#reifiedGenerics]
 ==== Reified Generics
 
-One great feature of Kotlin is reified generics. The JVM implements generics using "type erasure", which means that (while the compiler checks them and even adds type casts and auxiliary methods) at runtime the JVM basically "forgets" them. In Kotlin, you can access that type information under certain circumstances:
+One great feature of Kotlin is reified generics. The JVM implements generics using a technique called "type erasure", which means that (while the compiler checks them and even adds type casts and auxiliary methods) at runtime the JVM basically "forgets" them. In Kotlin, you can access that type information under certain circumstances:
 
 [source,kotlin]
 ----
@@ -405,7 +402,7 @@ fun main() {
 }
 ----
 
-Note the expression `T::class`, which shouldn't work considering type erasure. However, the function is defined as an `inline` function, and the generic parameter `T` is marked as "reified". The details are beyond the scope of this book, but basically the inlining allows the compiler to gather the generic type information already at compile time, and make it look like as there is no type erasure happening. It should be noted that inline functions are subjected to some restrictions, and show differences to "normal" functions regarding their return behavior.
+Note the expression `T::class`, which shouldn't work considering type erasure. However, the function is defined as an `inline` function, and the generic parameter `T` is marked as "reified". The details are beyond the scope of this book, but basically the inlining allows the compiler to gather the generic type information already at compile time, and make it look like as there is no type erasure happening. It should be noted that inline functions are subjected to some restrictions and vary slightly from normal functions, e.g. regarding their return behavior.
 
 [#annotations]
 === Annotations
