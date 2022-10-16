@@ -156,9 +156,9 @@ All the parser functions will have a similar return type, so this alias is used 
 typealias ParseResult<T> = Optional<Pair<T, String>>
 ----
 
-What does this mean? Well, trying to parse information from a string can be successful or not. In this example, an empty `Optional` is returned when the parser got no result, but serious implementations often use more elaborate failure classes, which give detailed information about why and where the operation failed. When parsing was successful, there must be not only kept track of the result, but also the remaining string. That's why a `Pair` is used in the alias.
+What does this mean? Well, trying to parse information from a string can be successful or not. In this example, an empty `Optional` is returned when the parser got no result, but serious implementations often use more elaborate failure classes, which give detailed information about why and where the operation failed. When the parsing rule could be applied successfully, it is not enough to keep track of the result, but also of the remaining string (or the new position inside the original string). That's why a `Pair` is used in the alias.
 
-We will assume that the input string is free of whitespaces, which can be easily done by the top-level function calling the parser. Here are the two most basic functions:
+We will assume that the input string is free of whitespaces, which can be already enforced by the top-level function calling the parser. Here are the two most basic functions:
 
 [source,kotlin]
 ----
@@ -178,7 +178,7 @@ fun parseNum(string: String): ParseResult<Int> =
     }
 ----
 
-The easiest function is `parsePattern()`, which just tries to find a given prefix in the string. `parseNum()` is slightly more involved, as it needs to find out the number of digits first. Except `parseElement()`, all other functions don't read directly from the string, but use these two and combine the results in certain ways - that's why this approach is known as "parser combinator". The first example for this "assembling" is the function for reading the equation arrow, which can be either `-{zwsp}>` or `<{zwsp}-{zwsp}>`:
+The easiest function is `parsePattern()`, which tries to find a given prefix in the string. `parseNum()` is slightly more involved, as it needs to determine the number of digits first. Except `parseElement()`, all other functions don't read directly from the string, but use these two and combine the results in certain ways - that's why this approach is known as "parser combinator". The first example for this "assembling" is the function for reading the equation arrow, which can be either `-{zwsp}>` or `<{zwsp}-{zwsp}>`:
 
 [source,kotlin]
 ----
@@ -361,7 +361,7 @@ val equationGrammar = object : Grammar<Equation>() {
 val eq = equationGrammar.parseToEnd("3Ba(OH)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2")
 ----
 
-Going into the details of this specific library is beyond the scope of this book, the important point is how much using a parser-combinator library has improved readability. However, you can still recognize the same pieces of grammar, which are assembled in a similar way as in our original code.
+Going into the details of this specific library is beyond the scope of this book, the important point is how much using a parser-combinator library can improve readability. However, you can still recognize the same pieces of grammar, which are assembled in a similar way as in our original code.
 
 === Conclusion
 
