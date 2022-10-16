@@ -1,18 +1,16 @@
 == Algebraic DSLs
 
-A common class of problems deals with objects forming algebraic structures, in other words, objects that behave somewhat similar to numbers. This includes complex numbers, quaternions, vectors, matrices, physical and monetary quantities, and much more. Often, such DSLs can be easily designed in Kotlin, especially when the existing operators can be used.
+A common class of problems deals with objects forming algebraic structures, in other words, objects that behave somewhat similar to numbers. This includes complex numbers, quaternions, vectors, matrices, physical and monetary quantities, and much more. Writing such DSLs in Kotlin is usually straightforward, especially when the required operators match with the existing ones.
 
-NOTE: As for many other categories of DSLs, there seems to be no established name for this DSL category in the literature. I think calling them "Algebraic DSLs" covers their behavior quite well, but you might find the same concept under different names elsewhere.
+NOTE: As for many other categories of DSLs, there seems to be no established name for this kind of DSL in the literature. I think calling them "Algebraic DSLs" covers their behavior quite well, but you might find the same concept under different names elsewhere.
 
-The Kotlin API itself contains some nice examples for Algebraic DSLs, e.g. for `BigInteger` and `BigDecimal`, which can be used pretty much like "normal" numbers - something Java programmers can only dream of.
+The Kotlin API itself contains some nice examples for small Algebraic DSLs, e.g. for `BigInteger` and `BigDecimal`, which can be used pretty much like "normal" numbers - something Java programmers can only dream of.
 
-Even if your problem domain has not exactly an algebraic structure, you should know about these techniques. Take chemical equations as an example: Even though they are clearly not number-like, they contain concepts like (scalar) multiplication and addition.
+Even if your problem domain hasn't exactly an algebraic structure, some ideas in this chapter might be at least partially applicable. Take chemical formulas as an example: Although though they are not number-like, they contain concepts like (scalar) multiplication and addition, and can be modelled accordingly.
 
 === Case Study: A DSL for Complex Numbers
 
-In order to keep things realistic, we won't use our own implementation for complex numbers, but an existing one that you could very well find in a production environment. We will use the https://github.com/apache/commons-numbers/tree/master/commons-numbers-complex[Apache Commons Numbers: Complex] implementation, which is written in Java.
-
-The implementation behaves pretty much as expected:
+In order to keep things realistic, we will use an existing implementation, that you could find in a production environment. We will use the https://github.com/apache/commons-numbers/tree/master/commons-numbers-complex[Apache Commons Numbers: Complex] library, which is written in Java. The implementation behaves pretty much as expected:
 
 [source,kotlin]
 ----
@@ -31,7 +29,7 @@ When we consider that `4.0i` is actually a multiplication, we are already there:
 
 First, we need to define the imaginary unit `i` with `val i = Complex.I`. This is a bit risky because of possible name clashes, so it would be also an option to import `Complex.I` instead.
 
-Next, the arithmetic operations can be implemented using operator overloading. We need not only operations between two `Complex` instances, but also between `Complex` and `Double`. Here is an example for addition:
+Next, the arithmetic operations can be written using operator overloading. We need not only operations between two `Complex` instances, but also between `Complex` and `Double`. Here is an example for addition:
 
 [source,kotlin]
 ----
@@ -41,7 +39,7 @@ operator fun Double.plus(other: Complex): Complex =
     Complex.ofCartesian(this, 0.0).add(this)
 ----
 
-The other operations look basically the same. We could also support interoperability with `Int` in addition to `Double` if we want, but it was omitted for the sake of brevity. A little improvement would be a helper method for the conversion from double to complex, instead of relying on the awkward `Complex.ofCartesian` factory.
+The other operations look basically the same. We could also support interoperability with `Int` in addition to `Double`, but it was omitted for the sake of brevity. A little improvement would be a helper method for the conversion from double to complex, instead of relying on the awkward `Complex.ofCartesian` factory.
 
 Next, we need also to support negation of complex numbers (and probably the unary plus, too, for symmetry reasons). This looks very similar to the code above:
 
@@ -57,6 +55,8 @@ When you can't find an appropriate operator to overload, you can use infix funct
 infix fun Complex.pow(that: Complex): Complex = pow(that)
 infix fun Complex.pow(that: Double): Complex = pow(that)
 ----
+
+Alternatively, we could have used `{backtick}^{backtick}` in <<chapter-04.adoc#backtickIdentifiers, backtick notation>>, which may be more readable than `pow`, but is harder to type.
 
 And that's already it, we have a basic DSL for complex numbers. Here is the complete code:
 
@@ -112,11 +112,11 @@ operator fun Complex.compareTo(that: Complex): Int =
 val cmp = 3.0 + 4.0*i < 5.0 - 1.0*i // true
 ----
 
-This wasn't included in the DSL because it is somewhat dangerous, as it isn't consistent with the behavior of `Double` values: Of course `-5.0 < 4.0`, but with the code above, we would have `-5.0 + 0.0*i > 4.0 + 0.0*i`.
+This wasn't included in the DSL because it is somewhat dangerous, as it isn't consistent with the behavior of `Double` values: While obviously `-5.0 < 4.0`, the code above would lead to the inverse result in case of `Complex` numbers: `-5.0 + 0.0*i > 4.0 + 0.0*i`.
 
 === Conclusion
 
-I hope the case study shows that writing algebraic DLSs is generally quite straightforward. There are still a few points to consider when deciding whether to use an algebraic DSL.
+I hope the case study demonstrates that writing algebraic DLSs is usually not that difficult. There are still a few points to consider when deciding whether to use an algebraic DSL. For some use-cases it might be a stretch to use algebraic notation: Take e.g. sum and product types (a.k.a. `Either` and tuples), where using `+` and `*` would be surprising for some users, even though the underlying structure is algebraic. Even if the notation is appropriate for the use-case, there might be surprising behaviours like non-commutative multiplication (e.g. in case of quaternions and matrices) that could lead to usage errors.
 
 ==== Preferable Use Cases
 

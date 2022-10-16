@@ -15,6 +15,7 @@ As mentioned in the preface, this book assumes that the reader has basic Kotlin 
 
 This chapter gives a short overview of language features that might be relevant for writing DSLs. I hope that after reading the chapter, you better understand how some DSL "tricks" work.
 
+[#backtickIdentifiers]
 === Backtick Identifiers (((Backtick Identifiers)))
 
 Kotlin allows almost arbitrary identifiers, as long as they are enclosed in backticks. The main reason for introducing this feature was to allow the usage of identifiers which are keywords in Kotlin but not in Java, like `fun` or `when`. For DSLs, we can use them when we need descriptive identifiers which don't follow the usual syntactic rules.
