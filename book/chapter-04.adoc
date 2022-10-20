@@ -181,30 +181,101 @@ There are many things you can do with explicit setters or getters, like caching 
 
 === Operator Overloading
 
-Kotlin allows operator overloading, but is conservative in the sense that it permits only a fixed set of operators:
+Kotlin allows operator overloading, but is conservative in the sense that it permits only a fixed set of operators.
 
-* the unary operators `+`, `-` and `!`
-* the binary arithmetic operators `+`, `-`, `*`, `/` and `%`
-* the augmented assignments for these: `+=`, `-=`, `*=`, `/=` and `%=`
-* the range operator `..`
-* the in operator `in`
-* the index access operator `[]`
-* the invoke operator `()`
-* the equality operators `==` and `!=`
-* the comparison operators `<`, `<{zwsp}=`, `>`, `>=`
+NOTE: The boolean operators `&&` and `||` cannot be overloaded.
 
-Note that the boolean operators `&&` and `||` cannot be overloaded. Kotlin 1.7.20 introduces the _experimental_ `..<` open-ended range operator, which will be enabled by default in language version 1.8.
+Some overloading functions require specific return types. The type `R` is used in the following tables to indicate that there are no such restrictions.
 
-There are many use cases for operators, but please don't overuse them. There should be at least some association or analogy between the operation and the chosen operator. E.g. for concatenating a path, `/` would be fine, as it is a common path separator. If you want to "add" a single value inside a trailing lambda block in some sense, using the unary `+` has become a kind of standard. It might be also okay to use `..` instead of a `:`, because of the visual similarity.
+==== Unary Operators
 
-But at some point you need to draw a line, e.g. inverting a matrix by using `!` would be in my opinion a bit of a stretch. Also, it can be confusing when you reuse an operator too often, like "adding" an address, phone number, email or website to a person. Often it is better to use an infix function with a meaningful name instead of letting the users guess what an operator could mean.
+[cols="1a,2a,3a"]
+|===
+|Operator |Overwriting Function | Remarks
 
-.Don't be too clever
-****
-There is a temptation to be "too clever" when designing a DSL, by assuming that other people will have the same associations as oneself when looking at certain DSL elements. You may think, "A percent sign looks like a little fraction", but others may not have the same association as you. It's the same awkward situation as for a joke not everyone gets. So try to avoid "clever" assumptions, which make it actually harder to understand your DSL.
-****
+| `+a` | `fun A.unaryPlus(): R` |
+| `-a` | `fun A.unaryMinus(): R` |
+| `!a` | `fun A.not(): R` |
+| `++a` | `fun A.inc(): A`| Assigns the result to `a` and returns it
+| `a++` | `fun A.inc(): A`| Assigns the result to `a` and returns the original value
+| `--a` | `fun A.dec(): A`| Assigns the result to `a` and returns it
+| `a--` | `fun A.dec(): A`| Assigns the result to `a` and returns the original value
+|===
 
-That said, you can do some sneaky things with operators. E.g. the invoke operator can be used to simulate the syntax of a function call, so you can e.g. camouflage objects to look like functions. Similarly, the index access operator can be used to mimic e.g. arrays and maps.
+==== Binary Arithmetic Operators
+
+[cols="1a,2a,3a"]
+|===
+|Operator |Overwriting Function | Remarks
+
+| `a + b` | `fun A.plus(b: B): R` |
+| `a - b` | `fun A.minus(b: B): R` |
+| `a * b` | `fun A.times(b: B): R` |
+| `a / b` | `fun A.div(b: B): R`|
+| `a % b` | `fun A.rem(b: B): R`| Until Kotlin 1.1, `mod` was used, but is now deprecated.
+|===
+
+When these operators are defined, `a` is mutable, and left hand side and right hand side have matching types (`B` is a subtype of `A`), they can be also used in the assignments  `+=`, `-=`, `*=`, `/=` and `%=` when `a` is mutable.
+
+When you don't want the normal binary form, but only the assignment, you can define it explicitly:
+
+[cols="1a,2a,3a"]
+|===
+|Operator |Overwriting Function | Remarks
+
+| `a += b` | `fun A.plusAssign(b: B): Unit` |
+| `a -= b` | `fun A.minusAssign(b: B): Unit` |
+| `a *= b` | `fun A.timesAssign(b: B): Unit` |
+| `a /= b` | `fun A.divAssign(b: B): Unit`|
+| `a %= b` | `fun A.remAssign(b: B): Unit`|
+|===
+
+Again, `a` must be mutable, `B` must be a subtype of `A`. Also, the return type for the function must be `Unit`. Having the binary version of the same operator in scope at the same time leads to an ambiguity error.
+
+==== Range and In Operators
+
+[cols="1a,2a,3a"]
+|===
+|Operator |Overwriting Function | Remarks
+
+| `a .. b` | `fun A.rangeTo(b: B): R` |
+| `a ..< b` | `fun A.rangeUntil(b: B): R` | Introduced in Kotlin 1.8, experimental in 1.7.20
+| `a in b` | `fun B.contains(a: A): R` | Defines also `!in`.
+|===
+
+==== Index Access and Invoke Operators
+
+[cols="1a,2a,3a"]
+|===
+|Operator |Overwriting Function | Remarks
+
+| `a[b]` | `fun A.get(b: B): R` |
+| `a[b, c]` | `fun A.get(b: B, c: C): R` | Or more arguments
+| `a[b] = x` | `fun A.set(b: B, x: X): Unit` |
+| `a[b, c] = x` | `fun A.set(b: B, c: C, x: X): Unit` | Or more arguments
+| `a()` | `fun A.invoke(): R` |
+| `a(b)` | `fun A.invoke(b: B): R` |
+| `a(b, c)` | `fun A.invoke(b: B, c: C): R` | Or more arguments
+|===
+
+==== Equality and Comparison Operators
+
+[cols="1a,2a,3a"]
+|===
+|Operator |Overwriting Function | Remarks
+
+| `a == b` | `fun equals(b: Any): Boolean` | Must be defined in `class A`. Also defines `!=`.
+| `a < b` | `fun A.compareTo(b: B): Int` | Evaluates `a.compareTo(b) < 0`
+| `a <{zwsp}= b` | `fun A.compareTo(b: B): Int` | Evaluates `a.compareTo(b) <{zwsp}= 0`
+| `a > b` | `fun A.compareTo(b: B): Int` | Evaluates `a.compareTo(b) > 0`
+| `a >= b` | `fun A.compareTo(b: B): Int` | Evaluates `a.compareTo(b) >= 0`
+|===
+
+==== Use Cases
+
+There are many application for overloaded operators, but please don't overuse them. There should be at least some association or analogy between the operation and the chosen operator. E.g. for concatenating a path, `/` would be fine, as it is a common path separator. If you want to "add" a single value inside a trailing lambda block, using the unary `+` has become a kind of standard. It might be also okay to use `..` instead of a `:`, because of the visual similarity.
+
+At some point you need to draw the line, e.g. inverting a matrix by using `!` would be a bit of a stretch. There is a temptation to be "too clever" when designing a DSL, by assuming that other people will have the same associations as oneself when looking at certain DSL elements. You may think, "A percent sign looks like a little fraction", but others may not have the same association. Often it is better to use an infix function with a meaningful name instead of letting the users guess what an operator could mean.
 
 === Extensions
 
