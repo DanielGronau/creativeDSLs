@@ -1,5 +1,6 @@
 = Creative DSLs in Kotlin
 :front-cover-image: image:cover.jpg[]
+:page-background-image: image:preprint.png[]
 :doctype: book
 :encoding: utf-8
 :lang: en
