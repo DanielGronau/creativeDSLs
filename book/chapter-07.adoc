@@ -271,7 +271,7 @@ Granted, the code isn't quite as comfortable and concise, but it comes close, an
 
 === Chained Loan Pattern
 
-It is possible to have a "chained" version of the Loan Pattern, but it depends on the use case whether it looks better than the chained Builder Pattern. I would argue that in case of the SQL DSL from the last chapter the chained version wouldn't be an improvement. Here is how it could look like:
+It is possible to have a "chained" version of the Loan Pattern, but it depends on the use case whether it looks better than the chained Builder Pattern. I would argue that in case of the SQL DSL from the last chapter the chained version wouldn't be a significant improvement. Here is how it could look like:
 
 [source,kotlin]
 ----
@@ -292,7 +292,7 @@ val query = SELECT {
 }.build()
 ----
 
-The code to implement this DSL could look like this (sanity checks were omitted for brevity):
+Here is a possible implementation of this DSL (sanity checks were omitted for brevity):
 
 [source,kotlin]
 ----
@@ -379,13 +379,109 @@ It is important to have different classes for the body of a clause, and the resu
 
 Also, the explicit call to the `build()` function is necessary in this example, because we don't know if the chain should be stopped after the FROM or after the WHERE. In use cases where there is only one possible exit point, the `build()` call could be performed internally.
 
+It is possible to simplify this code using the "chameleon" approach discussed in the last chapter, although it can come to name clashes. In our case, the unary `+` is used in both the select and the where clause, but it can't be part of the main builder class, because it wouldn't be clear in which list the values have to go. Here is a "chameleon" version of the code:
+
+[source,kotlin]
+----
+fun SELECT(body: ListBody.() -> Unit): SelectClause =
+    QueryBuilder().select(body)
+
+private class QueryBuilder : SelectClause, FromBody, FromClause, WhereClause {
+    private val columns = mutableListOf<String>()
+    private val conditions = mutableListOf<String>()
+
+    fun select(body: ListBody.() -> Unit) = this.apply { ListBody(columns).apply(body) }
+
+    //SelectClause
+    override fun FROM(body: FromBody.() -> Unit) =
+        apply(body)
+
+    //FromBody
+    override var tableName: NameWithAlias = "" to null
+    override val joinClauses = mutableListOf<Triple<NameWithAlias, String, String>>()
+    override infix fun String.AS(that: String) {
+        tableName = this to that
+    }
+
+    override fun JOIN(body: JoinBody.() -> Unit) =
+        JoinBody().apply(body).also {
+            joinClauses += Triple(it.tableName, it.firstColumn, it.secondColumn)
+        }
+
+    //FromClause
+    override fun WHERE(body: ListBody.() -> Unit) =
+        this.apply { ListBody(conditions).apply(body) }
+
+    //FromClause and WhereClause
+    override fun build() = build(columns, tableName, joinClauses, conditions)
+}
+
+class ListBody(val list:MutableList<String>) {
+    operator fun String.unaryPlus() {
+        list += this
+    }
+}
+
+interface SelectClause {
+    fun FROM(body: FromBody.() -> Unit): FromClause
+}
+
+typealias NameWithAlias = Pair<String, String?>
+
+interface FromBody {
+    var tableName: NameWithAlias
+    val joinClauses: List<Triple<NameWithAlias, String, String>>
+    infix fun String.AS(that: String)
+    fun JOIN(body: JoinBody.() -> Unit): JoinBody
+}
+
+interface FromClause {
+    fun WHERE(body: ListBody.() -> Unit): WhereClause
+    fun build(): String
+}
+
+class JoinBody {
+    var tableName: NameWithAlias = "" to null
+    var firstColumn = ""
+    var secondColumn = ""
+
+    operator fun String.unaryPlus() {
+        tableName = this to null
+    }
+
+    infix fun String.AS(that: String) {
+        tableName = this to that
+    }
+
+    fun ON(firstColumn: String, secondColumn: String) {
+        this.firstColumn = firstColumn
+        this.secondColumn = secondColumn
+    }
+}
+
+interface WhereClause {
+    fun build(): String
+}
+
+private fun build(
+    columns: List<String>,
+    tableName: NameWithAlias,
+    joinClauses: List<Triple<NameWithAlias, String, String>>,
+    conditions: List<String>
+): String {
+    // same as before
+}
+----
+
+Arguably, the code became a bit more confusing, but doesn't copy the data around as much as the original version did.
+
 === Builder Type Inference
 
 In some cases, the compiler can improve its type inference by inspecting the method calls inside the trailing lambda block. Since Kotlin 1.7.0, this feature is enabled by default, but in older versions you can turn in on using the  `-Xenable-builder-inference` compiler option. There is no real drawback using this feature, but if you want to look into the details, you can check out the https://kotlinlang.org/docs/using-builders-with-builder-inference.html[Kotlin Documentation - Using builders with builder type inference].
 
 === Conclusion
 
-The Loan Pattern DSLs have several advantages over the classic Builder Pattern style, and became very common in Kotlin. It really shines when dealing with nested structures, but struggles a bit, when the operations inside the block become a little more involved than simple assignments.
+The Loan Pattern DSLs have several advantages over the classic Builder Pattern style, and is very common in Kotlin. It really shines when dealing with nested structures, but struggles a bit when the operations inside the block become a little more involved than simple assignments.
 
 ==== Preferable Use Cases
 
