@@ -13,13 +13,13 @@ A common reason for mixing features from different DSL categories is to imitate 
 every { car.door(DoorType.FRONT_LEFT).windowState() } returns WindowState.UP
 ----
 
-Technically, writing a quasi-lingual DSL is not very different from other Hybrid DSLs, although it might be harder to model grammatical structures correctly. Also, name clashes with keywords like `is`, `as` etc. are more of a problem. As good advice is to keep the DSL grammar simple and well-structured, and to compromise when it helps to reduce complexity. E.g. instead of insisting on writing something like `should` `be` separated, it is okay to write `shouldBe` when it helps to keep the grammar simple.
+Technically, writing a quasi-lingual DSL is not very different from other Hybrid DSLs, although it might be harder to model grammatical structures correctly. Also, name clashes with keywords like `is`, `as` etc. are more of a problem. As good advice is to keep the DSL grammar simple and well-structured, and to compromise when it helps to reduce complexity. E.g. instead of trying to model words like `should` `be` separated, it is okay to use `shouldBe` instead when it helps to keep the grammar simple.
 
 === Case Study: Chemical Equations
 
 Writing a DSL for chemical equations is no easy task, because the notation is very concise and can't be imitated easily using Kotlin syntax. For our case study, we won't cover the full notation, e.g. we won't support writing ions or bonds.
 
-A simple chemical equation looks like this: `3Ba(OH)2 + 2H3PO4 -{zwsp}> 6H2O + Ba3(PO4)2`. To express such an equation, we use the following code:
+An example of a simple chemical equation in standard notation would be `3Ba(OH)~2~ + 2H~3~PO~4~ -> 6H~2~O + Ba~3~(PO~4~)~2~`. Of course, in scope of a DSL subscripts and special symbols are not very practical, so the target syntax would look more like `3Ba(OH)2 + 2H3PO4 -{zwsp}> 6H2O + Ba3(PO4)2`. To express such an equation, we use the following code:
 
 [source,kotlin]
 ----
@@ -53,7 +53,7 @@ data class Equation(val leftSide: List<Molecule>, val rightSide: List<Molecule>,
 }
 ----
 
-An `Element` contains a chemical symbol, like `"H"` (hydrogen) or `"Ba"` (barium), and optionally a subscript, which is the small number counting the number of atoms. A feature of the chemical notation is that you can also define groups like `"(OH)2"` in a molecule, which is why we need the `Group` class as well. A group can contain not only elements, but also other groups.
+An `Element` contains a chemical symbol, like `"H"` (hydrogen) or `"Ba"` (barium), and optionally a subscript, which is counting the number of atoms. A feature of the chemical notation is that you can also define groups like `"(OH)~2~"` in a molecule, which is why we need the `Group` class as well. A group can contain not only elements, but also other groups.
 
 A `Molecule` is a collection of elements or groups, and can also have a coefficient in front. An equation consists of two sides and either an arrow `-{zwsp}>` or - in case of reversible reactions - a double arrow `<{zwsp}-{zwsp}>` in the middle. Both sides consist either of a single molecule or a "sum" of molecules.
 
@@ -133,7 +133,7 @@ val Li = Element("Li", 1)
 // etc.
 ----
 
-Next, we need a convenient way to add the subscript to an element or a group. For this, we could use the invoke-operator `()` or the index access operator `[]`. As we will need parentheses in other places as well, the index access operator seems to be the better choice. We can now write `H[2]` to denote `H2`:
+Next, we need a convenient way to add the subscript to an element or a group. For this, we could use the invoke-operator `()` or the index access operator `[]`. As we will need parentheses in other places as well, the index access operator seems to be the better choice. We can now write `H[2]` to denote `H~2~`:
 
 [source,kotlin]
 ----
@@ -218,7 +218,7 @@ infix fun Molecule.reactsTo(that: Part) =
 // just with an Equation having reversible == true
 ----
 
-Unfortunately, we have to resort to infix functions, as there seems to be no suitable operator available. A common trick is to use the backtick syntax to mimic an operator, but `{backtick}-{zwsp}>{backtick}` and `{backtick}<{zwsp}-{zwsp}>{backtick}` won't work: `<` and `>` are two of the very few characters that are not allowed in backtick syntax on the JVM.
+Unfortunately, we have to resort to infix functions, as there seems to be no suitable operator available. A common trick is to use the backtick syntax(((Backtick Identifiers))) to mimic an operator, but `{backtick}-{zwsp}>{backtick}` and `{backtick}<{zwsp}-{zwsp}>{backtick}` won't work: `<` and `>` are two of the very few characters that are not allowed in backtick syntax on the JVM.
 
 So, how does our DSL look in action? Here are a few examples:
 
@@ -290,7 +290,7 @@ We have to allow for some compromises to make it work in Kotlin:
 * Comparisons as well as `and` and `or` can be only infix functions
 * The right sides should be only evaluated if needed, so we need braces for a "lazy" lambda.
 * Capturing variables on the left and using them on the right needs to use a separate variable.
-* `else` is a keyword, so we will use `otherwise` instead. Further, we can't know if conditions are exhaustive, so the `otherwise` branch is mandatory
+* `else` is a keyword, so `otherwise` is used instead. As it is not possible to determine at compile time whether the given conditions are exhaustive, the `otherwise` branch is mandatory
 * The whole construct has only limited type safety, as we can't know which member types a data class has.
 
 That's a rather long list, let's see how our example looks now:

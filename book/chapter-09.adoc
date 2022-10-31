@@ -8,7 +8,14 @@ WARNING: Kotlin supports - like many languages - regular expressions, which can 
 
 === Case Study: Forsyth–Edwards Notation
 
-Before we dive into complicated problems requiring parsers, we will start with an easy example, where we need only a few string functions. If you don't play chess, you probably never heard of the https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation[Forsyth–Edwards Notation] (or short FEN). It is basically a snapshot of an ongoing chess game: The position of the pieces, who's turn it is, castling rights, some information for the en-passant and 50-move rule, and the number of moves played.
+Before we dive into complicated problems requiring parsers, we will start with an easy example, where we need only a few string functions. If you don't play chess, you probably never heard of the https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation[Forsyth–Edwards Notation] (or short FEN). It is basically a snapshot of an ongoing chess game, and stores the following information:
+
+* the position of the pieces
+* who's turn it is
+* castling rights ("castling" is a special move involving king and rook)
+* a field where a special pawn capture (called "en-passant") could take place
+* number of half-moves without check or pawn moves (for the 50-move rule)
+* number of moves played so far
 
 Rows are separated by `/` and pieces have the usual names used in chess notation (like "Q" for a queen), plus "P" for pawn. Black pieces are notated in lower-case and white pieces in upper-case. To keep the string short, empty squares are written with a kind of run-length encoding, e.g. 3 empty fields are represented by a 3. The castling rights are given by "k" for king-side and "q" for queen-side, again upper-case for white and lower-case for black. If nobody can castle, a `-` is written instead. The en-passant field contains either a square like `b3` or again a `-`.
 
@@ -79,7 +86,7 @@ The class contains already a function for generating a FEN - this is not require
 
 .Round-trip Tests
 ****
-When you have code that transforms forth and back between two different formats, it is convenient to write round-trip tests: You're providing test data for the "easier" format, transform it to the other one and back, and compare it with the original. Comparing data in the same format is easier and safer than comparing different formats, sometimes even a simple string comparison is sufficient.
+When you have code that transforms forth and back between different formats, it is convenient to write round-trip tests: You're providing test data for the "easiest" format, transform it to the other one(s) and back, and compare it with the original. Comparing data in the same format is easier and safer than comparing different ones - sometimes even a simple string comparison is sufficient.
 ****
 
 Now we can write the DSL function for parsing a FEN:
@@ -315,6 +322,8 @@ fun equation(string: String) = parseEquation(string.replace(" ", ""))
 ----
 
 This function removes all spaces from the input string, calls the parser, checks that no "unparsed" string is left, and returns the result wrapped in an `Optional`. Again, an empty `Optional` indicates that some kind of error occurred. Now we can write e.g. `equation("3Ba(OH)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2")`, which is as concise at it can get for an internal DSL.
+
+As mentioned in the last chapter, a "real" chemical equation looks more like `3Ba(OH)~2~ + 2H~3~PO~4~ -> 6H~2~O + Ba~3~(PO~4~)~2~`, and with a few simple modifications, we could allow this syntax as well. Generally speaking, allowing the syntax of a String-based DSL to be more lenient is relatively easy, while other DSL categories often struggle with this kind of flexibility.
 
 As already stated, writing such a parser manually isn't difficult. However, using a library has many advantages: It improves readability and maintainability, the code is easier to debug, you get more information when the parsing failed, and the library is usually better tested than our manual code.
 

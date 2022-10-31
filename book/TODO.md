@@ -20,12 +20,12 @@ Chapters
 12. Dissecting common DSLs (kotest, gradle .kts, Kotlin Poet, better-parse)
 
 TODO:
-- chapter 12
+- chapter 12 and 13
 - make the index
 - other kinds of DSLs / techniques? E.g. Constructors in kotest?
 - More Diagrams: Code Generation?
 - Reorganize Requirements analysis?
-- find a good Kotlin reflection book to refer to
+- find a good Kotlin reflection book to refer to -> 8.3. TODO
 - proper @DslMarker example in chapter 4
 
 ## Research
