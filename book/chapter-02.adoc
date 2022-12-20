@@ -1,6 +1,8 @@
 == Requirements Analysis
 
-For a software engineer, writing DSLs often feels exciting and fun, and it is easy to get carried away. In the end, it may turn out that the DSL misses some important parts, shows unexpected behavior, and is neither maintainable nor extendable. It pays off to contain the excitement for a moment, and lay down some cornerstones. This doesn't have to be a long-winded and boring process, but you should ensure that everyone is on the same page, and that no significant detail is overlooked. This chapter gives you basically a check-list of decisions to make before you start implementing.
+As a software engineer, it's easy to get caught up in the excitement of building a DSL and lose sight of the bigger picture. However, it's important to take a step back and carefully consider the goals and requirements of your DSL before diving into implementation. This will help ensure that your DSL is complete, well-behaved, maintainable, and extendable.
+
+It is important to establish a clear understanding of the scope and purpose of your DSL among all stakeholders. This includes determining the target audience, and how the DSL will be used. Having everyone on the same page minimizes the risk that important details have been overlooked. However, this shouldn't be a long-winded and boring process. To simplify this task, this chapter is basically a check-list of decisions to make before you start implementing.
 
 === Defining the Problem Domain
 
@@ -8,13 +10,13 @@ The first question to answer is obviously which domain to tackle. For small doma
 
 Generally, it is a good practice to organize your DSL in layers, so that the lower layers don't rely on the higher ones, and can therefore be used independently. E.g. if you design a DSL for linear algebra, the DSL part for matrices could be independent of the rest of the system, which allows to use this part in other contexts as well.
 
-When the application already employs other DSLs, it should be considered whether a parallel use of the new DSL would be confusing or if it could yield unexpected results. In some cases it might be smart to imitate the syntax of an existing DSL in order to facilitate the experience the users already have. A real-world example for this approach is the KotlinPoet library mimicking the JavaPoet project.
+When the application already employs other DSLs, it should be considered whether a parallel use of the new DSL would be confusing or if it could yield unexpected results. In some cases it might be smart to imitate the syntax of an existing DSL in order to facilitate the experience the users already have. A real-world example for this approach is the KotlinPoet library mimicking its JavaPoet sister project.
 
 === Research
 
 After specifying the problem domain, you should check out existing DSLs. You might be surprised by the plethora of existing solutions, and of course it makes little sense to reinvent the wheel. Even if the results don't fit your use case perfectly, they might serve as a base implementation, or as a source of inspiration.
 
-TIP: There is an ongoing debate of how much software should depend on libraries, and you should be aware of related problems like the dreaded "dependency hell". On the other hand, you shouldn't fall into the "Not Invented Here" trap, where an organization tries to build everything from scratch. As in most cases, it is important to find a good balance. A decision to use a library or not should be always deliberate, and the decision process should be documented.
+TIP: There is an ongoing debate of how much software should depend on libraries, and you should be aware of related problems like the dreaded "dependency hell". On the other hand, you shouldn't fall into the "Not Invented Here" trap, where an organization tries to build everything from scratch. As in most cases, it is important to find a good balance. A decision whether to use a library should be always deliberate, and the decision process should be documented.
 
 If there is no existing DSL for your problem, you might also investigate whether using a DSL generator could be an option for you. Using such libraries can make designing a DSL a breeze. This book covers https://github.com/F43nd1r/autodsl[AutoDSL for Kotlin] to give you an impression of this approach.
 
@@ -28,11 +30,11 @@ Another potential question is whether to generate the target entities of an exte
 
 Usually, an internal DSL can only be an approximation of the syntax we really wish for, there is a "syntactical gap". It is tempting to subordinate everything else in order to come as close as possible to our ideal syntax. But of course beauty has its price, pushing the limits of the host language's syntax can be problematic, and neglecting the other requirements can render a beautiful DSL useless.
 
-That's why it is important to have a rough idea how close the internal DSL needs to come the ideal syntax, and when to start compromising. One relevant question in this context is how "tech-savvy" users of the DSL are. Generally, people without coding experience need more streamlined DSLs than software engineers, who will often tolerate a few warts in the DSL syntax.
+That's why it is important to have a rough idea how close the internal DSL needs to come to the ideal syntax, and when to start compromising. One relevant question in this context is how "tech-savvy" users of the DSL are. Generally, people without coding experience need more streamlined DSLs than software engineers, who will often tolerate a few "warts" in the DSL syntax.
 
 === Learning Experience
 
-Having a beautiful and concise Syntax for a DSL doesn't necessarily mean that it is easy to master. Once a DSL reaches a certain size and complexity, it is naive to assume that people just use it without assistance. The learning experience of the users is often just an afterthought, but I think it is important to account for it already in the analysis process.
+Having a beautiful and concise Syntax for a DSL doesn't necessarily mean that it is easy to master. Once a DSL reaches a certain size and complexity, it is naive to assume that people can use it without any assistance. The learning experience of the users is often just an afterthought, but I think it is important to account for it already in the analysis process.
 
 The DSL itself can be designed in a way to have a shallow learning curve, e.g. by mimicking known systems, or by emphasizing consistency over conciseness. An example for a "too concise" DSL might be regular expressions, as many users - including me - have to look up the syntax over and over again. Of course, training and documentation are major factors for a good learning experience as well. In order to get this right, you have to know your target audience and their skill-set.
 
@@ -61,6 +63,12 @@ The DSL has to be not only implemented, but must be maintained as well. It shoul
 === Performance and Memory Requirements
 
 Often performance considerations don't get much attention. However, in most cases DSLs invoke additional operations, instantiate extra classes and may trigger garbage collections. When working with big data, or having a wasteful DSL design, you might run in performance and memory problems. That's why it is necessary to estimate performance requirements upfront, and to employ load tests and metrics accordingly.
+
+=== Java Interoperability
+
+This is a Kotlin-specific question: There are plenty of environments using a mix of Java and Kotlin, so it might be a requirement to use a DSL written in Kotlin from Java code. Usually, this direction is more challenging than using Java from Kotlin code, and depending on the language features, a Kotlin DSL might be practically unusable from Java. However, in many cases some "glue code" can help to bridge the gap, and the Kotlin language itself contains some features to increase the interoperability with Java.
+
+If there is a requirement for Java interoperability, it should be already considered in the design phase. <<chapter-12.adoc#javaInteroperability, Chapter 12>> helps you deal with this challenge.
 
 === Ready, Steady, Go?
 

@@ -7,31 +7,35 @@
 
 The intention for writing a DSL is to make a certain domain more accessible, to make it easier to read and write, to avoid mistakes, and sometimes to follow established standards or conventions (e.g. SQL for database access, or mathematical notation). The target audience for DSLs can be the authors themselves, library users, or people who have domain knowledge, but do usually no or just a little programming. Sometimes it is sufficient when experts can read and understand a DSL, in order to check correctness or to give feedback.
 
-Typical use cases for DSLs include modelling business logic, e.g. trades for a financial company, and help communicating at the boundaries of the system, which includes database access, serialization, web connectivity or UI. Then there are DSLs that "calculate" something in some sense. Other common applications for DSLs are testing and logging. There are DSLs for code generation, or even for writing DSLs.
+Domain-specific languages are often used to model business logic in specific domains, such as financial trades for a financial company. They can also be useful for communicating at the boundaries of a system, including tasks such as database access, serialization, web connectivity, and UI design. Additionally, DSLs can be used for "calculative" purposes, such as performing calculations or simulations. They are also commonly used in testing and logging, as well as for code generation and even for writing DSLs themselves. In all of these cases, DSLs provide a specialized language that is tailored to the needs of a particular domain, allowing developers to more easily express concepts and perform tasks in a way that is natural and intuitive.
 
 === Internal and External DSLs
 
-This books discusses DSLs which are embedded into Kotlin, and are therefore limited to the existing expressions of the language. These are _internal DSLs_ (or "embedded DSLs"). One major advantage is that these DSL don't need special treatment, there are no extra steps needed like reading and parsing files, so they fit seamless with the rest of the code. An edge case are DSLs realized entirely inside strings, the way e.g. regular expressions work: While they are technically internal DSLs, they feel and behave more like external DSLs, because the "embedding" in the language is very shallow.
+This books discusses DSLs which are embedded into Kotlin, and are therefore limited to the existing expressions of the language. These are _internal DSLs_ (or "embedded DSLs"). One major advantage is that these DSL don't need special treatment, there are no extra steps needed like reading and parsing files, so they fit seamless with the rest of the code.
 
-One disadvantage of internal DSLs is the limitation of the syntax inherited by the host language. Kotlin allows great freedom for DSL design, especially compared to Java. Nevertheless, it is still possible that the language is not expressive enough to design the DSL you need. In this case _external DSLs_ are an option: They have their own rules and syntax, and require lexers, parsers etc. This leads to a larger overhead compared to internal DSLs. However, writing external DSLs has become much easier recently by new libraries and frameworks, and improved tooling.
+One disadvantage of internal DSLs is the limitation of the syntax inherited by the host language. Kotlin allows for great freedom in DSL design, especially compared to Java. Nevertheless, it is still possible that the language is not expressive enough to design the DSL you need. In such cases _external DSLs_ are an option: They have their own rules and syntax, and require lexers, parsers etc. This leads to a larger overhead compared to internal DSLs. However, writing external DSLs has become much easier recently by new libraries and frameworks, and improved tooling.
+
+An edge case are internal DSLs realized entirely inside strings, the way e.g. regular expressions work: While they are technically internal DSLs, they feel and behave more like external DSLs, because the "embedding" in the language is very shallow.
 
 === Code Generation for Internal DSLs (((Code Generation)))
 
-A common problem in DSL design is combinatorial explosion: Take for example a DSL for physical quantities, and all the possible results when multiplying or dividing them. In order to achieve a pleasing syntax, but avoid illegal conversions you might have to write lots of boilerplate code. In such cases, code generation can help to get the job done, even if it seemed hopeless at the first glance.
+One challenge when designing a DSL is the risk of combinatorial explosion, where the number of possible combinations of elements or operations in the DSL becomes too large to manage effectively. For example, in a DSL for representing physical quantities, there may be a large number of possible results when multiplying or dividing different quantities. To avoid illegal conversions and provide a pleasing syntax, it might be necessary to write a significant amount of boilerplate code to handle all the possible combinations. In such cases, code generation can be a useful tool to help automate the creation of this boilerplate code and make it easier to manage the complexity of the DSL, while keeping the DSL expressive and maintainable.
 
 There are also libraries creating DSLs for you. If you need a well-known style of DSL, you just have to describe what you need (e.g. by annotating your business classes accordingly), and the library will generate the DSL code for you. An example for this approach is https://github.com/F43nd1r/autodsl[AutoDSL for Kotlin]
 
 === Common use cases for DSLs
 
-While it is hard to get a clear-cut separation between the different types of use cases, it is still helpful to have these. In particular, every DSL category has use cases it can model better than others. Here is a list:
+While it is difficult to clearly distinguish between the various types of use cases, a general classification is still helpful. In particular, every DSL category has use cases it can model better than others. Some common types of use cases for DSLs include:
 
-* Creating data
-* Transforming data
-* Define operations
-* Execute actions
-* Generating code
-* Testing
-* Logging
+* Creating data: DSLs can be used to define and construct data structures in a domain-specific way, making it easier to represent and manipulate complex data.
+* Transforming data: DSLs can provide concise and expressive ways to perform transformations on data, such as filtering, aggregating, or mapping.
+* Defining operations: DSLs can be used to specify complex operations in a domain-specific way, making it easier to understand and reason about the behavior of the system.
+* Executing actions: DSLs can provide a natural way to specify and execute actions, such as triggering events or initiating processes.
+* Generating code: DSLs can be used to generate code in a specific programming language or format, making it easier to automate repetitive tasks or build complex systems.
+* Testing: DSLs can be used to define and execute tests in a domain-specific way, making it easier to validate the behavior of a system.
+* Logging: DSLs can provide a specialized language for logging messages and events, making it easier to understand and analyze the behavior of a system.
+
+Each of these use cases has its own challenges and requirements, and different DSL categories may be better suited to modeling certain types of use cases over others.
 
 === DSL Design Principles
 
@@ -47,7 +51,9 @@ There are a few general principles an internal DSL should follow:
 
 === Kotlin and DSLs
 
-At this point, it makes sense to discuss the relationship of the Kotlin language itself  with DSLs. Kotlin was unveiled in 2011 by JetBrains, the company known for IntelliJ IDEA and other IDEs. Kotlin's design focuses on readability, pragmatism, safety and interoperability. The language has a clean syntax, and is expressive, especially compared to Java.
+At this point, it's worth considering the characteristics of Kotlin that make it well-suited for building DSLs. Kotlin is a programming language developed by JetBrains, the company behind popular IDEs such as IntelliJ IDEA. From its inception, Kotlin was designed with a focus on readability, practicality, safety, and interoperability.
 
-Many language features seem to lead naturally to DSLs, there is no clear-cut boundary between "everyday code" and DSLs, and this seems to be a conscious design choice. I think this concept plays a big role in the success of the language, especially as it allows to adapt and improve existing Java code very easily and organically by creating "miniature DSLs" on the fly.
+In comparison to Java, Kotlin has a more concise and expressive syntax, making it easier to write and read code. It also has a number of language features that are particularly useful for building DSLs. Together, these features allow developers to create DSLs with a fluent and intuitive API that is easy to use and understand, and lend themselves naturally to this coding style.
+
+It is often easy to add "miniature DSLs" on the fly in existing code. That means the boundary between "everyday code" and DSLs in Kotlin isn't clear-cut, which seems to be a conscious design choice. This flexibility allows developers to gradually adapt and improve existing code in an organic way, without the need for major refactoring. In my opinion, this kind of language design plays a significant role in the success of Kotlin as a language.
 

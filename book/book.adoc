@@ -49,6 +49,8 @@ include::chapter-12.adoc[]
 
 include::chapter-13.adoc[]
 
+include::epilog.adoc[]
+
 include::bibliography.adoc[]
 
 include::index.adoc[]
