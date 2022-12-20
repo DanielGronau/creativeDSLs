@@ -129,7 +129,7 @@ dependencies {
 At the first glance, it is hard to tell which is which. There are parts of the DSLs
 which deviate more, but then it looks more like a deliberate decision, in order to clean up and standardize the syntax, than a limitation of the language.
 
-The Kotlin Script DSL itself uses mainly the Loan Pattern. For the definition of dependencies, there are two notations: The example shows the "string notation", which is an example for a String-Parsing DSL. Alternatively, the "map notation" can be used, which looks like this: `implementation(group = "com.example", name = "lib", version = "1.1")`
+The Kotlin Script DSL itself uses mainly the Loan Pattern. For the definition of dependencies, there are two notations: The example shows the "string notation", which is a String-Parsing DSL. Alternatively, the "map notation" can be used, which looks like this: `implementation(group = "com.example", name = "lib", version = "1.1")`
 
 In my opinion, Gradle is a good example how Kotlin DSLs can help to modernize an already established and successful solution, without causing major disruptions.
 
