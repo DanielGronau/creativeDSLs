@@ -93,6 +93,12 @@ Quotes look like this:
 "Code is like humor. When you have to explain it, it’s bad."
 -- Cory House
 
+=== Tools used for writing this book
+
+The book is written in the https://asciidoc.org/[AsciiDoc] format. For PDF and eBook generation, I used the https://asciidocfx.com/[AsciidocFX] editor. My main writing and programming tool was https://www.jetbrains.com/idea/[IntelliJ IDEA] by JetBrains, using the https://plugins.jetbrains.com/plugin/7391-asciidoc[Asciidoctor plugin]. The diagrams were made using the https://ditaa.sourceforge.net/[ditaa] library.
+
+I used https://openai.com/blog/chatgpt/[ChatGPT] by OpenAI, which was invaluable to improve my writing style and to avoid grammar mistakes. It is an amazing tool, and allows non-native speakers like me to publish without the need of extensive and expensive proofreading.
+
 === Feedback
 
 I'm always thankful for feedback from my readers. Constructive criticism helps to improve this book. As every book, it contains mistakes, omissions, unclear formulations and - as I'm painfully aware as a non-native speaker - bad grammar.

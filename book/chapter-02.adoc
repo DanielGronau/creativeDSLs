@@ -68,10 +68,10 @@ Often performance considerations don't get much attention. However, in most case
 
 This is a Kotlin-specific question: There are plenty of environments using a mix of Java and Kotlin, so it might be a requirement to use a DSL written in Kotlin from Java code. Usually, this direction is more challenging than using Java from Kotlin code, and depending on the language features, a Kotlin DSL might be practically unusable from Java. However, in many cases some "glue code" can help to bridge the gap, and the Kotlin language itself contains some features to increase the interoperability with Java.
 
-If there is a requirement for Java interoperability, it should be already considered in the design phase. <<chapter-12.adoc#javaInteroperability, Chapter 12>> helps you deal with this challenge.
+If Java interoperability is required, it should be already considered in the design phase. The respective challenges and possible solution are discussed in <<chapter-12.adoc#javaInteroperability, Chapter 12>> in more detail.
 
 === Ready, Steady, Go?
 
-After you have gathered the requirements, you should have a good idea for the scope, the complexity and the benefits of the project. At this point you should take a deep breath, and decide if you want to go forward. Don't get me wrong, I like DSLs so much that I wrote a book about them. But sometimes the best code is the one that was never written.
+After gathering the requirements for your DSL project, you should have a good understanding of its scope, complexity, and benefits. At this point, it's important to take a step back and carefully consider whether you want to move forward. While DSLs can be incredibly useful and rewarding to build, it's important to remember that they should not be an end in themselves. A DSL should have a clear purpose and add tangible value for its users, and the scope of the project should be manageable for your organization.
 
-A DSL should never be an end in itself, it should have a clear purpose, and add a tangible value for its users. Further, the scope of the project must be manageable for your organization. If you see that the upcoming project won't meet these criteria, cancel it. But hopefully, the project turns out to be both doable and useful, and you can give the green light.
+If you find that the project does not meet these criteria, it may be best to cancel it. However, if you believe that the project is both feasible and useful, you can give the green light and begin implementation. Just remember to keep the overall goals and purpose of the DSL in mind as you work, and be prepared to adapt and refine your approach as needed.
