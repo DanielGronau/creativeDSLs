@@ -470,6 +470,7 @@ Writing good hybrid DSLs is challenging. In most cases it is the better choice t
 * Define operations
 * Execute actions
 * Generating code
+* Configuring systems
 * Testing
 * Logging
 

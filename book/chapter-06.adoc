@@ -428,6 +428,7 @@ The Builder Pattern is quite popular in Java - there are even libraries like htt
 
 * Creating data
 * Generating code
+* Configuring systems
 * Testing
 * Logging
 

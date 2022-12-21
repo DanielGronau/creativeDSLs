@@ -129,6 +129,7 @@ In some cases, it can feel very natural to integrate a DSL in the existing user 
 * Transforming data
 * Execute actions
 * Generating code
+* Configuring systems
 * Testing
 * Logging
 

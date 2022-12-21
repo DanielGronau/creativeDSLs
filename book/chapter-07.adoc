@@ -488,6 +488,7 @@ The Loan Pattern DSLs have several advantages over the classic Builder Pattern s
 * Creating data
 * Transforming data
 * Execute actions
+* Configuring systems
 * Generating code
 * Testing
 
