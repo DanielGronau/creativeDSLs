@@ -17,7 +17,8 @@ Chapters
 9. String-Parsing DSLs (chemical formula with and without parser generator)
 10. Annotation based DSL (data class mapper)
 11. Code Generation with KotlinPoet (physical quantities)
-12. Dissecting common DSLs (kotest, gradle .kts, Kotlin Poet, better-parse)
+12. Java Interoperability
+13. Dissecting common DSLs (kotest, gradle .kts, Kotlin Poet, better-parse)
 
 TODO:
 - chapter 12 and 13
@@ -53,3 +54,5 @@ https://www.epubli.de/
 https://languagetool.org/de
 
 https://www.wordtune.com/
+
+https://chat.openai.com/

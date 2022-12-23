@@ -4,21 +4,21 @@
 
 === Why another book about DSLs in Kotlin?
 
-Kotlin is very suitable to write DSLs and accordingly there exists already literature about this topic. However, in my opinion many existing books fall short in some ways:
+Kotlin is a powerful language that is well-suited for writing Domain Specific Languages. There is already a wealth of literature available on this topic, but I find that many of these books fall short in a few key areas:
 
-* They focus too much on "toy examples" that give little insight in the process of writing DSLs in practice
-* They present solutions in a "vacuum", without highlighting how an effective design process looks like, which requirements, constraints and limitations apply, and which trade-offs were made
-* They don't attempt a categorization of, and comparison between the different DSL types
+* They often focus on oversimplified examples that do not provide a clear understanding of how to write DSLs in practice
+* They present solutions in a vacuum, without explaining the design process, the requirements and constraints that apply, or the trade-offs that were made
+* They do not provide a categorization of the different types of DSLs, or a comparison of their relative strengths and weaknesses
 
-This book tries to address these shortcomings. It contains a checklist of requirements, which includes less obvious, but nevertheless important aspects of the requirement analysis. It shows, how designing DSLs can be structured. Further, the presented DSLs progress from "boring" default examples to more and more challenging and unwieldy cases, and concludes with a discussion of some complex and successful real-world DSLs.
+This book aims to fill these gaps by providing a comprehensive guide to writing DSLs in Kotlin, with a focus on practical examples and real-world considerations. One of the main goals of this book is to go beyond toy examples and provide real-world insights into the process of writing DSLs in practice. This includes discussing the design process, the requirements and constraints that apply, the trade-offs that must be made, and the challenges that arise.
 
-Another goal of this book is to avoid presenting isolated examples, but to attempt a classification of DLS. The design patterns movement established a common language for battle-tested coding solutions. In the same way, there should exist a widely accepted terminology for classifying DSLs, and this book wants to contribute to this effort.
+To achieve this, the book progresses from "boring" default examples to more challenging and complex cases, culminating in a discussion of real-world DSLs that have been successful in practice. In addition to providing practical guidance, it is attempted to find a comprehensive terminology for classifying DSLs, similar to the way the design patterns movement established a common language for coding solutions.
 
-=== Who Shouldn't Read this Book (yet)?
+Overall, the goal of the book is to provide a comprehensive and practical guide to designing and implementing DSLs using Kotlin.
 
-Writing DSLs can be challenging, usually it isn't a good introduction to a host language. That's why this book assumes that you are already familiar with Kotlin, and - to a lesser degree - with Java. The book contains actually a chapter describing language features of Kotlin, but it is focussing on their possible use in DSLs - so this won't be enough to learn the language.
+=== Who is this book not (yet) intended for?
 
-So, if you don't feel comfortable in Kotlin yet, take your time and explore the language first, it will save you from a lot of confusion. This book won't go anywhere in the meantime, it can wait until you can get the most out of it.
+This book is not very suitable for those who are new to Kotlin or Java. While this book does contain a chapter discussing Kotlin language features and their potential use in DSLs, it is not meant to be a comprehensive guide to learning the Kotlin language. If you are not yet familiar with Kotlin or Java, it is recommended to take the time to learn these languages before diving into DSLs. Writing DSLs can be challenging, and it is important to have a solid foundation in the host language before attempting to create a full-scale DSL. This book will still be here when you are ready to take on the challenge of DSL development.
 
 === What's in this Book
 
@@ -32,7 +32,7 @@ _Chapter 4, Relevant Language Features_, takes a closer look at the Kotlin langu
 
 _Chapter 5, Algebraic DSLs_, introduces the first category of DSLs, which supports number-like behavior by employing operator overloading and infix functions. This is a quite straightforward DSL type, but mastering it will come handy in many other contexts.
 
-_Chapter 6, Builder Pattern DSLs_, covers the well known Builder Pattern you probably already know from Java, but also some variations that may surprise you.
+_Chapter 6, Builder Pattern DSLs_, covers the well known Builder Pattern you probably already know from Java, and shows some variations attempting to make builders safer to use.
 
 _Chapter 7, Loan Pattern DSLs_, is about employing extension functions and the Loan Pattern in order to solve similar problems like the Builder Pattern DSL, but in a more idiomatic and convenient way. It is also shown how the DSL code can be written for you by using libraries like AutoDSL.
 
@@ -44,15 +44,15 @@ _Chapter 10, Annotation-based DSLs_, discusses the use of annotations for a DSL,
 
 _Chapter 11, Code Generation for DSLs_, discusses how code generation can help you when writing the DSL manually is just too much boilerplate. At first, this task may sound complicated, but the example shows that it isn't really something to be afraid of.
 
-_Chapter 12, Real-World DSL Examples_, discusses some well-known and battle-tested DSLs, in order to learn from it. In my opinion, toy-examples are not enough to learn good DSL design. It is important to see how DSLs deal with real-world issues, how they have to compromise and still manage to deliver a great user experience.
+_Chapter 12, Java interoperability_, gives an overview of the issues that may arise when Kotlin DSLs are used from Java code, and gives some advice on how to solve these issues.
 
-_Chapter 13, Wrap-up_, collects some bits and pieces of experience which might be helpful to your journey, and finishes with a few closing remarks.
+_Chapter 13, Real-World DSL Examples_, discusses some well-known and battle-tested DSLs, in order to learn from it. In my opinion, toy-examples are not enough to learn good DSL design. It is important to see how DSLs deal with real-world issues, how they have to compromise and still manage to deliver a great user experience.
 
 === Prerequisites
 
-To try out code samples from this book or the associated project https://github.com/creativeDsls[github.com/creativeDsls], you can use any IDE capable of running Kotlin, JetBrains' IntelliJ IDEA being the obvious choice. You can also use the https://play.kotlinlang.org/[play.kotlinlang.org] online sandbox. The Kotlin language version used is 1.7. If not stated otherwise, when discussing Java, language level 11 is assumed.
+To try out the code samples in this book or from the associated project at https://github.com/creativeDsls[github.com/creativeDsls], you will need an integrated development environment (IDE) that can run Kotlin. I recommend using JetBrains' IntelliJ IDEA, which has a free community edition that is sufficient for this purpose. Alternatively, you can also use the online Kotlin sandbox   https://play.kotlinlang.org/[play.kotlinlang.org] for smaller examples. This book uses Kotlin version 1.7 and assumes Java language level 11 unless otherwise specified.
 
-In my opinion, the https://kotlinlang.org/docs/home.html[Kotlin Documentation] is really comprehensive, well written, and contains great examples. Every Kotlin programmer should know and use it, and instead of bloating this book, it will often refer to the documentation for very specific or not directly DSL-related topics.
+It is also recommended that you familiarize yourself with the https://kotlinlang.org/docs/home.html[Kotlin Documentation], which is a valuable resource for learning about the language and its features. This book will refer to the Kotlin documentation for specific or non-DSL-related topics, rather than repeating information that can already be found there.
 
 === Typographical Conventions
 
@@ -60,7 +60,7 @@ This book uses a few typographical conventions to structure its content.
 
 Inlined code snippets are shown like this: `val answer = 42`
 
-Tips, warnings etc. are shown as follows:
+Tips, warnings etc. are presented as follows:
 
 TIP: When the white frost comes, do not eat the yellow snow.
 
@@ -95,12 +95,12 @@ Quotes look like this:
 
 === Tools used for writing this book
 
-The book is written in the https://asciidoc.org/[AsciiDoc] format. For PDF and eBook generation, I used the https://asciidocfx.com/[AsciidocFX] editor. My main writing and programming tool was https://www.jetbrains.com/idea/[IntelliJ IDEA] by JetBrains, using the https://plugins.jetbrains.com/plugin/7391-asciidoc[Asciidoctor plugin]. The diagrams were made using the https://ditaa.sourceforge.net/[ditaa] library.
+The book is written in the https://asciidoc.org/[AsciiDoc] format. For PDF and eBook generation, I used the https://asciidocfx.com/[AsciidocFX] editor. The main writing and programming tool was https://www.jetbrains.com/idea/[IntelliJ IDEA] by JetBrains, using the https://plugins.jetbrains.com/plugin/7391-asciidoc[Asciidoctor plugin]. The diagrams were made using the https://ditaa.sourceforge.net/[ditaa] library.
 
-I used https://openai.com/blog/chatgpt/[ChatGPT] by OpenAI, which was invaluable to improve my writing style and to avoid grammar mistakes. It is an amazing tool, and allows non-native speakers like me to publish without the need of extensive and expensive proofreading.
+I used https://openai.com/blog/chatgpt/[ChatGPT] by OpenAI as writing assistant. As a non-native speaker, it is difficult to avoid grammar mistakes and to find to a natural writing style, and I'm thankful that OpenAI granted public access for testing this incredible technology.
 
 === Feedback
 
-I'm always thankful for feedback from my readers. Constructive criticism helps to improve this book. As every book, it contains mistakes, omissions, unclear formulations and - as I'm painfully aware as a non-native speaker - bad grammar.
+Please do not hesitate to contact me if you find any errors or have suggestions for improvement. Your feedback is very valuable to me and will help to improve this book for future readers. Thank you in advance for taking the time to let me know your thoughts.
 
-To send me feedback, e-mail me at feedback@creativedsls.com.
+To give feedback, e-mail me at creativeDsls@protonmail.com.
