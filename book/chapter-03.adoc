@@ -104,7 +104,7 @@ It's generally a good practice to avoid tightly integrating a DSL into the class
 
 * *Entangling DSL code with business logic:* Such tight integration can complicate to separate the two and to make changes to either without impacting the other.
 * *Making the DSL part of the business API:* The DSL may become part of the business API, which can make it bloated and inflexible. This complicates evolving the DSL or the business logic independently of one another.
-* *Limiting the usefulness of the result classes:* Tightly coupled result classes may not be able to work on their own or may be hard to use with other tools or frameworks. This can limit their usefulness in a variety of contexts, such as when working with big data, testing or code generation.
+* *Limiting the usefulness of the result classes:* Tightly coupled result classes may not be able to work on their own or may be hard to use with other tools and frameworks, or from other JVM languages like Java. This can limit their usefulness in a variety of contexts, such as when working with big data, testing or code generation.
 * *Making the DSL harder to replace:* It can be difficult to replace a tightly coupled DSL if the need arises. This can make it harder to evolve your codebase over time and take advantage of new technologies or approaches.
 
 In general, it's a good idea to design your DSL in a way that minimizes coupling between the DSL and the classes it creates, in order to avoid these kinds of issues. In Kotlin, you can use features like extension methods to create DSLs that are flexible and easy to use, while still keeping the DSL and the classes it creates separate.

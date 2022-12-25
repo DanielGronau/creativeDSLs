@@ -361,6 +361,7 @@ annotation class Multiply(
 )
 ----
 
+[#annotationProcessor]
 ==== Case Study: Writing the Annotation Processor
 
 KSP uses Java's https://docs.oracle.com/javase/tutorial/sound/SPI-intro.html[Service Provider Interface] mechanism to discover new processors. That's why we need to write a provider first:
@@ -388,7 +389,7 @@ Now we need to write the processor. The basic structure looks like this:
 
 [source,kotlin]
 ----
-class GrpcEntityMapperProcessor(
+class PhysicalQuantitiesMapperProcessor(
     private val codeGenerator: CodeGenerator,
     private val logger: KSPLogger,
     private val options: Map<String, String>

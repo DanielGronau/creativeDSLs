@@ -485,7 +485,7 @@ Another useful application for annotations is code generation(((Code Generation)
 
 .Annotation Processors
 ****
-Annotation processors allow to execute custom processor code during the build process, according to the annotations present in the application code. Kotlin features two annotation processors, the older https://kotlinlang.org/docs/kapt.html[kapt], which won't be developed further, and the recommended https://kotlinlang.org/docs/ksp-overview.html[Kotlin Symbol Processing API] (KSP). While the topic is beyond the scope of this book, it might be a good idea to get familiar with this concept, especially when developing annotation-based DSLs.
+Annotation processors allow to execute custom processor code during the build process, according to the annotations present in the application code. Kotlin features two annotation processors, the older https://kotlinlang.org/docs/kapt.html[kapt], which won't be developed further, and the recommended https://kotlinlang.org/docs/ksp-overview.html[Kotlin Symbol Processing API] (KSP), which will be covered in <<chapter-11.adoc#annotationProcessor,chapter 11>>.
 ****
 
 [#reflection]

@@ -1,5 +1,37 @@
 [#javaInteroperability]
 == Java Interoperability
 
+Using a Kotlin DSL from Java can be challenging. While some Kotlin features like operator overloading simply can't be used, there are means to make other features more accessible from Java, and to create a DSL which is useful and convenient in both languages. Fortunately, Kotlin has some built-in features to improve Java interoperability, which can be found in the https://kotlinlang.org/docs/java-to-kotlin-interop.html#package-level-functions[Kotlin Documentation: Calling Kotlin from Java]. In this chapter, Java interoperability will be discussed purely from a DSL design perspective, by presenting the relevant built-in features and useful techniques for solving DSL-specific issues.
 
+=== Top level Functions and Variable Definitions
+
+Java doesn't allow to define functions and variables outside of classes, so Kotlin puts them as static functions and variables in an artificial class. The default name of this class is derived from the file name, including the `kt` ending, and following the upper-camel-case naming convention for classes. Consider the following example:
+
+[source,kotlin]
+.utils.kt
+----
+package com.acme
+
+fun someFunction() {
+    ...
+}
+----
+
+The function could be called from Java as `com.acme.UtilsKt.someFunction()`. Often, you would prefer to use another class name for your DSL, e.g. `Utils` instead of `UtilsKt`.
+
+This can be easily achieved by including a `JvmName` annotation:
+
+[source,kotlin]
+.utils.kt
+----
+package com.acme
+
+@file:JvmName("Utils")
+
+fun someFunction() {
+    ...
+}
+----
+
+It is even possible to map the contents of multiple Kotlin files to the same Java class, but then an additional `@file:JvmMultifileClass` annotation is needed in every file.
 
