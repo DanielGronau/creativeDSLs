@@ -366,6 +366,39 @@ val money: Amount = 22.46.USD
 
 The infix notation covered in the next paragraph uses extension function syntax as well.
 
+==== Context Receivers
+
+Context receivers are still an experimental feature, so some details could change in the future. We won't use them in this book, but they are an interesting concept, and might turn out very useful for writing DSLs. The idea is to get a class providing a certain service into scope:
+
+[source,kotlin]
+----
+interface EnvironmentContext {
+    fun getProperty(name: String): String
+}
+
+context(EnvironmentContext)
+fun someMethod() {
+    val userName = environment.getProperty("userName")
+    ...
+}
+----
+
+As you can see, `someMethod()` can access members of the given `EnvironmentContext` class, similar as in case of an extension function. The difference is that you don't call the method on an instance of the context, it is just available. This allows to have multiple contexts in scope. Not only methods, but whole classes can be put in a context.
+
+To call this method, an `EnvironmentContext` implementation must be provided:
+
+[source,kotlin]
+----
+fun test() {
+    val environmentContext: EnvironmentContextImpl
+    with(environmentContext) {
+        someMethod()
+    }
+}
+----
+
+Providing DSL functionality using a context can help to control its scope, e.g. in order to avoid name clashes.
+
 === Infix Notation for Functions
 
 The infix notation allows names of functions to be used like binary operators. Well-known examples in the Kotlin API include `to` for creating pairs, and `until` and `downTo` for creating ranges.
@@ -475,6 +508,27 @@ fun main() {
 ----
 
 Note the expression `T::class`, which shouldn't work considering type erasure. However, the function is defined as an `inline` function, and the generic parameter `T` is marked as "reified". The details are beyond the scope of this book, but basically the inlining allows the compiler to gather the generic type information already at compile time, and make it look like as there is no type erasure happening. It should be noted that inline functions are subjected to some restrictions and vary slightly from normal functions, e.g. regarding their return behavior.
+
+=== Value Classes
+
+Value classes are a great replacement for data classes, when you just need a wrapper around some type, so you don't mix up different use cases:
+
+[source,kotlin]
+----
+value class Street(val streetName: String)
+value class City(val cityName: String)
+----
+
+When the type is a primitive in Java, you can avoid the overhead of having a wrapper class by using the `@JvmInline` annotation, which eliminates the class at byte-code level:
+
+[source,kotlin]
+----
+@JvmInline
+value class Kilometers(val value: Double)
+
+@JvmInline
+value class Miles(val value: Double)
+----
 
 [#annotations]
 === Annotations
