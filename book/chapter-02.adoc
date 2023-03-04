@@ -8,7 +8,7 @@ It is important to establish a clear understanding of the scope and purpose of y
 
 The first question to answer is obviously which domain to tackle. For small domains and areas with existing standards, this question is usually easy to answer. For larger domains it can be tempting to over-generalize. Try to be specific. Sometimes, the deliberate decision to drop some lesser used and harder to implement parts of the problem domain can make the DSL more flexible and lean. As in other areas of software development, it can be helpful to specify non-goals explicitly. Also, don't forget to specify the target platform, the language level etc.
 
-Generally, it is a good practice to organize your DSL in layers, so that the lower layers don't rely on the higher ones, and can therefore be used independently. E.g. if you design a DSL for linear algebra, the DSL part for matrices could be independent of the rest of the system, which allows to use this part in other contexts as well.
+Generally, it is a good practice to organize your DSL in layers, so that the lower layers don't rely on the higher ones, and can therefore be used independently. E.g. if you design a DSL for linear algebra, the DSL part for working with matrices could be independent of the rest of the system, which allows to use this part in other contexts as well.
 
 When the application already employs other DSLs, it should be considered whether a parallel use of the new DSL would be confusing or if it could yield unexpected results. In some cases it might be smart to imitate the syntax of an existing DSL in order to facilitate the experience the users already have. A real-world example for this approach is the KotlinPoet library mimicking its JavaPoet sister project.
 
@@ -20,7 +20,7 @@ TIP: There is an ongoing debate of how much software should depend on libraries,
 
 If there is no existing DSL for your problem, you might also investigate whether using a DSL generator could be an option for you. Using such libraries can make designing a DSL a breeze. This book covers https://github.com/F43nd1r/autodsl[AutoDSL for Kotlin] to give you an impression of this approach.
 
-=== Specifying the Results
+=== Specifying the Output of the DSL
 
 In most cases it is rather obvious which kind of output is expected. Sometimes you have a choice of executing some action (like a query) directly, or to create classes being able to perform that action instead. Most of the time, creating classes should be preferred. Usually this approach is easier to test and to debug, and sometimes it is convenient to be able to create these classes by other means.
 
@@ -36,7 +36,9 @@ That's why it is important to have a rough idea how close the internal DSL needs
 
 Having a beautiful and concise Syntax for a DSL doesn't necessarily mean that it is easy to master. Once a DSL reaches a certain size and complexity, it is naive to assume that people can use it without any assistance. The learning experience of the users is often just an afterthought, but I think it is important to account for it already in the analysis process.
 
-The DSL itself can be designed in a way to have a shallow learning curve, e.g. by mimicking known systems, or by emphasizing consistency over conciseness. An example for a "too concise" DSL might be regular expressions, as many users - including me - have to look up the syntax over and over again. Of course, training and documentation are major factors for a good learning experience as well. In order to get this right, you have to know your target audience and their skill-set.
+The DSL itself can be designed in a way to have a shallow learning curve, e.g. by mimicking known systems, or by emphasizing consistency over conciseness. An example for a "too concise" DSL might be regular expressions, as many users - including me - have to look up the syntax over and over again.
+
+Of course, training and documentation are essential factors for a good learning experience. However, it's important not to overlook the quality of error and warning messages, which can have a significant impact on how easily users can learn and understand a new DSL. In order to get those factors right, you have to know your target audience and their skill-set.
 
 TIP: In the end it's not the DSL itself which generates value, but the people using it effectively, and this is something we should never forget. Planning for the required assistance upfront can help to improve the DSL, and empower the users to get the most out of it.
 
@@ -54,7 +56,7 @@ Insufficient extensibility is a common pitfall when designing internal DSLs, whi
 
 Therefore, it makes sense to get upfront a rough idea which extensions could be requested after the first version of the DSL. Later, in the implementation phase, this information helps to avoid using techniques that are not flexible enough to handle future requirements.
 
-Another kind of extensibility, which is often overlooked, is extensibility by users. E.g. consider a DSL for working with physical quantities: There are way too many units to cover them all, but users might have a special set of units that they need in their daily work, so it would be great if the DSL allows to add custom units. Such considerations can make a DSL much more useful and successful. When possible, open your DSL for extension by users, and also document how to do it. On the other hand, when you can already predict that extending the DSL may lead to unexpected or unsafe results, try to prevent it.
+Another type of extensibility that is often overlooked is extensibility by users. For instance, consider a DSL for working with physical quantities: there are too many units to cover all of them, but users might have a particular set of units that they require in their daily work. Therefore, it would be beneficial if the DSL allows users to add custom units. Such considerations can significantly increase the usefulness and success of a DSL. If possible, it is recommended to open your DSL for extension by users, and also provide documentation on how to do it. However, it may be advisable to restrict extensibility when you can predict that extending the DSL may lead to unexpected or unsafe outcomes.
 
 === Maintainability
 
@@ -66,12 +68,18 @@ Often performance considerations don't get much attention. However, in most case
 
 === Java Interoperability
 
-This is a Kotlin-specific question: There are plenty of environments using a mix of Java and Kotlin, so it might be a requirement to use a DSL written in Kotlin from Java code. Usually, this direction is more challenging than using Java from Kotlin code, and depending on the language features, a Kotlin DSL might be practically unusable from Java. However, in many cases some "glue code" can help to bridge the gap, and the Kotlin language itself contains some features to increase the interoperability with Java.
+This is a Kotlin-specific question: There are plenty of environments using a mix of Java and Kotlin, so it might be required to use a DSL written in Kotlin from Java code. Usually, this direction is more challenging than using Java from Kotlin code, and depending on the language features, a Kotlin DSL might be practically unusable from Java. However, in many cases some "glue code" can help to bridge the gap, and the Kotlin language itself contains some features to increase the interoperability with Java.
 
 If Java interoperability is required, it should be already considered in the design phase. The respective challenges and possible solution are discussed in <<chapter-12.adoc#javaInteroperability, Chapter 12>> in more detail.
 
+=== Closed or Open Source
+
+One important consideration that should be decided up-front is whether to make the DSL project open source. Doing so can have several benefits, including community contributions, increased exposure, and potential collaborations. However, it also means giving up control over the direction of the project, as well as potentially exposing any flaws or security vulnerabilities to the public. Additionally, open source projects require ongoing maintenance and support from the original developers, which can be time-consuming and resource-intensive. Ultimately, the decision to make a DSL project open source should be weighed carefully against the potential benefits and drawbacks.
+
 === Ready, Steady, Go?
 
-After gathering the requirements for your DSL project, you should have a good understanding of its scope, complexity, and benefits. At this point, it's important to take a step back and carefully consider whether you want to move forward. While DSLs can be incredibly useful and rewarding to build, it's important to remember that they should not be an end in themselves. A DSL should have a clear purpose and add tangible value for its users, and the scope of the project should be manageable for your organization.
+After identifying the requirements for your DSL project, it is important to carefully consider its scope, complexity, and benefits before moving forward. While DSLs can be highly beneficial to build, it is important to ensure that they have a clear purpose and add tangible value for their users, and that the scope of the project is manageable for your organization.
 
-If you find that the project does not meet these criteria, it may be best to cancel it. However, if you believe that the project is both feasible and useful, you can give the green light and begin implementation. Just remember to keep the overall goals and purpose of the DSL in mind as you work, and be prepared to adapt and refine your approach as needed.
+If you find that the project does not meet these criteria, it may be best to cancel it. However, if you believe that the project is both feasible and useful, you can proceed with implementation. Keep the overall goals and purpose of the DSL in mind as you work, and be prepared to adapt and refine your approach as needed.
+
+Remember that building a DSL is just a means to an end, and not an end in itself. It should ultimately serve the needs of its users and add value to your organization. As such, careful consideration of the project's feasibility, purpose, and value is critical before beginning implementation.
