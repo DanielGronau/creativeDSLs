@@ -4,10 +4,10 @@ Now that you have defined the requirements for your DSL and are ready to move on
 
 The following four-step workflow can be a helpful guide as you begin designing and implementing your DSL:
 
-* Imagine the ideal syntax: Begin by considering the concepts and ideas that you want to express in your DSL, and brainstorm possible syntaxes that could be used to represent them. Consider readability, expressiveness, and usability as you explore different options.
-* Prototyping: Once you have a rough idea of the syntax you want to use, create a prototype of your DSL using Kotlin's language features. This will allow you to experiment with different approaches and see how they work in practice.
-* Formalization: Once you are satisfied with the prototype of your DSL, formalize the syntax and semantics of your DSL.
-* Implementation: With the syntax and semantics of your DSL formally defined, you can begin implementing your DSL in Kotlin. Use the features and techniques you have learned to create a complete and functional DSL that is ready for use.
+* *Imagine the ideal syntax:* Begin by considering the concepts and ideas that you want to express in your DSL, and brainstorm possible syntaxes that could be used to represent them. Consider readability, expressiveness, and usability as you explore different options.
+* *Prototyping:* Once you have a rough idea of the syntax you want to use, create a prototype of your DSL using Kotlin's language features. This will allow you to experiment with different approaches and see how they work in practice.
+* *Formalization:* Once you are satisfied with the prototype of your DSL, formalize the syntax and semantics of your DSL.
+* *Implementation:* With the syntax and semantics of your DSL formally defined, you can begin implementing your DSL in Kotlin. Use the features and techniques you have learned to create a complete and functional DSL that is ready for use.
 
 [ditaa,"writing-a-dsl"]
 .DSL-Development Workflow
@@ -76,7 +76,7 @@ The final step in the process of designing a DSL is implementation, which involv
 ====
 Be prepared for the possibility that your prototype may not be thorough enough, or may not cover all the necessary cases, and that you may hit a roadblock during the implementation phase. If this happens, it's important not to panic and to take a step back to assess the situation.
 
-One option you might consider in this situation is to return to the prototype phase and explore other approaches or ideas. While it may be tempting to try to power through and force a solution, this can often be counterproductive, as it can limit your field of view and make it harder to find a creative and effective solution.
+One option you might consider in this situation is to return to the prototype phase and explore other approaches or ideas. While it may be tempting to try to power through with your current approach, this can often be counterproductive, as it can limit your field of view and make it harder to find a creative and effective solution.
 ====
 
 If you find that you are writing a lot of boilerplate code during the implementation phase, you might want to consider using a source code generator to automate this process. This can help you save time and effort, and can help you create a DSL that is easier to maintain and extend.
@@ -115,9 +115,9 @@ It's generally a best practice to follow code conventions, as this can make your
 
 ==== Testing
 
-For some DSL categories, testing can be more difficult than for normal code, as the code might be less rigid than usual, or - to put it in mechanical terms - it can have more moving parts and degrees of freedom. This makes it more likely to overlook edge-cases or unwanted behavior. A particular challenge are compile-time guarantees: There is no convenient way to test that certain unwanted code structures don't compile. Overall, depending on the type of DSL, testing might require more attention and effort.
+For some DSL categories, testing can be more difficult than for normal code, as the code might be less rigid than usual, or - to put it in mechanical terms - it can have more moving parts and degrees of freedom. This makes it more likely to overlook edge-cases or unwanted behavior. A particular challenge are compile-time guarantees: There is no convenient way to test that certain unwanted code structures don't compile. Overall, depending on the type of DSL, testing can be more challenging than for ordinary code, and might require more attention and effort.
 
-Testing DSLs can be more challenging than testing ordinary code in some cases, due to the nature of DSLs and the way they are used. Some common challenges in testing DSLs include:
+Some common challenges in testing DSLs include:
 
 * *More complex code structures:* DSLs can have more complex code structures than ordinary code, e.g. classes acting as wrappers, or intermediate builder classes.
 * *Combinatorial explosion:* DSLs may allow to combine its elements as building blocks. This can make it more difficult to test all possible combinations and edge cases, and to ensure that the DSL is behaving as expected.

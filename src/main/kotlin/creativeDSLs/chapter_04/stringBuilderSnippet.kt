@@ -2,7 +2,7 @@ package creativeDSLs.chapter_04
 
 fun sb(block: StringBuilder.() -> Unit): String =
     StringBuilder()
-        .apply { block.invoke(this) }
+        .apply { block(this) }
         .toString()
 
 val s: String = sb {

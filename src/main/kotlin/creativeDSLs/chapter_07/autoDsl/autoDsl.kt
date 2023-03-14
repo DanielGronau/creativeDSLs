@@ -44,6 +44,7 @@ data class HttpRequestBuilder(
         }
 }
 
+/*
 fun main() {
     val request = httpRequestBuilder {
         uri = URI.create("https://acme.com:9876/products")
@@ -59,3 +60,4 @@ fun main() {
         timeout = Duration.ofSeconds(5)
     }.build()
 }
+*/
