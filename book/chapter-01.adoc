@@ -9,7 +9,7 @@ The intention for writing a DSL is to make a certain domain more accessible, to 
 
 Domain-specific languages are often used to model business logic in specific domains, such as financial trades for a financial company. They can also be useful for communicating at the boundaries of a system, including tasks such as database access, serialization, web connectivity, and UI design. Additionally, DSLs can be used for performing calculations or simulations. They are also commonly used in testing and logging, as well as for code generation and even for writing DSLs themselves. In all of these cases, DSLs provide a specialized language that is tailored to the needs of a particular domain, allowing developers to more easily express concepts and perform tasks in a way that is natural and intuitive.
 
-=== Internal and External DSLs
+=== Internal and External DSLs (((Internal DSL))) (((External DSL)))
 
 This books discusses DSLs which are embedded into Kotlin, and are therefore limited to the existing expressions of the language. These are _internal DSLs_ (or "embedded DSLs"). One major advantage is that these DSL don't need special treatment, there are no extra steps needed like reading and parsing files, so they fit seamless with the rest of the code.
 
@@ -23,7 +23,7 @@ One challenge when designing a DSL is the risk of combinatorial explosion, where
 
 There are also libraries creating DSLs for you. If you need a well-known style of DSL, you just have to describe what you need (e.g. by annotating your business classes accordingly), and the library will generate the DSL code for you. An example for this approach is https://github.com/F43nd1r/autodsl[AutoDSL for Kotlin]
 
-=== Common use cases for DSLs
+=== Common use cases for DSLs (((Use Cases)))
 
 While it is difficult to clearly distinguish between the various types of use cases, a general classification is still helpful. In particular, every DSL category has use cases it can model better than others. Some common types of use cases for DSLs include:
 
@@ -38,7 +38,7 @@ While it is difficult to clearly distinguish between the various types of use ca
 
 Each of these use cases has its own challenges and requirements, and different DSL categories may be better suited to modeling certain types of use cases over others.
 
-=== DSL Design Principles
+=== DSL Design Principles (((Design Principles)))
 
 There are a few general principles an internal DSL should follow:
 

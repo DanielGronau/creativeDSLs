@@ -1,7 +1,7 @@
 [#javaInteroperability]
-== Java Interoperability
+== Java Interoperability (((Java Interoperablitiy)))
 
-Using a Kotlin DSL from Java can be challenging. While some Kotlin features like operator overloading simply can't be used, there are means to make other features more accessible from Java, and to create a DSL which is useful and convenient in both languages. Fortunately, Kotlin has some built-in features to improve Java interoperability, which can be found in the https://kotlinlang.org/docs/java-to-kotlin-interop.html#package-level-functions[Kotlin Documentation: Calling Kotlin from Java]. In this chapter, Java interoperability will be discussed purely from a DSL design perspective, by presenting the relevant built-in features and useful techniques for solving DSL-specific issues.
+Using a Kotlin DSL from Java can be challenging. While some Kotlin features like operator overloading simply can't be used, there are means to make other features more accessible from Java, and to create a DSL which is useful and convenient in both languages. Fortunately, Kotlin has some built-in features to improve Java interoperability, which can be found in the https://kotlinlang.org/docs/java-to-kotlin-interop.html[Kotlin Documentation: Calling Kotlin from Java]. In this chapter, Java interoperability will be discussed purely from a DSL design perspective, by presenting the relevant built-in features and useful techniques for solving DSL-specific issues.
 
 === Top level Functions and Variable Definitions
 
@@ -35,3 +35,27 @@ fun someFunction() {
 
 It is even possible to map the contents of multiple Kotlin files to the same Java class, but then an additional `@file:JvmMultifileClass` annotation is needed in every file.
 
+=== Value Classes (((Value Classes))) and Mangling (((Mangling)))
+
+In Kotlin, value classes are represented by their underlying type in the JVM bytecode. However, this approach can lead to naming conflicts, e.g. when there are multiple methods with the same name, and value class parameters with the same underlying type. To avoid this issue, Kotlin uses a technique called "name mangling".
+
+During compilation, the compiler renames the affected methods using a hashing algorithm that takes into account the package name, class name, and method name. This creates a unique name for each method, which prevents naming conflicts in the bytecode.
+
+Kotlin users don't need to be aware of this behavior, as calls to the mangled methods are automatically translated correctly. However, if Java users want to call a mangled method, they would have to use the strange mangled name. To avoid this problem, you can name the method explicitly on the JVM, using the `@JvmName` annotation:
+
+[source,kotlin]
+----
+@JvmInline
+value class Kilometers(val value: Double)
+
+@JvmInline
+value class Miles(val value: Double)
+
+@JvmName("displayKm")
+fun display(x: Kilometers) { println("${x.value} km") }
+
+@JvmName("displayMiles")
+fun display(x: Miles) { println("${x.value} miles") }
+----
+
+From Java, you can call the example methods by their JVM names and with `double` arguments, e.g. `displayKm(23.0);` and `displayMiles(42.3);`.

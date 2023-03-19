@@ -1,10 +1,10 @@
-== Requirements Analysis
+== Requirements Analysis (((Requirement Analysis)))
 
 As a software engineer, it's easy to get caught up in the excitement of building a DSL and lose sight of the bigger picture. However, it's important to take a step back and carefully consider the goals and requirements of your DSL before diving into implementation. This will help ensure that your DSL is complete, well-behaved, maintainable, and extendable.
 
 It is important to establish a clear understanding of the scope and purpose of your DSL among all stakeholders. This includes determining the target audience, and how the DSL will be used. Having everyone on the same page minimizes the risk that important details have been overlooked. However, this shouldn't be a long-winded and boring process. To simplify this task, this chapter is basically a check-list of decisions to make before you start implementing.
 
-=== Defining the Problem Domain
+=== Defining the Problem Domain (((Problem Domain)))
 
 The first question to answer is obviously which domain to tackle. For small domains and areas with existing standards, this question is usually easy to answer. For larger domains it can be tempting to over-generalize. Try to be specific. Sometimes, the deliberate decision to drop some lesser used and harder to implement parts of the problem domain can make the DSL more flexible and lean. As in other areas of software development, it can be helpful to specify non-goals explicitly. Also, don't forget to specify the target platform, the language level etc.
 
@@ -26,13 +26,13 @@ In most cases it is rather obvious which kind of output is expected. Sometimes y
 
 Another potential question is whether to generate the target entities of an external API directly, or to follow the Adapter Pattern or similar approaches. In this case the decision depends on the intended architecture of your application (like Hexagonal Architecture, Onion Architecture etc.), but generally you should try to use non-essential external APIs only at the boundaries of the application, and DSLs should follow this guideline as well.
 
-=== Syntactical Gap
+=== Syntactical Gap (((Syntactical Gap)))
 
 Usually, an internal DSL can only be an approximation of the syntax we really wish for, there is a "syntactical gap". It is tempting to subordinate everything else in order to come as close as possible to our ideal syntax. But of course beauty has its price, pushing the limits of the host language's syntax can be problematic, and neglecting the other requirements can render a beautiful DSL useless.
 
 That's why it is important to have a rough idea how close the internal DSL needs to come to the ideal syntax, and when to start compromising. One relevant question in this context is how "tech-savvy" users of the DSL are. Generally, people without coding experience need more streamlined DSLs than software engineers, who will often tolerate a few "warts" in the DSL syntax.
 
-=== Learning Experience
+=== Learning Experience (((Learning Experience)))
 
 Having a beautiful and concise Syntax for a DSL doesn't necessarily mean that it is easy to master. Once a DSL reaches a certain size and complexity, it is naive to assume that people can use it without any assistance. The learning experience of the users is often just an afterthought, but I think it is important to account for it already in the analysis process.
 
@@ -42,7 +42,7 @@ Of course, training and documentation are essential factors for a good learning 
 
 TIP: In the end it's not the DSL itself which generates value, but the people using it effectively, and this is something we should never forget. Planning for the required assistance upfront can help to improve the DSL, and empower the users to get the most out of it.
 
-=== Safety of Use
+=== Safety of Use (((Safety of Use)))
 
 An often overlooked requirement is how and how well the user has to be protected against pitfalls and misuses of the DSL. This includes questions like whether misuses should cause compile time or only runtime errors, or whether it is acceptable that the DSL can express some states that shouldn't be allowed.
 
@@ -50,7 +50,7 @@ Reasons for unsafe behavior can be e.g. an overly flexible syntax, missing sanit
 
 Some level of unsafe behaviour might be acceptable for tech-savvy or experienced users, or in areas with lower safety requirements, like test data generation.
 
-=== Ensuring Extensibility
+=== Ensuring Extensibility (((Extensibility)))
 
 Insufficient extensibility is a common pitfall when designing internal DSLs, which usually operate with quite specialized techniques and language features. Sometimes new DSL requirement can't be properly implemented with the chosen feature set, which may render the whole DSL useless.
 
@@ -58,21 +58,21 @@ Therefore, it makes sense to get upfront a rough idea which extensions could be 
 
 Another type of extensibility that is often overlooked is extensibility by users. For instance, consider a DSL for working with physical quantities: there are too many units to cover all of them, but users might have a particular set of units that they require in their daily work. Therefore, it would be beneficial if the DSL allows users to add custom units. Such considerations can significantly increase the usefulness and success of a DSL. If possible, it is recommended to open your DSL for extension by users, and also provide documentation on how to do it. However, it may be advisable to restrict extensibility when you can predict that extending the DSL may lead to unexpected or unsafe outcomes.
 
-=== Maintainability
+=== Maintainability (((Maintainability)))
 
 The DSL has to be not only implemented, but must be maintained as well. It should be estimated how many resources are necessary to keep the code running and to update it. Knowing these expectations can help to decide e.g. which dependencies are acceptable, or if code generation (((Code Generation))) is required.
 
-=== Performance and Memory Requirements
+=== Performance (((Performance))) and Memory (((Memory))) Requirements
 
 Often performance considerations don't get much attention. However, in most cases DSLs invoke additional operations, instantiate extra classes and may trigger garbage collections. When working with big data, or having a wasteful DSL design, you might run in performance and memory problems. That's why it is necessary to estimate performance requirements upfront, and to employ load tests and metrics accordingly.
 
-=== Java Interoperability
+=== Java Interoperability (((Java Interoperability)))
 
 This is a Kotlin-specific question: There are plenty of environments using a mix of Java and Kotlin, so it might be required to use a DSL written in Kotlin from Java code. Usually, this direction is more challenging than using Java from Kotlin code, and depending on the language features, a Kotlin DSL might be practically unusable from Java. However, in many cases some "glue code" can help to bridge the gap, and the Kotlin language itself contains some features to increase the interoperability with Java.
 
 If Java interoperability is required, it should be already considered in the design phase. The respective challenges and possible solution are discussed in <<chapter-12.adoc#javaInteroperability, Chapter 12>> in more detail.
 
-=== Closed or Open Source
+=== Closed or Open Source (((Closed Source))) (((Open Source)))
 
 One important consideration that should be decided up-front is whether to make the DSL project open source. Doing so can have several benefits, including community contributions, increased exposure, and potential collaborations. However, it also means giving up control over the direction of the project, as well as potentially exposing any flaws or security vulnerabilities to the public. Additionally, open source projects require ongoing maintenance and support from the original developers, which can be time-consuming and resource-intensive. Ultimately, the decision to make a DSL project open source should be weighed carefully against the potential benefits and drawbacks.
 
