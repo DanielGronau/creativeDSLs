@@ -14,7 +14,7 @@ typealias NameWithAlias = Pair<String, String?>
 data class FromClause(
     val columns: List<String>,
     val tableName: NameWithAlias,
-    val joinClauses: List<Triple<NameWithAlias, String, String>> = listOf()
+    val joinClauses: List<Triple<NameWithAlias, String, String>> = emptyList()
 ) {
     fun join(tableName: String) =
         JoinClause(this, tableName to null)
@@ -24,7 +24,7 @@ data class FromClause(
     fun where(condition: String) =
         WhereClause(columns, tableName, joinClauses, listOf(condition))
 
-    fun build() = build(columns, tableName, joinClauses, listOf())
+    fun build() = build(columns, tableName, joinClauses, emptyList())
 }
 
 data class JoinClause(val fromClause: FromClause, val tableName: NameWithAlias) {
@@ -50,14 +50,14 @@ private fun build(
     conditions: List<String>
 ): String {
     val sb = StringBuilder()
-        .append("SELECT ${columns.joinToString(", ") { it }}")
+        .append("SELECT ${columns.joinToString(", ")}")
         .append("\nFROM ")
         .append(nameWithAlias(tableName))
     joinClauses.forEach { (n, c1, c2) ->
-        sb.append("\n JOIN ${nameWithAlias(n)} ON $c1 = $c2")
+        sb.append("\n  JOIN ${nameWithAlias(n)} ON $c1 = $c2")
     }
     if (conditions.isNotEmpty()) {
-        sb.append("\nWHERE ${conditions.joinToString("\n AND ")}")
+        sb.append("\nWHERE ${conditions.joinToString("\n  AND ")}")
     }
     sb.append(';')
     return sb.toString()

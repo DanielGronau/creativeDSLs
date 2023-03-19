@@ -298,6 +298,7 @@ One of the most important features for DSL design are extension functions, lambd
 
 Extension methods were first introduced in C#. In Kotlin, they particularly allow to adapt existing Java classes, in order to make them more convenient to use. A great example for this are the `apply()`, `run()`, `let()` and `also()` functions, which make it easier to use e.g. expression body syntax for functions, or succinct variable assignments.
 
+[#typeNarrowing]
 ==== Type Narrowing (((Type Narrowing)))
 
 Interestingly, generic extension functions have a capability that normal instance methods don't have: They can fixate generic parameters on a certain type, narrowing down the range of possible receivers. Here is an example for calculating the product of numbers as an extension function for a list:

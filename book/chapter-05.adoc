@@ -1,10 +1,10 @@
 == Algebraic DSLs
 
-A common class of problems deals with objects forming algebraic structures, in other words, objects that behave somewhat similar to numbers. This includes complex numbers, quaternions, vectors, matrices, physical and monetary quantities, and much more. Writing such DSLs in Kotlin is usually straightforward, especially when the required operators match with the existing ones.
+A common class of problems deals with objects that exhibit numeric-like behavior. These "algebraic" structures include complex numbers, quaternions, vectors, matrices, physical and monetary quantities, and many more. With Kotlin, it is relatively easy to write DSLs for these problems, especially when the required operators match with the existing ones.
 
 NOTE: As for many other categories of DSLs, there seems to be no established name for this kind of DSL in the literature. I think calling them "Algebraic DSLs" covers their behavior quite well, but you might find the same concept under different names elsewhere.
 
-The Kotlin API itself contains some nice examples for small Algebraic DSLs, e.g. for `BigInteger` and `BigDecimal`, which can be used pretty much like "normal" numbers - something Java programmers can only dream of.
+The Kotlin API itself contains some nice examples for small Algebraic DSLs, e.g. for `BigInteger` and `BigDecimal`, which can be used pretty much like "normal" numbers.
 
 Even if your problem domain hasn't exactly an algebraic structure, some ideas in this chapter might be at least partially applicable. Take chemical formulas as an example: Although though they are not number-like, they contain concepts like (scalar) multiplication and addition, and can be modelled accordingly.
 
@@ -23,7 +23,7 @@ val e = a.pow(b) // -1.860 + 11.837i
 
 There are some static factory methods to create `Complex` objects, like `Complex.ofCartesian()` or `Complex.ofPolar()`, and then you can use some methods like `add()` and `times()` on these objects.
 
-If we follow the steps from chapter 3, we should now come up with an ideal syntax. This is easy, as in maths we would simply write `3.0 + 4.0i` instead of `Complex.ofCartesian(3.0, 4.0)`. I think it is acceptable to have no special syntax for other ways to initialize complex numbers, like the polar definition.
+If we follow the steps from chapter 3, we should now come up with an ideal syntax. This is easy, as in mathematics we would simply write `3.0 + 4.0i` instead of `Complex.ofCartesian(3.0, 4.0)`. I think it is acceptable to have no special syntax for other ways to initialize complex numbers, like the polar definition.
 
 When we consider that `4.0i` is actually a multiplication, we are already there: A syntax like `3.0 + 4.0*i` can be implemented in Kotlin.
 
@@ -33,10 +33,10 @@ Next, the arithmetic operations can be written using operator overloading. We ne
 
 [source,kotlin]
 ----
-operator fun Complex.plus(other: Complex): Complex = add(other)
-operator fun Complex.plus(other: Double): Complex = add(other)
-operator fun Double.plus(other: Complex): Complex =
-    Complex.ofCartesian(this, 0.0).add(this)
+operator fun Complex.plus(that: Complex): Complex = this.add(that)
+operator fun Complex.plus(that: Double): Complex = this.add(that)
+operator fun Double.plus(that: Complex): Complex =
+    Complex.ofCartesian(this, 0.0).add(that)
 ----
 
 The other operations look basically the same. We could also support interoperability with `Int` in addition to `Double`, but it was omitted for the sake of brevity. A little improvement would be a helper method for the conversion from double to complex, instead of relying on the awkward `Complex.ofCartesian` factory.
@@ -56,7 +56,7 @@ infix fun Complex.pow(that: Complex): Complex = pow(that)
 infix fun Complex.pow(that: Double): Complex = pow(that)
 ----
 
-Alternatively, we could have used `{backtick}^{backtick}` in <<chapter-04.adoc#backtickIdentifiers, backtick notation>>, which may be more readable than `pow`, but is harder to type.
+Alternatively, we could have used `{backtick}^{backtick}` in <<chapter-04.adoc#backtickIdentifiers, backtick notation>>(((Backtick Notation))), which may be more readable than `pow`, but is harder to type.
 
 And that's already it, we have a basic DSL for complex numbers. Here is the complete code:
 
@@ -92,7 +92,7 @@ infix fun Complex.pow(that: Double) = pow(that)
 private fun fromDouble(d: Double) = Complex.ofCartesian(d, 0.0)
 ----
 
-Now our very first example can be written as
+Now our usage example can be written as:
 [source,kotlin]
 ----
 val a = 3.0 + 4.0*i
@@ -102,17 +102,7 @@ val d = a * b
 val e = a pow b
 ----
 
-Of course, we could add more functionality. E.g. this function would allow to compare complex numbers by their absolute values:
-
-[source,kotlin]
-----
-operator fun Complex.compareTo(that: Complex): Int =
-    abs().compareTo(that.abs())
-
-val cmp = 3.0 + 4.0*i < 5.0 - 1.0*i // true
-----
-
-This wasn't included in the DSL because it is somewhat dangerous, as it isn't consistent with the behavior of `Double` values: While obviously `-5.0 < 4.0`, the code above would lead to the inverse result in case of `Complex` numbers: `-5.0 + 0.0*i > 4.0 + 0.0*i`.
+Using complex numbers feels now as intuitive as using one of the built-in numeric types.
 
 === Conclusion
 

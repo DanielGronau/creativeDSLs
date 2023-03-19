@@ -1,6 +1,6 @@
 == Builder Pattern DSLs
 
-A common task is the initialization of a complex, sometimes nested object. The classical solution for this is the Builder Pattern. The builder class is mutable, uses method chaining (a.k.a. "((Fluent Interfaces))") to simplify value assignments, and contains a terminal build method, which constructs (hopefully after some sanity checks) the domain object.
+A common task is the initialization of a complex, sometimes nested object. The classical solution for this is the Builder Pattern. The builder class is mutable, uses method chaining (a.k.a. "((Fluent Interfaces))") to simplify value assignments, and contains a terminal build method, which constructs the domain object.
 
 This chapter covers the classical builder as often used in Java. Sometimes this is overkill is Kotlin, as named arguments can be used for smaller classes. Next, we will address the problem of mandatory fields in builders by presenting the Typesafe Builder Pattern. The following three sections cover some more exotic variations: Builders that can count, chains of builders and chameleon builders. In the conclusion section we discuss why in Kotlin builders are not as widely used as in Java.
 
@@ -9,7 +9,7 @@ This chapter covers the classical builder as often used in Java. Sometimes this 
 As an example for a classical builder with realistic complexity, we can use `java.net.http.HttpRequest`, which is written in Java. A typical builder call could look like this:
 
 [source,kotlin]
-.See https://docs.oracle.com/en/java/javase/11/docs/api/java.net.http/java/net/http/HttpRequest.Builder.html
+.See https://docs.oracle.com/en/java/javase/18/docs/api/java.net.http/java/net/http/HttpRequest.Builder.html
 ----
 val request = HttpRequest.newBuilder(URI.create("https://acme.com:9876/products"))
     .GET()
@@ -74,8 +74,6 @@ class PersonBuilder {
 }
 ----
 
-There are several alternatives or extension for the Builder Pattern. We will discuss these with shorter examples, and close this chapter with a case study for improving the builder above using extension methods.
-
 === Named Arguments instead of Builders
 
 In Kotlin, you might not need a builder, because the language has already features like named and default arguments. E.g. take this implementation of an RGBA color:
@@ -110,7 +108,7 @@ A common weakness of builders is that you can't enforce that mandatory fields ar
 
 Although it requires some boilerplate code, you can use generics to keep track of the state of mandatory fields, and adapt the build method to accept only correctly filled out builders. As the generic signature of the builder must change for this to work, you can't use a single mutable builder, so the setter methods return new builders.
 
-As an example, consider the following class for a product, which needs to have product id, name and price set, while the other attributes are optional:
+As an example, consider the following class for a product, which requires a product id, the name and the price, while the other attributes are optional:
 
 [source,kotlin]
 ----
@@ -122,7 +120,7 @@ As an example, consider the following class for a product, which needs to have p
     val images: List<URI>)
 ----
 
-The first ingredient to our builder are three classes as a common prerequisite. They are similar to `Optional`, with the difference that the empty and full state are represented by different subclasses. `T: Any` was used instead of just `T`, because it prevents `T` from being inhabited by a nullable type.
+The first ingredient to our builder are three classes as a common prerequisite. They are similar to `Optional`, with the difference that the empty and full state are represented by different subclasses. The type parameter `T: Any` was used instead of just `T`, because it prevents `T` from being inhabited by a nullable type.
 
 [source,kotlin]
 ----
@@ -135,7 +133,10 @@ With the help of these classes, we can write the builder:
 
 [source,kotlin]
 ----
-data class ProductBuilder<ID: Val<UUID>, NAME: Val<String>, PRICE: Val<BigDecimal>>(
+data class ProductBuilder<
+      ID: Val<UUID>,
+      NAME: Val<String>,
+      PRICE: Val<BigDecimal>>(
     val id: ID,
     val name: NAME,
     val price: PRICE,
@@ -145,7 +146,7 @@ data class ProductBuilder<ID: Val<UUID>, NAME: Val<String>, PRICE: Val<BigDecima
 }
 ----
 
-That's a scary looking generic signature, but it isn't really hard to understand: Every mandatory field gets a separate type parameter, which keeps track whether it is already set or not. We could use the constructor to start the building process, but a helper function is more convenient:
+That's a scary looking generic signature, but the basic idea is simple: Every mandatory field gets a separate type parameter, which keeps track whether it is already set or not. We could use the constructor to start the building process, but a helper function is more convenient:
 
 [source,kotlin]
 ----
@@ -158,13 +159,14 @@ fun productBuilder() = ProductBuilder(
 )
 ----
 
-Thankfully, we don't have to write all the generic signatures, but the inferred return type of this function is `ProductBuilder<Without<UUID>, Without<String>, Without<BigDecimal>>`.
-
-Now you can hopefully anticipate how the generics keep track of the mandatory fields. Basically, when an optional field is set, the type parameters don't change, but when a mandatory field is set, the signature will change from `Without` to `With` for this particular field. Here is the complete builder class:
+Thankfully, we don't have to write all the generic signatures, but the inferred return type of this function is `ProductBuilder<Without<UUID>, Without<String>, Without<BigDecimal>>`. When an optional field is set, these type parameters don't change, but when a mandatory field is set, the signature will change from `Without` to `With` for this particular field. Here is the complete builder class:
 
 [source,kotlin]
 ----
-data class ProductBuilder<ID : Val<UUID>, NAME : Val<String>, PRICE : Val<BigDecimal>>(
+data class ProductBuilder<
+      ID: Val<UUID>,
+      NAME: Val<String>,
+      PRICE: Val<BigDecimal>>(
     val id: ID,
     val name: NAME,
     val price: PRICE,
@@ -183,7 +185,7 @@ data class ProductBuilder<ID : Val<UUID>, NAME : Val<String>, PRICE : Val<BigDec
 
 Again, type inference saves us from a lot of typing, but the setters for the mandatory fields return a builder with a changed signature. That's why you can't use the `copy()` methods in this case.
 
-Of course, one crucial part is missing: The `build()` method. However, we can't write it as part of the builder class, as it needs to inspect the generic signature. It has to be an extension method, because only there you can "fix" the type parameters to concrete types:
+Of course, one crucial part is missing: The `build()` method. However, we can't write it as part of the builder class, as it needs to inspect the generic signature. It has to be an extension method, because only there you can "fix" the type parameters to concrete types (a.k.a. <<chapter-04.adoc#typeNarrowing, Type Narrowing>>):
 
 [source,kotlin]
 ----
@@ -203,45 +205,62 @@ Consider the following `Polygon` class, which could be part of a graphics librar
 
 [source,kotlin]
 ----
+import java.awt.geom.Point2D
+
 data class Polygon(val points: List<Point2D>)
 ----
 
-It is very easy to write a builder to collect all points, and to construct the polygon from it, but there is a problem: A polygon with less than three points isn't really a polygon. Therefore, we would need a builder which can "count" how often a point is added, and only allows to construct polygons with at least three points.
+However, a problem arises when we want to ensure that polygons are constructed with at least three points. To solve this issue, we could create a builder that counts the number of points added and only allows the construction of polygons with three or more points.
 
-The obvious solution is to check the number of points at runtime, and to throw an exception if we got less than three. But we can do better by preventing to writing an invalid builder at compile time. To do this, we may keep track of the number of points by using a recursive type parameter. While this sounds strange at first, the implementation of the idea is straightforward:
-
-[source,kotlin]
-----
-sealed class PB
-
-object PolygonBuilder: PB() {
-    fun add(point: Point2D) =
-        PointPB<PolygonBuilder>(listOf(point))
-}
-
-class PointPB<T: PB>(val points:List<Point2D>): PB() {
-    fun add(point: Point2D) =
-        PointPB<PointPB<T>>(points + point)
-}
-----
-
-The `PolygonBuilder` is both starting point and marker for an empty builder. The `PointPB` builder takes a list of points as arguments, but it also keeps track of the type of the calling builder in its type parameter.
-
-After the first `PolygonBuilder.add()` call, you get a `PointPB<PolygonBuilder>` back. Calling `add()` again gives you a `PointPB<PointPB<PolygonBuilder>>`. The next call returns a `PointPB<PointPB<PointPB<PolygonBuilder>>>`. And as in the Typesafe Builder Pattern example, we can use an extension method to make sense of these signatures:
+While the obvious solution is to check the number of points at runtime, we can achieve better safety by preventing the creation of an invalid builder at compile time. This can be achieved by using a recursive type parameter to keep track of the number of points. Though this may seem odd at first, the implementation is quite simple:
 
 [source,kotlin]
 ----
-fun <T: PB> PointPB<PointPB<PointPB<T>>>.build() =
-    Polygon(points)
+sealed interface Nat
+interface Z : Nat
+interface S<N : Nat> : Nat
+
+class PolygonBuilder<N : Nat> private constructor() {
+
+    companion object {
+        operator fun invoke() =
+            PolygonBuilder<Z>()
+    }
+
+    val points: MutableList<Point2D> =
+        mutableListOf()
+
+    @Suppress("UNCHECKED_CAST")
+    fun add(point: Point2D) =
+        (this as PolygonBuilder<S<N>>)
+            .also { points += point }
+}
+
+fun <N : Nat> PolygonBuilder<S<S<S<N>>>>.build() = Polygon(points)
 ----
 
-As you can see, the `build()` method is quite literally counting the points by inspecting the type signature of the receiver.
+First, we create a sealed interface `Nat` to represent the natural numbers, and two sub-interfaces, `Z` representing zero and `S<N>` representing the successor of a natural number `N`. For instance, the number 3 would be written as `S<S<S<Z>>>`. This is called the Peano representation of the natural numbers. Note that even if we don't know the innermost part of `S<S<S<...>>>`, we can still deduce that the given number is greater or equal to 3, which is exactly what we need to check our condition. These recursively constructed numbers are used by the builder class as a generic "counter" parameter holding the number of points in the list.
+
+The builder class must hide its constructor, because a call like `PolygonBuilder<S<S<Z>>>()` would initialize the builder with a wrong counter. That's why we build a "fake constructor" using the `invoke()` operator in the companion object, which returns only builders with the counter initially set to 0. The `add()` method appends a point to the list, but also casts the instance to one with an incremented counter. This is safe, as the counter is a phantom type(((Phantom Type))). Alternatively, we also could have constructed a new builder object on every `add()` call.
+
+The last part is the `build()` method, which has to be an extension function, for the same reasons as in the typesafe builder example. The function is "counting" the points by inspecting the type signature of the builder. This is how a usage of our builder could look like:
+
+[source,kotlin]
+----
+val polygon = PolygonBuilder()
+    .add(Point2D.Double(1.0, 2.3))
+    .add(Point2D.Double(2.1, 4.5))
+    .add(Point2D.Double(2.4, 5.0))
+    .build()
+----
+
+If one of the `add()` calls is removed, the code will no longer compile, as the type of the `PolygonBuilder` does no longer comply with the signature of the `build()` extension function.
 
 === Builder Chain
 
 Sometimes you want to construct an object in stages, either for better readability or for more control over the life cycle. E.g. for a SQL query, you might want to define separate builders for the SELECT, FROM and WHERE part. As the SQL language is very complex, this is just a simplified example. A show-case for a serious implementation of SQL queries and expressions using builders is the Java library https://www.jooq.org/[jOOQ].
 
-The final DSL will allow you to write basic SQL queries like this:
+The final DSL will allow to write basic SQL queries like this:
 
 [source,kotlin]
 ----
@@ -260,8 +279,10 @@ Let's start with the SELECT part, which is straightforward:
 fun select(vararg columns: String) = SelectClause(*columns)
 
 class SelectClause(vararg val columns: String) {
+
     fun from(tableName: String) =
         FromClause(columns.asList(), tableName to null)
+
     fun from(tableName: String, alias: String) =
         FromClause(columns.asList(), tableName to alias)
 }
@@ -274,27 +295,30 @@ There is no `build()` method, the only way forward is going into the `FromClause
 data class FromClause(
     val columns: List<String>,
     val tableName: NameWithAlias,
-    val joinClauses: List<Triple<NameWithAlias, String, String>> = listOf()
+    val joinClauses: List<Triple<NameWithAlias, String, String>> = emptyList()
 ) {
+
     fun join(tableName: String) =
         JoinClause(this, tableName to null)
+
     fun join(tableName: String, alias: String) =
         JoinClause(this, tableName to alias)
 
     fun where(condition: String) =
         WhereClause(columns, tableName, joinClauses, listOf(condition))
 
-    fun build() = build(columns, tableName, joinClauses, listOf())
+    fun build() = build(columns, tableName, joinClauses, emptyList())
 }
 ----
 
-From here, you can go to a `JoinClause`, which allows to mimic the SQL syntax by allowing to write something like `fromClause.join("Address","a").on("p.addressId", "a.id")`. The other exit is to start a `WhereClause`. Additionally, the `FromClause` has a `build()` method, because the where part is optional.
+From here, you can go to a `JoinClause`, which mimics the SQL syntax by permitting to write something like `fromClause.join("Address","a").on("p.addressId", "a.id")`. The other exit point is to start a `WhereClause`. Additionally, the `FromClause` has a `build()` method, because the where part is optional.
 
-The `JoinClause` offers just an `on()` method, which leads back to the `FromClause`. Note that when constructing the `JoinClause`, it gets the calling `FromClause` as an argument, which is a neat trick to avoid passing around all the data separately, and allows to use the power of the `copy()` method:
+The `JoinClause` offers just an `on()` method, which leads back to the `FromClause`. Note that when constructing the `JoinClause`, it gets the calling `FromClause` as an argument, which is a neat trick to avoid passing around all the data separately, and allows to employ the power of the `copy()` method:
 
 [source,kotlin]
 ----
 data class JoinClause(val fromClause: FromClause, val tableName: NameWithAlias) {
+
     fun on(firstColumn: String, secondColumn: String) =
         fromClause.copy(joinClauses =
            fromClause.joinClauses + Triple(tableName, firstColumn, secondColumn))
@@ -311,12 +335,16 @@ data class WhereClause(
     val joinClauses: List<Triple<NameWithAlias, String, String>>,
     val conditions: List<String>
 ) {
-    fun and(condition: String) = copy(conditions = conditions + condition)
-    fun build() = build(columns, tableName, joinClauses, conditions)
+
+    fun and(condition: String) =
+        copy(conditions = conditions + condition)
+
+    fun build() =
+        build(columns, tableName, joinClauses, conditions)
 }
 ----
 
-The only missing part is the separate `build()` method used by both `FromClause` and `WhereClause`:
+The only missing part is the common `build()` method used by `FromClause` and `WhereClause`:
 
 [source,kotlin]
 ----
@@ -326,17 +354,22 @@ private fun build(
     joinClauses: List<Triple<NameWithAlias, String, String>>,
     conditions: List<String>
 ): String {
+
     val sb = StringBuilder()
-        .append("SELECT ${columns.joinToString(", ") { it }}")
+        .append("SELECT ${columns.joinToString(", ")}")
         .append("\nFROM ")
         .append(nameWithAlias(tableName))
+
     joinClauses.forEach { (n, c1, c2) ->
-        sb.append("\n JOIN ${nameWithAlias(n)} ON $c1 = $c2")
+        sb.append("\n  JOIN ${nameWithAlias(n)} ON $c1 = $c2")
     }
+
     if (conditions.isNotEmpty()) {
-        sb.append("\nWHERE ${conditions.joinToString("\n AND ")}")
+        sb.append("\nWHERE ${conditions.joinToString("\n  AND ")}")
     }
+
     sb.append(';')
+
     return sb.toString()
 }
 
@@ -350,7 +383,7 @@ In the next section, we will look at an alternative implementation of the same D
 
 === Chameleon Builder
 
-A chained builder can get very messy because of all the data being copied around. It would be nice to keep the data all in one class, but what is with all the guarantees a chained builder provides, e.g. that you can't call `build()` or `join()` in a select clause? To achieve this, we first need to translate our former chained builders into interfaces:
+A chained builder can get quite messy because of all the data being copied around. It would be nice to keep the data all in one class, but what is with all the guarantees a chained builder provides, e.g. that you can't call `build()` or `join()` in a select clause? To achieve this, we first need to translate our former chained builders into interfaces:
 
 [source,kotlin]
 ----
@@ -378,37 +411,48 @@ interface WhereClause {
 }
 ----
 
-Now all we need is to implement these interfaces in one builder class, and to keep track of the data. Also, we want to have a method to create this builder:
+Now all we need is to implement these interfaces in one builder class, and to keep track of the data. Also, we need a method to create this builder, which we place in the companion object:
 
 [source,kotlin]
 ----
-fun select(vararg columns: String): SelectClause = QueryBuilder(columns.asList())
-
-class QueryBuilder(val columns: List<String>):
+class QueryBuilder private constructor (val columns: List<String>):
         SelectClause, FromClause, JoinClause, WhereClause {
+
     var tableName : NameWithAlias = "" to null
     var joinTableName : NameWithAlias = "" to null
     val joinClauses = mutableListOf<Triple<NameWithAlias, String, String>>()
     val conditions = mutableListOf<String>()
 
+    companion object {
+        fun select(vararg columns: String): SelectClause =
+            QueryBuilder(columns.asList())
+    }
+
     //SelectClause
     override fun from(table: String): FromClause =
         this.apply { tableName = table to null }
+
     override fun from(table: String, alias: String): FromClause =
         this.apply { tableName = table to alias }
+
     //FromClause
     override fun join(table: String): JoinClause =
         this.apply { joinTableName = table to null }
+
     override fun join(table: String, alias: String): JoinClause =
         this.apply { joinTableName = table to alias }
+
     override fun where(condition: String): WhereClause =
         this.apply { conditions += condition }
+
     //JoinClause
     override fun on(firstColumn: String, secondColumn: String): FromClause =
         this.apply { joinClauses += Triple(joinTableName, firstColumn, secondColumn) }
+
     //WhereClause
     override fun and(condition: String): WhereClause =
         this.apply { conditions += condition }
+
     //FromClause and WhereClause
     override fun build(): String {
         // same as in previous section
@@ -416,9 +460,9 @@ class QueryBuilder(val columns: List<String>):
 }
 ----
 
-For the compiler, it doesn't matter that you give back the same object over and over again at runtime, because the static type decides which methods can be called, and this static type is never `QueryBuilder`, but only one of the interfaces for the clauses. Calling the DSL looks exactly the same as before, and you still can't call methods out of order (at least not without casting).
+For the compiler, it doesn't matter that you give back the same object over and over again at runtime, because the static type decides which methods can be called, and this static type is never `QueryBuilder`, but always one of the interfaces for the SQL clauses. Calling the DSL looks as before, and you still can't call methods out of order (at least not without casting).
 
-While the chained builder approach is conceptually simple, it leads to a lot of boilerplate code. The chameleon builder concept might look somewhat strange at first, but results usually in more readable code.
+While the chained builder approach is conceptually simple, it leads to a lot of boilerplate code. The chameleon builder concept might look somewhat strange at first, but results usually in more readable code. However, be aware that this approach is susceptible to name clashes, which occur when the same method signature is used with different return types by multiple interfaces.
 
 === Conclusion
 
@@ -455,5 +499,5 @@ The Builder Pattern is quite popular in Java - there are even libraries like htt
 * nested builders don't look nice
 * inflexible structure
 * boilerplate code (e.g. need for a `build()` method)
-* assignments are concealed behind methods calls
+* assignments are disguised as method calls
 |===

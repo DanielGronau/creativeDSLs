@@ -1,31 +1,41 @@
 package creativeDSLs.chapter_06.chameleon
 
-fun select(vararg columns: String): SelectClause = QueryBuilder(columns.asList())
-
-class QueryBuilder(val columns: List<String>): SelectClause, FromClause, JoinClause, WhereClause {
+class QueryBuilder private constructor(val columns: List<String>):
+    SelectClause, FromClause, JoinClause, WhereClause {
     var tableName : NameWithAlias = "" to null
     var joinTableName : NameWithAlias = "" to null
     val joinClauses = mutableListOf<Triple<NameWithAlias, String, String>>()
     val conditions = mutableListOf<String>()
 
+    companion object {
+        fun select(vararg columns: String): SelectClause = QueryBuilder(columns.asList())
+    }
+
     //SelectClause
     override fun from(table: String): FromClause =
         this.apply { tableName = table to null }
+
     override fun from(table: String, alias: String): FromClause =
         this.apply { tableName = table to alias }
+
     //FromClause
     override fun join(table: String): JoinClause =
         this.apply { joinTableName = table to null }
+
     override fun join(table: String, alias: String): JoinClause =
         this.apply { joinTableName = table to alias }
+
     override fun where(condition: String): WhereClause =
         this.apply { conditions += condition }
+
     //JoinClause
     override fun on(firstColumn: String, secondColumn: String): FromClause =
         this.apply { joinClauses += Triple(joinTableName, firstColumn, secondColumn) }
+
     //WhereClause
     override fun and(condition: String): WhereClause =
         this.apply { conditions += condition }
+
     //FromClause and WhereClause
     override fun build(): String {
         val sb = StringBuilder()
@@ -72,7 +82,7 @@ interface WhereClause {
 }
 
 fun main() {
-    val query = select("p.firstName", "p.lastName", "p.income")
+    val query = QueryBuilder.select("p.firstName", "p.lastName", "p.income")
         .from("Person", "p")
         .join("Address", "a").on("p.addressId","a.id")
         .where("p.age > 20")
