@@ -185,7 +185,7 @@ data class ProductBuilder<
 
 Again, type inference saves us from a lot of typing, but the setters for the mandatory fields return a builder with a changed signature. That's why you can't use the `copy()` methods in this case.
 
-Of course, one crucial part is missing: The `build()` method. However, we can't write it as part of the builder class, as it needs to inspect the generic signature. It has to be an extension method, because only there you can "fix" the type parameters to concrete types (a.k.a. <<chapter-04.adoc#typeNarrowing, Type Narrowing>>(((Type Narrowing)))):
+Of course, one crucial part is missing: The `build()` method. However, we can't write it as part of the builder class, as it needs to inspect the generic signature. It has to be an extension method, because only there you can "fix" the type parameters to concrete types (a.k.a. <<chapter-04.adoc#typeNarrowing, Type Narrowing>>(((Type Narrowing))):
 
 [source,kotlin]
 ----
@@ -241,7 +241,7 @@ fun <N : Nat> PolygonBuilder<S<S<S<N>>>>.build() = Polygon(points)
 
 First, we create a sealed interface `Nat` to represent the natural numbers, and two sub-interfaces, `Z` representing zero and `S<N>` representing the successor of a natural number `N`. For instance, the number 3 would be written as `S<S<S<Z>>>`. This is called the "Peano representation" of the natural numbers (which is used in the Peano axioms to define their properties). Note that even if we don't know the innermost part of `S<S<S<...>>>`, we can still deduce that the given number is greater or equal to 3, which is exactly what we need to check our condition. These recursively constructed numbers are used by the builder class as a generic "counter" parameter holding the number of points in the list.
 
-The builder class must hide its constructor, because a call like `PolygonBuilder<S<S<Z>>>()` would initialize the builder with a wrong counter. That's why we build a "fake constructor" using the `invoke()` operator in the companion object, which returns only builders with a counter initialized to 0. The `add()` method appends a point to the list, but also casts the instance to one with an incremented counter. This is safe, as the counter is a phantom type(((Phantom Type))). Alternatively, we also could have constructed a new builder object on every `add()` call.
+The builder class must hide its constructor, because a call like `PolygonBuilder<S<S<Z>>>()` would initialize the builder with a wrong counter. That's why we build a "fake constructor" using the `invoke()` operator in the companion object, which returns only builders with a counter initialized to 0. The `add()` method appends a point to the list, but also casts the instance to one with an incremented counter. This is safe, as the counter is a phantom type(((Phantom Types))). Alternatively, we also could have constructed a new builder object on every `add()` call.
 
 The last ingredient is the `build()` method, which has to be an extension function, for the same reasons as in the typesafe builder example. The function is "counting" the points by inspecting the type signature of the builder. This is how a usage of our builder could look like:
 
@@ -317,7 +317,7 @@ data class JoinClause(val fromClause: FromClause, val tableName: NameWithAlias) 
 
     fun on(firstColumn: String, secondColumn: String) =
         fromClause.copy(joinClauses =
-           fromClause.joinClauses + Triple(tableName, firstColumn, secondColumn))
+           fromClause.joinClauses + TableJoin(tableName, firstColumn, secondColumn))
 }
 ----
 
@@ -437,7 +437,7 @@ class QueryBuilder private constructor (val columns: List<String>):
 
     //JoinClause
     override fun on(firstColumn: String, secondColumn: String): FromClause =
-        this.apply { joinClauses += Triple(joinTableName, firstColumn, secondColumn) }
+        this.apply { joinClauses += TableJoin(joinTableName, firstColumn, secondColumn) }
 
     //WhereClause
     override fun and(condition: String): WhereClause =

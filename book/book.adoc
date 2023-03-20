@@ -47,13 +47,15 @@ include::chapter-09.adoc[]
 
 include::chapter-10.adoc[]
 
-= Part III - Advanced Topics
-
 include::chapter-11.adoc[]
+
+= Part III - Advanced Topics
 
 include::chapter-12.adoc[]
 
 include::chapter-13.adoc[]
+
+include::chapter-14.adoc[]
 
 include::epilog.adoc[]
 

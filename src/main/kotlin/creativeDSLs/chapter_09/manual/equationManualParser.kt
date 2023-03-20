@@ -2,7 +2,7 @@ package creativeDSLs.chapter_09.manual
 
 import java.util.*
 
-import creativeDSLs.chapter_08.*
+import creativeDSLs.chapter_11.*
 
 private val elements = setOf(
     "H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si",

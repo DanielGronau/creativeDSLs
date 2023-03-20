@@ -17,16 +17,18 @@ class SelectClause(val columns : List<String>) {
 
 typealias NameWithAlias = Pair<String, String?>
 
+typealias TableJoin = Triple<NameWithAlias, String, String>
+
 class FromBody {
     var tableName: NameWithAlias = "" to null
-    val joinClauses  = mutableListOf<Triple<NameWithAlias, String, String>>()
+    val joinClauses  = mutableListOf<TableJoin>()
 
     operator fun String.unaryPlus() { tableName = this to null }
     infix fun String.AS(that: String) { tableName = this to that }
 
     fun JOIN(body: JoinBody.() -> Unit) {
         JoinBody().apply(body).also {
-            joinClauses += Triple(it.tableName, it.firstColumn, it.secondColumn)
+            joinClauses += TableJoin(it.tableName, it.firstColumn, it.secondColumn)
         }
     }
 }
@@ -34,7 +36,7 @@ class FromBody {
 data class FromClause(
     val columns: List<String>,
     val tableName: NameWithAlias,
-    val joinClauses: List<Triple<NameWithAlias, String, String>>
+    val joinClauses: List<TableJoin>
 ) {
     fun WHERE(body: WhereBody.() -> Unit) =
         WhereClause(columns, tableName, joinClauses, WhereBody().apply(body).conditions)
@@ -63,7 +65,7 @@ class WhereBody {
 data class WhereClause(
     val columns: List<String>,
     val tableName: NameWithAlias,
-    val joinClauses: List<Triple<NameWithAlias, String, String>>,
+    val joinClauses: List<TableJoin>,
     val conditions: List<String>
 ) {
     fun build() = build(columns, tableName, joinClauses, conditions)
@@ -72,7 +74,7 @@ data class WhereClause(
 private fun build(
     columns: List<String>,
     tableName: NameWithAlias,
-    joinClauses: List<Triple<NameWithAlias, String, String>>,
+    joinClauses: List<TableJoin>,
     conditions: List<String>
 ): String {
     val sb = StringBuilder()

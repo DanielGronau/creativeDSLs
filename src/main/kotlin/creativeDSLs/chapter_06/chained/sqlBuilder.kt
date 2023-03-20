@@ -32,7 +32,7 @@ data class JoinClause(val fromClause: FromClause, val tableName: NameWithAlias) 
 data class WhereClause(
     val columns: List<String>,
     val tableName: NameWithAlias,
-    val joinClauses: List<Triple<NameWithAlias, String, String>>,
+    val joinClauses: List<TableJoin>,
     val conditions: List<String>
 ) {
     fun and(condition: String) = copy(conditions = conditions + condition)

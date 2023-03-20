@@ -72,7 +72,10 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <args><arg>-Xcontext-receivers</arg></args>
+                    <!--<languageVersion>1.9</languageVersion>-->
+                    <args>
+                        <arg>-Xcontext-receivers</arg>
+                    </args>
                 </configuration>
             </plugin>
             <plugin>

@@ -15,7 +15,7 @@ As mentioned in the preface, this book assumes that the reader has basic Kotlin 
 This chapter gives a short overview of language features that might be relevant for writing DSLs. I hope that after reading the chapter, you better understand how some DSL "tricks" work.
 
 [#backtickIdentifiers]
-=== Backtick Identifiers (((Backtick Identifiers)))
+=== Backtick Identifiers (((Backtick Notation)))
 
 Kotlin allows almost arbitrary identifiers, as long as they are enclosed in backticks. The main reason for introducing this feature was to allow the usage of identifiers which are keywords in Kotlin but not in Java, like `fun` or `when`. For DSLs, we can use them when we need descriptive identifiers which don't follow the usual syntactic rules.
 
@@ -32,7 +32,7 @@ fun `check that the slithy toves gyre and gimble in the wabe` {
 
 Another common use case is to simulate an operator with an infix function, e.g. the exponentiation of numbers could be written as `5 {backtick}^{backtick} 3`.
 
-=== Named Arguments (((Names Arguments))) and Default Values (((Default Values)))
+=== Named Arguments (((Named Arguments))) and Default Values (((Default Values)))
 
 Java relies on the order of the parameters when calling a method or constructor, which can get confusing very quickly. In contrast, Kotlin allows you to address arguments by name, which is much more readable, and doesn't require you to remember the order of parameters:
 
@@ -350,7 +350,8 @@ val usingTheLoanPattern: String = sb {
 
 Building DSLs based on this pattern is very common, as it has several advantages over the classic builder pattern.
 
-==== The @DslMarker annotation (((DslMarker)))
+[#dslMarker]
+==== The @DslMarker annotation (((@DslMarker)))
 
 When you nest several extension functions, the overlapping scopes can pose a problem: Things visible in the outer code blocks are also visible in the inner ones. E.g. in a DSL for HTML generation, one could write:
 
@@ -586,7 +587,7 @@ Another useful application for annotations is code generation(((Code Generation)
 
 .Annotation Processors (((Annotation Processors))) (((KSP))) (((kapt))) (((Kotlin Symbol Processing API)))
 ****
-Annotation processors allow to execute custom processor code during the build process, according to the annotations present in the application code. Kotlin features two annotation processors, the older https://kotlinlang.org/docs/kapt.html[kapt], which won't be developed further, and the recommended https://kotlinlang.org/docs/ksp-overview.html[Kotlin Symbol Processing API] (KSP), which will be covered in <<chapter-11.adoc#annotationProcessor,chapter 11>>.
+Annotation processors allow to execute custom processor code during the build process, according to the annotations present in the application code. Kotlin features two annotation processors, the older https://kotlinlang.org/docs/kapt.html[kapt], which won't be developed further, and the recommended https://kotlinlang.org/docs/ksp-overview.html[Kotlin Symbol Processing API] (KSP), which will be covered in <<chapter-12.adoc#annotationProcessor,chapter 12>>.
 ****
 
 [#reflection]

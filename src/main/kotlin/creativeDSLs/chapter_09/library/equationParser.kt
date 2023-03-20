@@ -9,7 +9,7 @@ import com.github.h0tk3y.betterParse.lexer.regexToken
 import com.github.h0tk3y.betterParse.lexer.token
 import com.github.h0tk3y.betterParse.parser.Parser
 
-import creativeDSLs.chapter_08.*
+import creativeDSLs.chapter_11.*
 
 private val elements = setOf(
     "H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si",

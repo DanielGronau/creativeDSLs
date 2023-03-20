@@ -1,485 +1,67 @@
-== Hybrid DSLs
+== Token Chain DSLs
 
-In many cases, it is hard to categorize a DSL because it uses a mix of different techniques: Some parts could resemble a builder, others look like an algebraic DSL, and in one place annotations are used. That's what I call a "hybrid DSL".
+Sometimes, all you need is to construct a sequence of elements. When there are only a few types of elements, the elements itself are easy to construct, and there are no succession rules needed, you can model this use case as a simple chain of tokens. The ingredients for this pattern are a token hierarchy, which can be modelled using sealed classes or interfaces, and a way to glue these tokens together, which can be a simple vararg function, or - more stylish - a concatenating operator.
 
-When most of a DSL can be written in a certain style, it is usually a good idea to stick with it in order to ensure a coherent look and feel. So I wouldn't advocate to mix builder and loan pattern styles together, but to decide on one. But if this is not possible, there is nothing wrong with designing a DSL which combines different approaches, when it gets the job done.
+=== Case Study: Turtle Graphics
 
-=== Quasi-lingual DSLs
-
-A common reason for mixing features from different DSL categories is to imitate - to a degree - natural language. I call this important subgroup of Hybrid DSLs "quasi-lingual". Even though the syntax is usually rigid and contains artifacts like braces, parenthesis or commas, it is still "readable" in a very literal sense. This snippet from the mocking library https://mockk.io/#dsl-examples[MockK] should give you a good impression:
+While computer graphics (regardless of pixels or vectors) is usually operating on absolute coordinates, https://en.wikipedia.org/wiki/Turtle_graphics[Turtle Graphics] works relative to its current local position and last direction (the "cursor").
 
 [source,kotlin]
 ----
-every { car.door(DoorType.FRONT_LEFT).windowState() } returns WindowState.UP
+import java.awt.Color
+
+sealed interface TurtleOp
+
+interface Motion : TurtleOp
+data class F(val distance: Int): Motion // forward
+data class B(val distance: Int): Motion // backward
+data class R(val degrees: Int): Motion // right
+data class L(val degrees: Int): Motion // left
+data class Goto(val x: Int, val y: Int): Motion // set position
+data class Head(val degrees: Int): Motion // set heading
+
+interface Drawing : TurtleOp
+object Down : Drawing // pen down
+object Up : Drawing // pen up
+data class Col(val color: Color): Drawing // set color
+
+data class TurtleGraphic(val operations: List<TurtleOp>)
+
+operator fun TurtleOp.unaryMinus() = TurtleGraphic(listOf(this))
+
+operator fun TurtleGraphic.minus(turtleOp: TurtleOp) =
+    this.copy(operations = operations + turtleOp)
 ----
 
-Technically, writing a quasi-lingual DSL is not very different from other Hybrid DSLs, although it might be harder to model grammatical structures correctly. Also, name clashes with keywords like `is`, `as` etc. are more of a problem. As good advice is to keep the DSL grammar simple and well-structured, and to compromise when it helps to reduce complexity. E.g. instead of trying to model words like `should` `be` separated, it is okay to use `shouldBe` instead when it helps to keep the grammar simple.
-
-=== Case Study: Chemical Equations
-
-Writing a DSL for chemical equations is no easy task, because the notation is very concise and can't be imitated easily using Kotlin syntax. For our case study, we won't cover the full notation, e.g. we won't support writing ions or bonds.
-
-An example of a simple chemical equation in standard notation would be `3Ba(OH)~2~ + 2H~3~PO~4~ -> 6H~2~O + Ba~3~(PO~4~)~2~`. Of course, in scope of a DSL subscripts and special symbols are not very practical, so the target syntax would look more like `3Ba(OH)2 + 2H3PO4 -{zwsp}> 6H2O + Ba3(PO4)2`. To express such an equation, we use the following code:
+Here is the code to draw a black triangle:
 
 [source,kotlin]
 ----
-sealed interface Part
-
-data class Element(val symbol: String, val subscript: Int) : Part {
-    override fun toString() = when (subscript) {
-        1 -> symbol
-        else -> symbol + subscript
-    }
-}
-
-data class Group(val parts: List<Part>, val subscript: Int) : Part {
-    override fun toString() = when (subscript) {
-        1 -> parts.joinToString("", "(", ")")
-        else -> parts.joinToString("", "(", ")") + subscript
-    }
-}
-
-data class Molecule(val coefficient: Int, val parts: List<Part>) {
-    override fun toString() = when (coefficient) {
-        1 -> parts.joinToString("")
-        else -> "$coefficient${parts.joinToString("")}"
-    }
-}
-
-data class Equation(val leftSide: List<Molecule>, val rightSide: List<Molecule>, val reversible: Boolean = false) {
-    override fun toString() = leftSide.joinToString(" + ") +
-            (if (reversible) " <-> " else " -> ") +
-            rightSide.joinToString(" + ")
-}
+val graph = -Col(BLACK)-
+        Down-
+        F(100)-L(120)-
+        F(100)-L(120)-
+        F(100)-L(120)-
+        Up
 ----
-
-An `Element` contains a chemical symbol, like `"H"` (hydrogen) or `"Ba"` (barium), and optionally a subscript, which is counting the number of atoms. A feature of the chemical notation is that you can also define groups like `"(OH)~2~"` in a molecule, which is why we need the `Group` class as well. A group can contain not only elements, but also other groups.
-
-A `Molecule` is a collection of elements or groups, and can also have a coefficient in front. An equation consists of two sides and either an arrow `-{zwsp}>` or - in case of reversible reactions - a double arrow `<{zwsp}-{zwsp}>` in the middle. Both sides consist either of a single molecule or a "sum" of molecules.
-
-The code and overwrites the `toString()` methods in order to give the output in chemical notation. Note that lists were used instead of varargs, because data classes don't allow varargs in their primary constructor.
-
-This chart summarizes the structure of our model classes:
-
-[ditaa,"chemicalEquation"]
-.Model for Chemical Equations
-....
-
-         +--------------+
-         |   Chemical   |
-         |              |
-         |   Equation   |
-         +---+------+---+
-             |1     |1
-        LHS  |      |  RHS
-             vn     vn
-         +--------------+
-         |   Molecule   |
-         |              |
-         | e.g. 2CH3OH  |
-         +------+-------+
-                |1
-                |
-                vn
-         +--------------+
-         |   Molecular  |
-         |              +<--+
-         |     Part     |   |1
-         +-+----------+-+   |
-           |          |     |
-           |is-a  is-a|     |n
-    +------+--+    +--+-----+-+
-    | Element |    |  Group   |
-    |         |    |          |
-    | e.g. H2 |    |e.g. (OH)2|
-    +---------+    +----------+
-
-....
-
-The equation mentioned above for making barium phosphate could be written like this:
-
-[source,kotlin]
-----
-val Ba = Element("Ba")
-val Ba3 = Element("Ba", 3)
-val O = Element("O")
-val O2 = Element("O", 2)
-val O4 = Element("O", 4)
-val H2 = Element("H", 2)
-val H3 = Element("H", 3)
-val P = Element("P")
-
-val bariumHydroxide = Molecule(3, listOf(Ba, Group(listOf(O, H), 2)))
-val phosphoricAcid = Molecule(2, listOf(H3, P, O4))
-val water = Molecule(6, listOf(H2, O))
-val bariumPhosphate = Molecule(1, listOf(Ba3, Group(listOf(P, O4), 2)))
-
-val equation = Equation(
-    listOf(bariumHydroxide, phosphoricAcid),
-    listOf(water, bariumPhosphate),
-    false)
-
-println(equation)
-//3Ba(HO)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2
-----
-
-This code works, but a little improvement wouldn't be the worst idea. Let's write a Hybrid DSL for it. First, we predefine all elements:
-
-[source,kotlin]
-----
-val H = Element("H", 1)
-val He = Element("He", 1)
-val Li = Element("Li", 1)
-// etc.
-----
-
-Next, we need a convenient way to add the subscript to an element or a group. For this, we could use the invoke-operator `()` or the index access operator `[]`. As we will need parentheses in other places as well, the index access operator seems to be the better choice. We can now write `H[2]` to denote `H~2~`:
-
-[source,kotlin]
-----
-operator fun Element.get(subscript: Int) =
-    apply { require(this.subscript == 1 && subscript > 1) }
-        .copy(subscript = subscript)
-operator fun Group.get(subscript: Int) =
-    apply { require(this.subscript == 1 && subscript > 1) }
-        .copy(subscript = subscript)
-----
-
-The code for both functions contains a sanity check, which won't allow nonsensical calls like `H[-5]` or `H[2][7]`.
-
-The next task is to assemble molecules from either elements or groups. We can use the minus operator `-` to represent a chemical bond, e.g. a water molecule could be written as `(H[2]-O)`. We also need to assemble groups, and from the few remaining operators the range `..` seems like a good fit, so we can write e.g. a carboxyl group as `(C..O..O..H)`:
-
-[source,kotlin]
-----
-operator fun Part.minus(that: Part) =
-    Molecule(1,listOf(this, that))
-operator fun Molecule.minus(that: Part) =
-    copy(parts = parts + that)
-operator fun Element.rangeTo(that: Part) =
-    Group(listOf(this, that),1)
-operator fun Group.rangeTo(that: Part) =
-    copy(parts = parts + that)
-----
-
-Generally, we need to put molecules and groups in parentheses because of the precedence rules.
-
-A molecule can have an optional coefficient in front. Also, the same operation should "promote" an element or group to a molecule, allowing e.g. to write `2*O[2]` resulting in an oxygen molecule with a coefficient of two. Again, we need sanity checks, rendering calls like `-2*H[2]` or `3*(2*O[2])` invalid:
-
-[source,kotlin]
-----
-operator fun Int.times(that: Molecule) =
-    that.apply { require(coefficient == 1 && this@times > 1) }
-        .copy(factor = this)
-operator fun Int.times(that: Part) =
-    Molecule(this, listOf(that))
-        .apply { require(coefficient > 1) }
-----
-
-Next, we need a way to group the left and right side of an equation to a list of molecules, and the obvious choice for an operator is `+`. Again, we "promote" molecule parts to full molecules when necessary. This time the precedence rules for `*` and `+` play nicely along with the intended use, so we won't need parentheses on this level.
-
-[source,kotlin]
-----
-operator fun Molecule.plus(that: Molecule) =
-    listOf(this, that)
-operator fun Molecule.plus(that: Part) =
-    listOf(this, Molecule(1,listOf(that)))
-operator fun Part.plus(that: Molecule) =
-    listOf(Molecule(1,listOf(this)), that)
-operator fun List<Molecule>.plus(that: Part) =
-    this + Molecule( 1, listOf( that))
-----
-
-In case you wonder why there is no `List<Molecule>.plus(that: Molecule)` function: This would be just a special case of adding elements to a list, which is already defined in the standard library.
-
-The last part is collecting everything in an equation. This is not complicated, but lengthy, because we might encounter not only lists of molecules, but single molecules or molecule parts on both sides of the equation. Further, we have to account for the two different equation types:
-
-[source,kotlin]
-----
-infix fun List<Molecule>.reactsTo(that: List<Molecule>) =
-    Equation(this, that, false)
-infix fun Molecule.reactsTo(that: List<Molecule>) =
-    Equation(listOf(this), that, false)
-infix fun List<Molecule>.reactsTo(that: Molecule) =
-    Equation(this, listOf(that), false)
-infix fun Molecule.reactsTo(that: Molecule) =
-    Equation(listOf(this), listOf(that), false)
-infix fun Part.reactsTo(that: List<Molecule>) =
-    Equation(listOf(Molecule(1,listOf(this))), that, false)
-infix fun List<Molecule>.reactsTo(that: Part) =
-    Equation(this, listOf(Molecule(1, listOf(that))), false)
-infix fun Part.reactsTo(that: Part) =
-    Equation(listOf(Molecule(1,listOf(this))), listOf(Molecule(1,listOf(that))), false)
-infix fun Part.reactsTo(that: Molecule) =
-    Equation(listOf(Molecule(1,listOf(this))), listOf(that), false)
-infix fun Molecule.reactsTo(that: Part) =
-    Equation(listOf(this), listOf(Molecule(1,listOf(that))), false)
-
-// same functions for reversibleTo,
-// just with an Equation having reversible == true
-----
-
-Unfortunately, we have to resort to infix functions, as there seems to be no suitable operator available. A common trick is to use the backtick syntax(((Backtick Identifiers))) to mimic an operator, but `{backtick}-{zwsp}>{backtick}` and `{backtick}<{zwsp}-{zwsp}>{backtick}` won't work: `<` and `>` are two of the very few characters that are not allowed in backtick syntax on the JVM.
-
-So, how does our DSL look in action? Here are a few examples:
-
-[source,kotlin]
-----
-//2H2 + O2 <-> 2H2O
-val makingWater =
-    2*H[2] + O[2] reversibleTo 2*(H[2]-O)
-
-//3Ba(HO)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2
-val makingBariumPhosphate =
-    3*(Ba-(O..H)[2]) + 2*(H[3]-P-O[4]) reactsTo
-        6*(H[2]-O) + (Ba[3]-(P..O[4])[2])
-
-//H2SO4 + 8HI <-> H2S + 4I2 + 4H2O
-val sulfuricAcidAndHydrogenIodide =
-    (H[2]-S-O[4]) + 8*(H-I) reversibleTo (H[2]-S) + 4*I[2] + 4*(H[2]-O)
-----
-
-There is one optional improvement, which is more a matter of taste: We could add some extension properties for low subscripts of elements and groups, which would allow to write e.g. `N._2` instead of `N[2]`:
-
-[source,kotlin]
-----
-val Element._2
-    get() = this.apply { require(subscript == 1) }.copy(subscript = 2)
-val Element._3
-    get() = this.apply { require(subscript == 1) }.copy(subscript = 3)
-// etc.
-
-val Group._2
-    get() = this.apply { require(subscript == 1) }.copy(subscript = 2)
-val Group._3
-    get() = this.apply { require(subscript == 1) }.copy(subscript = 3)
-// etc.
-
-// new syntax
-val eq = 3*(Ba-(O..H)._2) + 2*(H._3-P-O._4) reactsTo
-            6*(H._2-O) + (Ba._3-(P..O._4)._2)
-----
-
-Please decide for yourself which version you prefer. Personally, I find the first syntax more readable.
-
-Simulating the dense chemical notation is hard, and while using operator overloading and infix notation made our example substantially shorter, it still contains a lot of clutter. Of course, after some time one would get used to the DSL, but there is clearly a learning curve involved. In the next chapter, we will have another look at the problem, and attack it from a totally different angle.
-
-=== Case Study: Pattern Matching
-
-Kotlin's `when` is certainly more versatile than Java's `switch`, but languages like Scala or Haskell go one step further and allow pattern matching. This means that you can not only compare or test a value, you can also decompose it, check its parts individually or use the values in the result expression. But it is possible to get similar functionality in Kotlin, although not as elegant. The following code is based on the https://github.com/DanielGronau/kopama[kopama] library written by the author.
-
-An ideal syntax could look like this:
-
-[source,text]
-----
-//not (yet?) Kotlin
-val p = Person("Andy", "Smith", 43)
-
-val result = match(p) {
-    Person("Andy", "Miller", _) ->
-        "Andy Miller has called!"
-    Person("Andy", lastName != "Miller", age) ->
-        "Some other Andy of age $age has called"
-    else -> "Some unknown caller"
-}
-----
-
-We have to allow for some compromises to make it work in Kotlin:
-
-* We can't use `Person` in the match cases, but `Person::class` would be okay. We will assume that `Person` is a `data class`.
-* The arrow notation is not possible, we will use `then` instead
-* Comparisons as well as `and` and `or` can be only infix functions
-* The right sides should be only evaluated if needed, so we need braces for a "lazy" lambda.
-* Capturing variables on the left and using them on the right needs to use a separate variable.
-* `else` is a keyword, so `otherwise` is used instead. As it is not possible to determine at compile time whether the given conditions are exhaustive, the `otherwise` branch is mandatory
-* The whole construct has only limited type safety, as we can't know which member types a data class has.
-
-That's a rather long list, let's see how our example looks now:
-
-[source,kotlin]
-----
-val result = match(p) {
-    Person::class("Andy", "Miller", any) then
-        { "Andy Miller has called!" }
-    val ageCapture = capture<Int>()
-    Person::class("Andy", !eq("Miller"), ageCapture) then
-        { "Some other Andy of age ${ageCapture.value} has called" }
-    otherwise { "Some unknown caller" }
-}
-----
-
-That doesn't look too bad. The core of the DSL is quite small:
-
-[source,kotlin]
-----
-fun interface Pattern : (Any?) -> Boolean
-
-data class MatchResult<T>(val value: T)
-
-class Matcher<T>(private val obj: Any?) {
-    private var result: T? = null
-
-    fun otherwise(default: () -> T) = MatchResult(result ?: default())
-
-    infix fun Pattern.then(value: () -> T) {
-        if (result == null && this(obj)) {
-            result = value()
-        }
-    }
-}
-
-fun <T> match(obj: Any, body: Matcher<T>.() -> MatchResult<T>): T =
-    Matcher<T>(obj).run(body).value
-----
-
-As a reminder, the `fun interface` syntax defines a <<chapter-04.adoc#functionalInterfaces, functional interface>>. Note that the `body` parameter of the `match()` method requires a `MatchResult` as return value. This is a trick to force users to call the `otherwise()` method at the end of the block.
-
-Of course, there are still patterns missing for the left-hand sides of the `then` expressions. For implementing them, we can take advantage of the simplified syntax for functional interfaces (a.k.a. SAM conversion). Most of them are quite easy to write:
-
-[source,kotlin]
-----
-// matches everything
-val any = Pattern { true }
-// matches nothing
-val none = Pattern { false }
-// matches null values
-val isNull = Pattern { it == null }
-// negates a pattern
-operator fun Pattern.not() = Pattern { !this@not(it) }
-// conjunction of patterns
-infix fun Pattern.and(that: Pattern) =
-    Pattern { this@and(it) && that(it) }
-// disjunction of patterns
-infix fun Pattern.or(that: Pattern) =
-    Pattern { this@or(it) || that(it) }
-// equality to a value
-fun eq(value: Any?) = Pattern { it == value }
-// equality to one of the values
-fun oneOf(vararg values: Any?) = Pattern { values.contains(it) }
-// type check
-fun isA(kClass: KClass<*>) = Pattern { kClass.isInstance(it) }
-// instance equality
-fun isSame(value: Any) = Pattern { it === value }
-----
-
-For comparing values, some type checks are needed in order to ensure that the value is comparable. That's why we need <<chapter-04.adoc#reifiedGenerics, reified generics>> in this case:
-
-[source,kotlin]
-----
-// greater than
-inline fun <reified C : Comparable<C>> gt(value: C) = Pattern {
-    when (it) {
-        is C -> it > value
-        else -> false
-    }
-}
-// greater or equal
-inline fun <reified C : Comparable<C>> ge(value: C) = Pattern {
-    when (it) {
-        is C -> it >= value
-        else -> false
-    }
-}
-// less than
-inline fun <reified C : Comparable<C>> lt(value: C) = Pattern {
-    when (it) {
-        is C -> it < value
-        else -> false
-    }
-}
-// less or equal
-inline fun <reified C : Comparable<C>> le(value: C) = Pattern {
-    when (it) {
-        is C -> it <= value
-        else -> false
-    }
-}
-----
-
-For capturing values we need a subclass of `Pattern` which can also hold a value:
-
-[source,kotlin]
-----
-class Capture<T : Any>(val kclass: KClass<T>) : Pattern {
-    lateinit var value: T
-        private set
-
-    override fun invoke(obj: Any?) = when {
-        kclass.isInstance(obj) -> true.also { value = kclass.cast(obj) }
-        else -> false
-    }
-}
-
-inline fun <reified T : Any> capture() = Capture(T::class)
-----
-
-For capturing values, you first define a variable using the `capture<T>()` method. Then you can use this variable on the left-hand side of `then` as a pattern, which checks that the value has the same type `T` as specified, and stores it. On the right-hand side the value can be read from the variable.
-
-Now the only missing pattern is the one for decomposing a data class, which is more involved, as it relies heavily on reflection:
-
-[source,kotlin]
-----
-operator fun KClass<*>.invoke(vararg patterns: Any?) = Pattern {
-    fun asPattern(p: Any?) = when (p) {
-        is Pattern -> p
-        else -> eq(p)
-    }
-    when {
-        it == null -> false
-        !this@invoke.isInstance(it) -> false
-        patterns.size != maxComponent(it) -> false
-        else -> patterns.foldIndexed(true) { i, b, p ->
-            b && asPattern(p).testComponentN(it, i + 1)
-        }
-    }
-}
-
-private fun Pattern.testComponentN(obj: Any?, index: Int) =
-    if (index < 0 || obj == null) false
-    else obj::class.memberFunctions.find { f ->
-        f.name == "component$index" &&
-        f.parameters.size == 1 &&
-        f.parameters[0].kind == KParameter.Kind.INSTANCE
-    }
-        ?.call(obj)
-        ?.let { this@testComponentN(it) }
-        ?: false
-
-private fun maxComponent(obj: Any?) = obj?.let {
-    generateSequence(1) { index ->
-        if (obj::class.memberFunctions.any { f ->
-                f.name == "component$index" &&
-                        f.parameters.size == 1 &&
-                        f.parameters[0].kind == KParameter.Kind.INSTANCE
-            }) index + 1 else null
-    }.last() - 1
-} ?: 0
-----
-
-The `invoke()` method checks first that the value is not null and that it has the right type and number of fields. Then the patterns given for the fields are applied. If no pattern is given, but another value, it is assumed that you want to compare the field with this value, so when you write `Person::class("Andy", "Miller", any)`, it is interpreted as `Person::class(eq("Andy"), eq("Miller"), any)`. I won't get into the details of the reflection code, but would refer to TODO.
-
-Of course, you can write many more patterns, but the DSL is already functional as it is. Unfortunately, there is no way to make the code more type-safe, as we can't know which types the fields of a data class have. So I would advise to be careful when using it, and double-check if the patterns make sense. Despite that, I still think this is a cool example which demonstrate the expressiveness of Kotlin.
 
 === Conclusion
 
-Writing good hybrid DSLs is challenging. In most cases it is the better choice to stick with a certain style, when it is possible. On the other hand, a well-designed hybrid DSL can combine the most fitting techniques in a way that feels intuitive and organic.
+The Loan Pattern DSL has several advantages over the classic Builder Pattern style, and is very common in Kotlin. It really shines when dealing with nested structures, and allows to integrate other DSL techniques more easily.
 
 ==== Preferable Use Cases
 
 * Creating data
-* Transforming data
-* Define operations
 * Execute actions
-* Generating code
 * Configuring systems
 * Testing
-* Logging
 
 ==== Rating
 
-* image:3_sun.png[] - for Simplicity of DSL design
-* image:4_sun.png[] - for Elegance
-* image:4_sun.png[] - for Usability
-* image:5_sun.png[] - for possible Applications
+* image:5_sun.png[] - for Simplicity of DSL design
+* image:3_sun.png[] - for Elegance
+* image:3_sun.png[] - for Usability
+* image:3_sun.png[] - for Application Scope
 
 ==== Pros & Cons
 
@@ -487,12 +69,8 @@ Writing good hybrid DSLs is challenging. In most cases it is the better choice t
 |===
 |Pros |Cons
 
-|* can support a wide range of problems
-* allows to get creative with different techniques
-* can get very concise by having many implementation options
+|* easy to write and read
 
-|* might look incoherent
-* high perceptual complexity -> steeper learning curve
-* difficult to control and predict the outcome
-* higher maintenance effort needed
+|* succession rules can't be enforced
+* might be difficult to use from Java client code
 |===

@@ -10,24 +10,28 @@ Chapters
 2. Requirements Analysis
 3. Writing a DSL
 4. Relevant Language Features
+---
 5. Algebraic DSLs
 6. Builder Pattern DSLs 
 7. Loan Pattern DSLs (with AutoDSL)
-8. Hybrid DSLs (chemical formula, pattern matcher) 
+8. Token Chain DSLs
 9. String-Parsing DSLs (chemical formula with and without parser generator)
 10. Annotation based DSL (data class mapper)
-11. Code Generation with KotlinPoet (physical quantities)
-12. Java Interoperability
-13. Dissecting common DSLs (kotest, gradle .kts, Kotlin Poet, better-parse)
+11. Hybrid DSLs (chemical formula, pattern matcher)
+---
+12. Code Generation with KotlinPoet (physical quantities)
+13. Java Interoperability
+14. Dissecting common DSLs (kotest, gradle .kts, Kotlin Poet, better-parse)
 
 TODO:
-- chapter 12 and 13
+- chapter 8, 13 and 14
 - make the index
-- other kinds of DSLs / techniques? E.g. Constructors in kotest?
-- More Diagrams: Code Generation?
-- Reorganize Requirements analysis?
+- other kinds of DSLs / techniques? 
+  - Constructors in kotest?
+  - Token based, e.g. turtle graphics
 - find a good Kotlin reflection book to refer to -> 8.3. TODO
-- proper @DslMarker example in chapter 4
+- Are the conclusion sections okay?
+- chapter 14 "Bits and Pieces"?
 
 ## Research
 

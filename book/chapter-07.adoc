@@ -2,11 +2,13 @@
 
 The Loan Pattern DSL type is Kotlin's common answer to the Builder Pattern, and covers the same use cases. Instead of having a mutable builder using method chaining, we have a mutable builder class exposing its members using the Loan Pattern. The main ingredients to make it work are extension methods and the trailing lambda syntax.
 
-In this chapter, we will first write a more convenient replacement for the `HttpRequest.Builder` presented in the last chapter. Next, we discuss and example for a chained loan pattern. If you have control over the business class you want to construct, you can use a library like AutoDSL to generate a DSL for you. We will explore this in the second part of this chapter.
+This approach can be particularly useful for creating deeply nested structures. In such cases, the code can quickly become cluttered and hard to read when using the builder pattern. Further, it can be easier to enforce constraints and ensure type safety with this approach compared to using builders. Sometimes, the greater flexibility of Loan Pattern DSLs allows to incorporate other DSL techniques like operator overloading, while the builder approach is often too rigid for such improvements.
+
+In this chapter, we will first write a more convenient replacement for the `HttpRequest.Builder` presented in the last chapter. Next, we implement and discuss an example for the Chained Loan Pattern. If you have control over the business classes you want to construct, you can use libraries like AutoDSL to generate a DSL for you. We will explore this in the second part of this chapter.
 
 === Case Study: HttpRequest
 
-As already shown in the last chapter, `HttpRequest` comes already with a builder, which looks like this:
+As discussed in the last chapter, `HttpRequest` comes already with a builder, which looks like this:
 
 [source,kotlin]
 ----
@@ -18,9 +20,7 @@ val request = HttpRequest.newBuilder(URI.create("https://acme.com:9876/products"
     .build()
 ----
 
-This doesn't look too bad, but there is some noise in form of the `newBuilder()` and `build()` calls, and the other method calls are actually assignments in disguise. The question is how we can improve this in Kotlin.
-
-Here is a suggestion for an improved syntax:
+This doesn't look too bad, but there is some noise in form of the `newBuilder()` and `build()` calls, and the other method calls are actually assignments in disguise. The question is how we can improve this in Kotlin. Here is a suggestion for an improved syntax:
 
 [source,kotlin]
 ----
@@ -34,7 +34,7 @@ val request = httpRequest("https://acme.com:9876/products") {
 }
 ----
 
-There are no more `newBuilder()` and `build()` calls, the assignments are assignments, headers have their own subsection and durations can be calculated. For convenience, you have now the choice whether to specify the web-address as `String` or `URI` (the example shows only `String`).
+There are no more `newBuilder()` and `build()` calls, the assignments are actually assignments, headers have their own subsection, and durations can be calculated. For convenience, you have the choice whether to specify the web-address as `String` or `URI` (the example shows the `String` version).
 
 As you might have guessed, `httpRequest` is a method employing the Loan Pattern: It initializes a builder class, exposes it as a receiver, and takes care of the final `build()` call. Also note how it takes care of a mandatory field (in our case the address) by requiring it as an explicit argument. We have two versions of the function, depending on how the address is specified:
 
@@ -74,7 +74,7 @@ class HttpRequestBuilder(var uri: URI) {
 }
 ----
 
-The `headers` field can't be set directly, because we want to use a nested structure here. The `headers()` method works analogous to the `httpRequest()` method, and exposes the inner `Headers` class, which in turn enables to fill the `headers` field. The range operator `..` was chosen to collect the key-value-pairs because it looks like `:`. As discussed in the fourth chapter, we don't want that you can see all the `HttpRequestBuilder` fields from its inner class `Headers`, and that's why we use te `@DslMarker` mechanism to limit the scope inside of `Headers`.
+The `headers` field can't be set directly, because we want to use a nested structure here. The `headers()` method works analogous to the `httpRequest()` method, and exposes the inner `Headers` class, which in turn enables to fill the `headers` field. The range operator `..` was chosen to collect the key-value-pairs because it looks somewhat like `:`. As discussed in the <<chapter-04.adoc#dslMarker,fourth chapter>>, we don't want to expose all the `HttpRequestBuilder` fields from its inner class `Headers`, and that's why we use te `@DslMarker` (((@DslMarker))) mechanism to limit the scope inside of `Headers`.
 
 [source,kotlin]
 ----
@@ -196,13 +196,15 @@ class HttpRequestBuilder(var uri: URI) {
 }
 ----
 
-=== AutoDSL
+Retrofitting HttpRequestBuilder with a Loan Pattern DSL proved to be a relatively simple task, but the resulting DSL is convenient and idiomatic. By adapting existing libraries in this way, especially those written in Java, it becomes possible to better meet the needs of users and to integrate them more seamlessly into the Kotlin ecosystem. The end result is often a more natural and intuitive experience for developers.
 
-As this kind of DSL is very common, and its structure is quite predictable, it shouldn't come as a surprise that there exist libraries for deriving such DSLs automatically. At this point we will cover the https://github.com/F43nd1r/autodsl[AutoDSL] library, which has to be added as an annotation processor (either via kapt or KSP). To do this, please follow the description on the GitHub project page.
+=== Case Study: HttpRequest with AutoDSL (((AutoDSL)))
+
+As this kind of DSL is very common, and its structure is quite predictable, it shouldn't come as a surprise that there exist libraries for deriving such DSLs automatically. At this point we will cover the https://github.com/F43nd1r/autodsl[AutoDSL] library, which needs to be set up as an annotation processor (either via kapt (((kapt))) or (((KSP))) KSP). To do this, please follow the description on the GitHub project page.
 
 WARNING: Please make sure to use the right GitHub project. There is an older library called "AutoDsl", which was the inspiration for the project covered here. Unfortunately, it is no longer maintained, and doesn't work for Kotlin 1.4 or newer.
 
-Remember all the work we put into `HttpRequestBuilder` in the last section? Let's see what we can get "for free" instead. Note that we can't annotate the `HttpRequest` class itself, so we are auto-generating a builder class, and hence have to call the `build()` method at the end. Usually, for our own classes we wouldn't do this, but annotate them directly.
+Remember the work put into `HttpRequestBuilder` in the last section? Let's see what we can get "for free" instead. Note that we can't annotate the `HttpRequest` class itself, so we are auto-generating an intermediate class instead, and therefore we have to call the `build()` method at the end. Usually, for classes under our control we wouldn't do this, but instead annotate them directly.
 
 [source,kotlin]
 ----
@@ -226,6 +228,7 @@ data class HttpRequestBuilder(
     @AutoDslSingular("header")
     val headers: List<Header> = listOf()
 ) {
+
     fun build(): HttpRequest =
         with(HttpRequest.newBuilder(uri)) {
             headers.forEach { (key, value) -> header(key, value) }
@@ -246,7 +249,7 @@ data class HttpRequestBuilder(
 
 It can't get much simpler than that: All classes which should be included in the DSL are marked with the `@AutoDsl` annotation, and when there are lists that should be specified element-wise and not as a whole, you add an `@AutoDslSingular` annotation containing the name of the helper method.
 
-If you compile the project using IntelliJ IDEA, you should find the generated classes `HeaderDsl` and `HttpRequestBuilderDsl` somewhere in the `target/generated-sources/...` folder, depending on how you integrated the AutoDSL processor, and how you setup your project).
+If you compile the project using IntelliJ IDEA, you should usually find the generated classes `HeaderDsl` and `HttpRequestBuilderDsl` in a `generated-sources/...` folder, depending on how you integrated the AutoDSL processor, and how you set up your project).
 
 The example call from the previous section would now like this:
 
@@ -267,11 +270,11 @@ val request = httpRequestBuilder {
 }.build()
 ----
 
-Granted, the code isn't quite as comfortable and concise, but it comes close, and looks definitely nicer and more intuitive than a traditional builder. AutoDSL also checks that mandatory fields like `uri` are set, and throws an `IllegalStateException` otherwise.
+Granted, the code isn't quite as comfortable and concise, but it comes close, and looks definitely nicer and more intuitive than a traditional builder. AutoDSL also keeps track of mandatory fields like `uri`, and throws an `IllegalStateException` if they were not set.
 
 === Chained Loan Pattern
 
-It is possible to have a "chained" version of the Loan Pattern, but it depends on the use case whether it looks better than the chained Builder Pattern. I would argue that in case of the SQL DSL from the last chapter the chained version wouldn't be a significant improvement. Here is how it could look like:
+It is possible to have a "chained" version of the Loan Pattern, but it depends on the use case whether it looks better than the chained Builder Pattern. In case of the SQL DSL from the last chapter one could argue that the Loan Pattern version wouldn't be a significant improvement, and I would agree. However, it could turn out that the more flexible Loan Pattern approach scales better when attempting to cover the whole SQL syntax. Here is an example call of the Loan Pattern version:
 
 [source,kotlin]
 ----
@@ -292,7 +295,7 @@ val query = SELECT {
 }.build()
 ----
 
-Here is a possible implementation of this DSL (sanity checks were omitted for brevity):
+The implementation of this DSL is quite similar to the builder version (sanity checks were omitted for brevity):
 
 [source,kotlin]
 ----
@@ -301,28 +304,33 @@ fun SELECT(body: SelectBody.() -> Unit) =
 
 class SelectBody {
     val columns = mutableListOf<String>()
+
     operator fun String.unaryPlus() { columns += this }
 }
 
 class SelectClause(val columns : List<String>) {
+
     fun FROM(body: FromBody.() -> Unit) =
-        FromBody().apply(body).let{
+        FromBody().apply(body).let {
             FromClause(columns, it.tableName, it.joinClauses)
         }
 }
 
 typealias NameWithAlias = Pair<String, String?>
 
+typealias TableJoin = Triple<NameWithAlias, String, String>
+
 class FromBody {
     var tableName: NameWithAlias = "" to null
-    val joinClauses  = mutableListOf<Triple<NameWithAlias, String, String>>()
+    val joinClauses  = mutableListOf<TableJoin>()
 
     operator fun String.unaryPlus() { tableName = this to null }
+
     infix fun String.AS(that: String) { tableName = this to that }
 
     fun JOIN(body: JoinBody.() -> Unit) {
         JoinBody().apply(body).also {
-            joinClauses += Triple(it.tableName, it.firstColumn, it.secondColumn)
+            joinClauses += TableJoin(it.tableName, it.firstColumn, it.secondColumn)
         }
     }
 }
@@ -330,10 +338,13 @@ class FromBody {
 data class FromClause(
     val columns: List<String>,
     val tableName: NameWithAlias,
-    val joinClauses: List<Triple<NameWithAlias, String, String>>
+    val joinClauses: List<TableJoin>
 ) {
+
     fun WHERE(body: WhereBody.() -> Unit) =
-        WhereClause(columns, tableName, joinClauses, WhereBody().apply(body).conditions)
+        WhereClause(columns, tableName, joinClauses,
+            WhereBody().apply(body).conditions)
+
     fun build() = build(columns, tableName, joinClauses, listOf())
 }
 
@@ -343,6 +354,7 @@ class JoinBody {
     var secondColumn = ""
 
     operator fun String.unaryPlus() { tableName = this to null }
+
     infix fun String.AS(that: String) { tableName = this to that }
 
     fun ON(firstColumn: String, secondColumn: String) {
@@ -353,31 +365,33 @@ class JoinBody {
 
 class WhereBody {
     val conditions = mutableListOf<String>()
+
     operator fun String.unaryPlus() { conditions += this }
 }
 
 data class WhereClause(
     val columns: List<String>,
     val tableName: NameWithAlias,
-    val joinClauses: List<Triple<NameWithAlias, String, String>>,
+    val joinClauses: List<TableJoin>,
     val conditions: List<String>
 ) {
+
     fun build() = build(columns, tableName, joinClauses, conditions)
 }
 
 private fun build(
     columns: List<String>,
     tableName: NameWithAlias,
-    joinClauses: List<Triple<NameWithAlias, String, String>>,
+    joinClauses: List<TableJoin>,
     conditions: List<String>
 ): String {
     // as in chapter 6
 }
 ----
 
-It is important to have different classes for the body of a clause, and the result. So the receiver for the `SELECT` function is the `SelectBody` class, but the result of the call is a `SelectClause`. This is because we want to be able to call different functions in both classes, e.g. the `SelectBody` allows to add columns, but `SelectClause` can call the `FROM` function. It would be very confusing and unsafe to have this functionality in a single class.
+It is important to have different classes for the body of a clause, and the result. E.g., the receiver for the `SELECT` function is the `SelectBody` class, but the result of the call is a `SelectClause`. This is because we want to be able to call different functions in both classes, e.g. the `SelectBody` allows to add columns, but `SelectClause` can call the `FROM` function. It would be very confusing and unsafe to have this functionality in a single class.
 
-Also, the explicit call to the `build()` function is necessary in this example, because we don't know if the chain should be stopped after the FROM or after the WHERE. In use cases where there is only one possible exit point, the `build()` call could be performed internally.
+Also, the explicit call to the `build()` function is necessary in this example, because we don't know whether the chain should be stopped after FROM or after WHERE. In use cases with only one possible exit point, the `build()` call could be performed internally.
 
 It is possible to simplify this code using the "chameleon" approach discussed in the last chapter, although it can come to name clashes. In our case, the unary `+` is used in both the select and the where clause, but it can't be part of the main builder class, because it wouldn't be clear in which list the values have to go. Here is a "chameleon" version of the code:
 
@@ -390,7 +404,8 @@ private class QueryBuilder : SelectClause, FromBody, FromClause, WhereClause {
     private val columns = mutableListOf<String>()
     private val conditions = mutableListOf<String>()
 
-    fun select(body: ListBody.() -> Unit) = this.apply { ListBody(columns).apply(body) }
+    fun select(body: ListBody.() -> Unit) =
+        this.apply { ListBody(columns).apply(body) }
 
     //SelectClause
     override fun FROM(body: FromBody.() -> Unit) =
@@ -398,14 +413,16 @@ private class QueryBuilder : SelectClause, FromBody, FromClause, WhereClause {
 
     //FromBody
     override var tableName: NameWithAlias = "" to null
-    override val joinClauses = mutableListOf<Triple<NameWithAlias, String, String>>()
+
+    override val joinClauses = mutableListOf<TableJoin>()
+
     override infix fun String.AS(that: String) {
         tableName = this to that
     }
 
     override fun JOIN(body: JoinBody.() -> Unit) =
         JoinBody().apply(body).also {
-            joinClauses += Triple(it.tableName, it.firstColumn, it.secondColumn)
+            joinClauses += TableJoin(it.tableName, it.firstColumn, it.secondColumn)
         }
 
     //FromClause
@@ -417,12 +434,14 @@ private class QueryBuilder : SelectClause, FromBody, FromClause, WhereClause {
 }
 
 class ListBody(val list:MutableList<String>) {
+
     operator fun String.unaryPlus() {
         list += this
     }
 }
 
 interface SelectClause {
+
     fun FROM(body: FromBody.() -> Unit): FromClause
 }
 
@@ -430,13 +449,17 @@ typealias NameWithAlias = Pair<String, String?>
 
 interface FromBody {
     var tableName: NameWithAlias
-    val joinClauses: List<Triple<NameWithAlias, String, String>>
+    val joinClauses: List<TableJoin>
+
     infix fun String.AS(that: String)
+
     fun JOIN(body: JoinBody.() -> Unit): JoinBody
 }
 
 interface FromClause {
+
     fun WHERE(body: ListBody.() -> Unit): WhereClause
+
     fun build(): String
 }
 
@@ -460,13 +483,14 @@ class JoinBody {
 }
 
 interface WhereClause {
+
     fun build(): String
 }
 
 private fun build(
     columns: List<String>,
     tableName: NameWithAlias,
-    joinClauses: List<Triple<NameWithAlias, String, String>>,
+    joinClauses: List<TableJoin>,
     conditions: List<String>
 ): String {
     // same as before
@@ -481,7 +505,7 @@ In some cases, the compiler can improve its type inference by inspecting the met
 
 === Conclusion
 
-The Loan Pattern DSLs have several advantages over the classic Builder Pattern style, and is very common in Kotlin. It really shines when dealing with nested structures, but struggles a bit when the operations inside the block become a little more involved than simple assignments.
+The Loan Pattern DSL has several advantages over the classic Builder Pattern style, and is very common in Kotlin. It really shines when dealing with nested structures, and allows to integrate other DSL techniques more easily.
 
 ==== Preferable Use Cases
 

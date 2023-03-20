@@ -1,6 +1,6 @@
-package creativeDSLs.chapter_08.equationDSL
+package creativeDSLs.chapter_11.equationDSL
 
-import creativeDSLs.chapter_08.*
+import creativeDSLs.chapter_11.*
 
 operator fun Element.get(subscript: Int) =
     apply { require(this.subscript == 1 && subscript > 1) }
