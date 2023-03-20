@@ -525,6 +525,7 @@ val worksToo = 2.1.GBP + 4.2.GBP // 6.3 £
 
 Adding amounts of different currencies together isn't possible, because the definition of `+` ensures that both amounts belong to the same currency. The generic type parameter `T` is called a "phantom type", and this code is a very simple example for type-level programming.
 
+[#typeLevelProgramming]
 .Type-level Programming (((Type Level Programming))) and Phantom Types (((Phantom Types)))
 ****
 *Type-level programming* is a programming paradigm where types themselves are used as values that can be manipulated and computed upon at compile-time, rather than just being used to check the correctness of program syntax and logic. In other words, type-level programming involves using types to encode complex computations and algorithms, which are evaluated by the compiler at compile-time instead of runtime. Type-level programming can be used to achieve a wide range of goals, such as improving program performance, reducing runtime errors, and enforcing stronger type constraints.

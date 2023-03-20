@@ -1,10 +1,12 @@
 package creativeDSLs.chapter_06.chameleon
 
+typealias TableJoin = Triple<NameWithAlias, String, String>
+
 class QueryBuilder private constructor(val columns: List<String>):
     SelectClause, FromClause, JoinClause, WhereClause {
     var tableName : NameWithAlias = "" to null
     var joinTableName : NameWithAlias = "" to null
-    val joinClauses = mutableListOf<Triple<NameWithAlias, String, String>>()
+    val joinClauses = mutableListOf<TableJoin>()
     val conditions = mutableListOf<String>()
 
     companion object {
@@ -12,17 +14,12 @@ class QueryBuilder private constructor(val columns: List<String>):
     }
 
     //SelectClause
-    override fun from(table: String): FromClause =
-        this.apply { tableName = table to null }
 
-    override fun from(table: String, alias: String): FromClause =
+    override fun from(table: String, alias: String?): FromClause =
         this.apply { tableName = table to alias }
 
     //FromClause
-    override fun join(table: String): JoinClause =
-        this.apply { joinTableName = table to null }
-
-    override fun join(table: String, alias: String): JoinClause =
+    override fun join(table: String, alias: String?): JoinClause =
         this.apply { joinTableName = table to alias }
 
     override fun where(condition: String): WhereClause =
@@ -30,7 +27,7 @@ class QueryBuilder private constructor(val columns: List<String>):
 
     //JoinClause
     override fun on(firstColumn: String, secondColumn: String): FromClause =
-        this.apply { joinClauses += Triple(joinTableName, firstColumn, secondColumn) }
+        this.apply { joinClauses += TableJoin(joinTableName, firstColumn, secondColumn) }
 
     //WhereClause
     override fun and(condition: String): WhereClause =
@@ -43,10 +40,10 @@ class QueryBuilder private constructor(val columns: List<String>):
             .append("\nFROM ")
             .append(nameWithAlias(tableName))
         joinClauses.forEach { (n, c1, c2) ->
-            sb.append("\n JOIN ${nameWithAlias(n)} ON $c1 = $c2")
+            sb.append("\n  JOIN ${nameWithAlias(n)} ON $c1 = $c2")
         }
         if (conditions.isNotEmpty()) {
-            sb.append("\nWHERE ${conditions.joinToString("\n AND ")}")
+            sb.append("\nWHERE ${conditions.joinToString("\n  AND ")}")
         }
         sb.append(';')
         return sb.toString()
@@ -59,15 +56,13 @@ class QueryBuilder private constructor(val columns: List<String>):
 }
 
 interface SelectClause {
-    fun from(table: String): FromClause
-    fun from(table: String, alias: String): FromClause
+    fun from(table: String, alias: String? = null): FromClause
 }
 
 typealias NameWithAlias = Pair<String, String?>
 
 interface FromClause{
-    fun join(tableName: String): JoinClause
-    fun join(tableName: String, alias: String): JoinClause
+    fun join(tableName: String, alias: String? = null): JoinClause
     fun where(condition: String): WhereClause
     fun build(): String
 }
