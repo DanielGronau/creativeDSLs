@@ -16,29 +16,35 @@ sealed class Val<T : Any>
 class Without<T : Any> : Val<T>()
 class With<T : Any>(val value: T) : Val<T>()
 
-data class ProductBuilder<ID : Val<UUID>, NAME : Val<String>, PRICE : Val<BigDecimal>>(
+data class ProductBuilder<ID : Val<UUID>, NAME : Val<String>, PRICE : Val<BigDecimal>> private constructor(
     val id: ID, val name: NAME, val price: PRICE, val description: String?, val images: List<URI>
 ) {
+    companion object {
+        operator fun invoke() = ProductBuilder(
+            id = Without(),
+            name = Without(),
+            price = Without(),
+            description = null,
+            images = listOf()
+        )
+    }
+
     fun id(uuid: UUID) = ProductBuilder(With(uuid), name, price, description, images)
-    fun name(n: String) = ProductBuilder(id, With(n), price, description, images)
-    fun price(p: BigDecimal) = ProductBuilder(id, name, With(p), description, images)
+
+    fun name(name: String) = ProductBuilder(id, With(name), price, description, images)
+
+    fun price(price: BigDecimal) = ProductBuilder(id, name, With(price), description, images)
+
     fun description(desc: String) = copy(description = desc)
+
     fun addImage(img: URI) = copy(images = images + img)
 }
-
-fun productBuilder() = ProductBuilder(
-    id = Without(),
-    name = Without(),
-    price = Without(),
-    description = null,
-    images = listOf()
-)
 
 fun ProductBuilder<With<UUID>, With<String>, With<BigDecimal>>.build() =
     Product(id.value, name.value, price.value, description, images)
 
 fun main() {
-    productBuilder()
+    ProductBuilder()
         .id(UUID.randomUUID())
         .name("Comb")
         .description("Green plastic comb")

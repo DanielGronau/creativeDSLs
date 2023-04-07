@@ -1,10 +1,48 @@
-== Token Chain DSLs
+== Expressing States or Stages in DSLs
 
-Sometimes, all you need is to construct a sequence of elements. When there are only a few types of elements, the elements itself are easy to construct, and there are no succession rules needed, you can model this use case as a simple chain of tokens. The ingredients for this pattern are a token hierarchy, which can be modelled using sealed classes or interfaces, and a way to glue these tokens together, which can be a simple vararg function, or - more stylish - a concatenating operator.
+Finite State Machines (FSMs) provide a powerful abstraction for controlling the life cycle of objects, as well as for constructing an object in multiple stages. In this chapter, we will explore three different techniques for modeling FSMs. The stages themselves can be implemented using other patterns, like the Builder or the Loan Pattern.
+
+As an introductory example, we will model the life cycle of a vending machine in different ways, before we tackle more realistic problems. The underlying FSM looks like this:
+
+[ditaa,"vending-machine"]
+.Finite State Machine model of a Vending Machine
+....
+    /-------------------\
+    |       Idle        |<--\
+    \--------+----------/   |
+             |              |
+     /----\  | select       |
+     |paid|  | Item         |
+     v    |  v              |
+    /-----+-------------\   |
+/---+   Item Selected   |   |
+|   \--------+----------/   |
+|cancelled   |              |
+|            | paid         |
+|            | enough       |
+|            v              |
+|   /-------------------\   |
+|   |   Dispend Item    |   |
+|   \--------+----------/   |
+|            |              |
+|            |dispended     |
+|            v          done|
+|   /-------------------\   |
+\-->|   Return Change   +---/
+    \--------+----------/
+....
+
+=== Multiple Class Approach
+
+The most straight-forward way for modelling our FSM is to use individual classes for every state.
+
+
 
 === Case Study: Turtle Graphics
 
-While computer graphics (regardless of pixels or vectors) is usually operating on absolute coordinates, https://en.wikipedia.org/wiki/Turtle_graphics[Turtle Graphics] works relative to its current local position and last direction (the "cursor").
+While computer graphics (regardless of pixels or vectors) is usually operating on absolute coordinates, https://en.wikipedia.org/wiki/Turtle_graphics[Turtle Graphics] works relative to its current local position and last direction. It was pioneered by the Logo programming language mainly as an educational tool, but has found to be useful in other areas, e.g. in fractal geometry.
+
+The very basic implementation features operations for moving the "turtle" and for drawing. A turtle graphic consists of a list of these operations. As "glue" operator, `-` was chosen, which has the advantage that its unary version can be used to start the chain.
 
 [source,kotlin]
 ----
@@ -45,6 +83,205 @@ val graph = -Col(BLACK)-
         Up
 ----
 
+
+=== Builder Chain
+
+Sometimes you want to construct an object in stages, either for better readability or for more control over the life cycle. E.g. for a SQL query, you might want to define separate builders for the SELECT, FROM and WHERE part. As the SQL language is very complex, this is just a simplified example. A show-case for a serious implementation of SQL queries and expressions using builders is the Java library https://www.jooq.org/[jOOQ].
+
+The final DSL will allow to write basic SQL queries like this:
+
+[source,kotlin]
+----
+val query = select("p.firstName", "p.lastName", "p.income")
+    .from("Person", "p")
+    .join("Address", "a").on("p.addressId","a.id")
+    .where("p.age > 20")
+    .and("p.age <= 40")
+    .and("a.city = 'London'")
+----
+
+Let's start with the SELECT part, which is straightforward:
+
+[source,kotlin]
+----
+fun select(vararg columns: String) = SelectClause(*columns)
+
+class SelectClause(vararg val columns: String) {
+
+    fun from(tableName: String, alias: String? = null) =
+        FromClause(columns.asList(), tableName to alias)
+}
+----
+
+There is no `build()` method, the only way forward is going into the `FromClause`, which is a bit more involved, as there might be multiple tables joined together:
+
+[source,kotlin]
+----
+typealias TableJoin = Triple<NameWithAlias, String, String>
+
+data class FromClause(
+    val columns: List<String>,
+    val tableName: NameWithAlias,
+    val joinClauses: List<TableJoin> = emptyList()
+) {
+
+    fun join(tableName: String, alias: String? = null) =
+        JoinClause(this, tableName to alias)
+
+    fun where(condition: String) =
+        WhereClause(columns, tableName, joinClauses, listOf(condition))
+
+    fun build() = build(columns, tableName, joinClauses, emptyList())
+}
+----
+
+From here, you can go to a `JoinClause`, which mimics the SQL syntax by permitting to write something like `fromClause.join("Address","a").on("p.addressId", "a.id")`. The other exit point is to start a `WhereClause`. Additionally, the `FromClause` has a `build()` method, because the where part is optional.
+
+The `JoinClause` offers just an `on()` method, which leads back to the `FromClause`. Note that when constructing the `JoinClause`, it gets the calling `FromClause` as an argument, which is a neat trick to avoid passing around all the data separately, and allows to employ the power of the `copy()` method:
+
+[source,kotlin]
+----
+data class JoinClause(val fromClause: FromClause, val tableName: NameWithAlias) {
+
+    fun on(firstColumn: String, secondColumn: String) =
+        fromClause.copy(joinClauses =
+           fromClause.joinClauses + TableJoin(tableName, firstColumn, secondColumn))
+}
+----
+
+The `WhereClause` is quite simple, but of course using `String` to represent the different conditions is not very safe and should be avoided in production code. The SQL syntax allows other clauses like `HAVING` and `ORDER BY` after `WHERE`, but for brevity the example stops here, so after all conditions are set, the only thing to do is calling the `build()` method:
+
+[source,kotlin]
+----
+data class WhereClause(
+    val columns: List<String>,
+    val tableName: NameWithAlias,
+    val joinClauses: List<TableJoin>,
+    val conditions: List<String>
+) {
+
+    fun and(condition: String) =
+        copy(conditions = conditions + condition)
+
+    fun build() =
+        build(columns, tableName, joinClauses, conditions)
+}
+----
+
+The only missing part is the common `build()` method used by `FromClause` and `WhereClause`:
+
+[source,kotlin]
+----
+private fun build(
+    columns: List<String>,
+    tableName: NameWithAlias,
+    joinClauses: List<TableJoin>,
+    conditions: List<String>
+): String {
+
+    val sb = StringBuilder()
+        .append("SELECT ${columns.joinToString(", ")}")
+        .append("\nFROM ")
+        .append(nameWithAlias(tableName))
+
+    joinClauses.forEach { (n, c1, c2) ->
+        sb.append("\n  JOIN ${nameWithAlias(n)} ON $c1 = $c2")
+    }
+
+    if (conditions.isNotEmpty()) {
+        sb.append("\nWHERE ${conditions.joinToString("\n  AND ")}")
+    }
+
+    sb.append(';')
+
+    return sb.toString()
+}
+
+private fun nameWithAlias(name: NameWithAlias) = when (name.second) {
+    null -> name.first
+    else -> "${name.first} AS ${name.second}"
+}
+----
+
+In the next section, we will look at an alternative implementation of the same DSL.
+
+=== Chameleon Builder
+
+A chained builder can get quite messy because of all the data being copied around. It would be nice to keep the data all in one class, but what is with all the guarantees a chained builder provides, e.g. that you can't call `build()` or `join()` in a select clause? To achieve this, we first need to translate our former chained builders into interfaces:
+
+[source,kotlin]
+----
+typealias NameWithAlias = Pair<String, String?>
+
+interface SelectClause {
+    fun from(table: String, alias: String? = null): FromClause
+}
+
+interface FromClause{
+    fun join(tableName: String, alias: String? = null): JoinClause
+    fun where(condition: String): WhereClause
+    fun build(): String
+}
+
+interface JoinClause {
+    fun on(firstColumn: String, secondColumn: String): FromClause
+}
+
+interface WhereClause {
+    fun and(condition: String): WhereClause
+    fun build(): String
+}
+----
+
+Now all left to do is to implement these interfaces in one builder class, and to keep track of the data. Also, we need a method to create this builder, which can be placed in the companion object:
+
+[source,kotlin]
+----
+typealias TableJoin = Triple<NameWithAlias, String, String>
+
+class QueryBuilder private constructor (val columns: List<String>):
+        SelectClause, FromClause, JoinClause, WhereClause {
+
+    var tableName : NameWithAlias = "" to null
+    var joinTableName : NameWithAlias = "" to null
+    val joinClauses = mutableListOf<TableJoin>()
+    val conditions = mutableListOf<String>()
+
+    companion object {
+        fun select(vararg columns: String): SelectClause =
+            QueryBuilder(columns.asList())
+    }
+
+    //SelectClause
+    override fun from(table: String, alias: String?): FromClause =
+        this.apply { tableName = table to alias }
+
+    //FromClause
+    override fun join(table: String, alias: String?): JoinClause =
+        this.apply { joinTableName = table to alias }
+
+    override fun where(condition: String): WhereClause =
+        this.apply { conditions += condition }
+
+    //JoinClause
+    override fun on(firstColumn: String, secondColumn: String): FromClause =
+        this.apply { joinClauses += TableJoin(joinTableName, firstColumn, secondColumn) }
+
+    //WhereClause
+    override fun and(condition: String): WhereClause =
+        this.apply { conditions += condition }
+
+    //FromClause and WhereClause
+    override fun build(): String {
+        // same as in previous section
+    }
+}
+----
+
+For the compiler, it doesn't matter that you give back the same object over and over again at runtime, because the static type decides which methods can be called, and this static type is never `QueryBuilder`, but instead one of the interfaces for the SQL clauses. Calling the DSL looks like before, and you still can't call methods out of order (without casting).
+
+While the chained builder approach is conceptually simple, it leads to a lot of boilerplate code. The chameleon builder concept might look somewhat strange at first, but results usually in more readable code. However, be aware that this approach is susceptible to name clashes, which occur when the same method signature is used with different return types by multiple interfaces.
+
 === Conclusion
 
 The Loan Pattern DSL has several advantages over the classic Builder Pattern style, and is very common in Kotlin. It really shines when dealing with nested structures, and allows to integrate other DSL techniques more easily.
@@ -61,7 +298,7 @@ The Loan Pattern DSL has several advantages over the classic Builder Pattern sty
 * image:5_sun.png[] - for Simplicity of DSL design
 * image:3_sun.png[] - for Elegance
 * image:3_sun.png[] - for Usability
-* image:3_sun.png[] - for Application Scope
+* image:2_sun.png[] - for Application Scope
 
 ==== Pros & Cons
 

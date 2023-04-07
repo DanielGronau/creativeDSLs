@@ -88,11 +88,6 @@ Definitions or additional information may be presented as follows:
 "Kotlin" is a small Russian island in the Baltic Sea. Naming languages or projects after islands has been a long-standing tradition in the Java ecosystem. Beside Java itself, there are projects like Lombok, the Komodo-IDE and the Ceylon language. The Jakarta project is named after the capital of Indonesia, which is located on the island of Java.
 ****
 
-Quotes look like this:
-
-"Code is like humor. When you have to explain it, it’s bad."
--- Cory House
-
 === Tools used for writing this book
 
 The book is written in the https://asciidoc.org/[AsciiDoc] format. For PDF and eBook generation, I used the https://asciidocfx.com/[AsciidocFX] editor. The main writing and programming tool was https://www.jetbrains.com/idea/[IntelliJ IDEA] by JetBrains, using the https://plugins.jetbrains.com/plugin/7391-asciidoc[Asciidoctor plugin]. The diagrams were made using the https://ditaa.sourceforge.net/[ditaa] library.
