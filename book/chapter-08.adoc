@@ -1,104 +1,36 @@
-== Expressing States or Stages in DSLs
+== Modeling State Transitions in DSLs
 
-Finite State Machines (FSMs) provide a powerful abstraction for controlling the life cycle of objects, as well as for constructing an object in multiple stages. In this chapter, we will explore three different techniques for modeling FSMs. The stages themselves can be implemented using other patterns, like the Builder or the Loan Pattern.
+DSLs often need to model complex state transitions that occur during the execution of the program, or for constructing objects in stages. In this chapter, we will explore three different techniques for modeling such use cases, how to choose the right technique, and how to use these techniques in conjunction with other patterns such as the Builder and Loan pattern.
 
-As an introductory example, we will model the life cycle of a vending machine in different ways, before we tackle more realistic problems. The underlying FSM looks like this:
-
-[ditaa,"vending-machine"]
-.Finite State Machine model of a Vending Machine
-....
-    /-------------------\
-    |       Idle        |<--\
-    \--------+----------/   |
-             |              |
-     /----\  | select       |
-     |paid|  | Item         |
-     v    |  v              |
-    /-----+-------------\   |
-/---+   Item Selected   |   |
-|   \--------+----------/   |
-|cancelled   |              |
-|            | paid         |
-|            | enough       |
-|            v              |
-|   /-------------------\   |
-|   |   Dispend Item    |   |
-|   \--------+----------/   |
-|            |              |
-|            |dispended     |
-|            v          done|
-|   /-------------------\   |
-\-->|   Return Change   +---/
-    \--------+----------/
-....
-
-=== Multiple Class Approach
-
-The most straight-forward way for modelling our FSM is to use individual classes for every state.
-
-
-
-=== Case Study: Turtle Graphics
-
-While computer graphics (regardless of pixels or vectors) is usually operating on absolute coordinates, https://en.wikipedia.org/wiki/Turtle_graphics[Turtle Graphics] works relative to its current local position and last direction. It was pioneered by the Logo programming language mainly as an educational tool, but has found to be useful in other areas, e.g. in fractal geometry.
-
-The very basic implementation features operations for moving the "turtle" and for drawing. A turtle graphic consists of a list of these operations. As "glue" operator, `-` was chosen, which has the advantage that its unary version can be used to start the chain.
-
-[source,kotlin]
-----
-import java.awt.Color
-
-sealed interface TurtleOp
-
-interface Motion : TurtleOp
-data class F(val distance: Int): Motion // forward
-data class B(val distance: Int): Motion // backward
-data class R(val degrees: Int): Motion // right
-data class L(val degrees: Int): Motion // left
-data class Goto(val x: Int, val y: Int): Motion // set position
-data class Head(val degrees: Int): Motion // set heading
-
-interface Drawing : TurtleOp
-object Down : Drawing // pen down
-object Up : Drawing // pen up
-data class Col(val color: Color): Drawing // set color
-
-data class TurtleGraphic(val operations: List<TurtleOp>)
-
-operator fun TurtleOp.unaryMinus() = TurtleGraphic(listOf(this))
-
-operator fun TurtleGraphic.minus(turtleOp: TurtleOp) =
-    this.copy(operations = operations + turtleOp)
-----
-
-Here is the code to draw a black triangle:
-
-[source,kotlin]
-----
-val graph = -Col(BLACK)-
-        Down-
-        F(100)-L(120)-
-        F(100)-L(120)-
-        F(100)-L(120)-
-        Up
-----
-
-
-=== Builder Chain
-
-Sometimes you want to construct an object in stages, either for better readability or for more control over the life cycle. E.g. for a SQL query, you might want to define separate builders for the SELECT, FROM and WHERE part. As the SQL language is very complex, this is just a simplified example. A show-case for a serious implementation of SQL queries and expressions using builders is the Java library https://www.jooq.org/[jOOQ].
+In order to allow a good comparison between the implementations, we will write a DSL for building SQL queries using the different approaches. As the SQL language is very complex, we have to limit our example to queries using just `SELECT`, `FROM`, `WHERE` and `GROUP BY` clauses, and use simple `String` arguments. A show-case for a serious implementation of SQL queries and expressions using builders is the Java library https://www.jooq.org/[jOOQ].
 
 The final DSL will allow to write basic SQL queries like this:
 
 [source,kotlin]
 ----
-val query = select("p.firstName", "p.lastName", "p.income")
+val queryAll = select("p.firstName", "p.lastName", "p.income")
+    .from("Person", "p")
+
+val queryJoin = select("p.firstName", "p.lastName", "p.income")
     .from("Person", "p")
     .join("Address", "a").on("p.addressId","a.id")
     .where("p.age > 20")
     .and("p.age <= 40")
     .and("a.city = 'London'")
+
+val queryGroupBy = select("min(p.income)", "max(p.income)", "avg(p.income)")
+    .from("Person", "p")
+    .where("p.age > 20")
+    .groupBy("p.income")
 ----
+
+While this example is using a builder pattern syntax, we will also discuss how a loan pattern implementation of the same functionality could look like.
+
+=== 'Separate Classes' Implementation
+
+The first approach is straight-forward: Every state is represented by a separate class, which is independent of all other classes. While conceptionally very simple, the main drawback of this approach is that all the collected data have to be transferred between the classes representing the states.
+
+==== Case Study: SQL with the Separate Classes approach
 
 Let's start with the SELECT part, which is straightforward:
 
