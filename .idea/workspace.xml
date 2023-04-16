@@ -4,15 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="34e13fba-44c8-43ad-8704-18715c28c4b8" name="Changes" comment="chapter 4, index">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/book/chapter-04.adoc" beforeDir="false" afterPath="$PROJECT_DIR$/book/chapter-04.adoc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/book/chapter-05.adoc" beforeDir="false" afterPath="$PROJECT_DIR$/book/chapter-05.adoc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/book/chapter-06.adoc" beforeDir="false" afterPath="$PROJECT_DIR$/book/chapter-06.adoc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/creativeDSLs/chapter_06/chained/sqlBuilder.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/creativeDSLs/chapter_06/chained/sqlBuilder.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/creativeDSLs/chapter_06/chameleon/sqlBuilder.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/creativeDSLs/chapter_06/chameleon/sqlBuilder.kt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/kotlin/creativeDSLs/chapter_06/polygonCountingBuilder.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/creativeDSLs/chapter_06/polygonCountingBuilder.kt" afterDir="false" />
-    </list>
+    <list default="true" id="34e13fba-44c8-43ad-8704-18715c28c4b8" name="Changes" comment="chapter-08, WIP" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -140,7 +132,14 @@
       <option name="project" value="LOCAL" />
       <updated>1679241100177</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="chapter-08, WIP">
+      <created>1681079192671</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1681079192671</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -158,7 +157,8 @@
     <MESSAGE value="initial commit" />
     <MESSAGE value="restart" />
     <MESSAGE value="chapter 4, index" />
-    <option name="LAST_COMMIT_MESSAGE" value="chapter 4, index" />
+    <MESSAGE value="chapter-08, WIP" />
+    <option name="LAST_COMMIT_MESSAGE" value="chapter-08, WIP" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
