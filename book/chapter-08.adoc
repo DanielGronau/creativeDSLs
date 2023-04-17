@@ -291,7 +291,77 @@ The chameleon class concept might look somewhat strange at first, but results us
 
 === The Phantom Type Approach
 
+There is an alternative implementation to the chameleon class, which uses <<chapter-04.adoc#typeLevelProgramming,phantom types>>(((Phantom Types))). From a usage perspective, the main difference is that the phantom type approach uses a data holder class and extension functions. The data holder class has a generic parameter (the phantom type), which is used by the extension functions to distinguish the current state:
 
+[source,kotlin]
+----
+interface CanGroupBy
+interface CanBuild
+
+sealed interface State
+interface SelectClause : State
+interface FromClause : State, CanGroupBy, CanBuild
+interface JoinClause : State
+interface WhereClause : State, CanGroupBy, CanBuild
+interface GroupByClause : State, CanBuild
+
+data class QueryData<out State>(
+    val columns: List<String>,
+    val tableName: NameWithAlias = NameWithAlias(""),
+    val joinTableName: NameWithAlias = NameWithAlias(""),
+    val joinClauses: List<TableJoin> = emptyList(),
+    val whereConditions: List<String> = emptyList(),
+    val groupByColumns: List<String> = emptyList()
+)
+
+@Suppress("UNCHECKED_CAST")
+private fun <S : State> QueryData<*>.cast(): QueryData<S> = this as QueryData<S>
+----
+
+The states are represented by interfaces. We need two additional interfaces `CanGroupBy` and `CanBuild` for the functions that can be called from multiple states. Except for the generic parameter, the data holder class looks as usual. As the generic parameter doesn't refer to any real data, the cast itself is safe. The `cast()` extension function allows us to switch easily between states. Of course, this function must be private in order to avoid abuse. The extension functions for the state transitions are straight-forward:
+
+[source,kotlin]
+----
+fun QueryData<SelectClause>.from(table: String, alias: String?): QueryData<FromClause> =
+    copy(tableName = NameWithAlias(table, alias)).cast()
+
+fun QueryData<FromClause>.join(tableName: String, alias: String?): QueryData<JoinClause> =
+    copy(joinTableName = NameWithAlias(tableName, alias)).cast()
+
+fun QueryData<FromClause>.where(condition: String): QueryData<WhereClause> =
+    copy(whereConditions = whereConditions + condition).cast()
+
+fun QueryData<JoinClause>.on(firstColumn: String, secondColumn: String): QueryData<FromClause> =
+    copy(joinClauses = joinClauses + TableJoin(joinTableName, firstColumn, secondColumn)).cast()
+
+fun QueryData<WhereClause>.and(condition: String): QueryData<WhereClause> =
+    copy(whereConditions = whereConditions + condition)
+
+fun QueryData<CanGroupBy>.groupBy(vararg groupByColumns: String): QueryData<GroupByClause> =
+    copy(groupByColumns = groupByColumns.toList()).cast()
+
+fun QueryData<CanBuild>.build(): String {
+    val sb = StringBuilder()
+        .append("SELECT ${columns.joinToString(", ")}")
+        .append("\nFROM ")
+        .append(tableName)
+    joinClauses.forEach { (n, c1, c2) ->
+        sb.append("\n  JOIN $n ON $c1 = $c2")
+    }
+    if (whereConditions.isNotEmpty()) {
+        sb.append("\nWHERE ${whereConditions.joinToString("\n  AND ")}")
+    }
+    if (groupByColumns.isNotEmpty()) {
+        sb.append("\nGROUP BY ${groupByColumns.joinToString(", ")}")
+    }
+    sb.append(';')
+    return sb.toString()
+}
+----
+
+Note that `groupBy()` can be called e.g. on `QueryData<FromClause>`, even though it is defined as `fun QueryData<CanGroupBy>.groupBy(...)`. This is possible because the phantom type in `QueryData` was defined as contravariant using the `out` keyword. Without this, we would have needed a signature like `fun <S: CanGroupBy> QueryBuilder<S>.groupBy(...)` in order to be callable from a data holder with a sub-interface.
+
+Chameleon classes and the phantom type implementation are conceptually similar, and it is a matter of taste whether you prefer a large class with methods, or a data holder with extension methods. When the DSL needs to be called from Java, it should be considered that only the chameleon approach preserves the DSL syntax in this case.
 
 === Conclusion
 
