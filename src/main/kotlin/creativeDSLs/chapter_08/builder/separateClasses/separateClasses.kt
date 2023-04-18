@@ -1,4 +1,4 @@
-package creativeDSLs.chapter_08.separateClasses
+package creativeDSLs.chapter_08.builder.separateClasses
 
 data class NameWithAlias(val name: String, val alias: String? = null) {
     override fun toString(): String = when (alias) {

@@ -361,7 +361,11 @@ fun QueryData<CanBuild>.build(): String {
 
 Note that `groupBy()` can be called e.g. on `QueryData<FromClause>`, even though it is defined as `fun QueryData<CanGroupBy>.groupBy(...)`. This is possible because the phantom type in `QueryData` was defined as contravariant using the `out` keyword. Without this, we would have needed a signature like `fun <S: CanGroupBy> QueryBuilder<S>.groupBy(...)` in order to be callable from a data holder with a sub-interface.
 
-Chameleon classes and the phantom type implementation are conceptually similar, and it is a matter of taste whether you prefer a large class with methods, or a data holder with extension methods. When the DSL needs to be called from Java, it should be considered that only the chameleon approach preserves the DSL syntax in this case.
+Chameleon classes and the phantom type implementation are conceptually similar, and it depends on the problem at hand whether a class with all the methods, or a data holder with extension methods is preferable. When the DSL needs to be called from Java, it should be considered that only the chameleon approach preserves the DSL syntax.
+
+=== Using the Loan Pattern
+
+So far, all examples followed a syntax close to the builder pattern. This doesn't have to be the case.
 
 === Conclusion
 
