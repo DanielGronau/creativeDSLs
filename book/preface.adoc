@@ -34,19 +34,21 @@ _Chapter 5, Algebraic DSLs_, introduces the first category of DSLs, which suppor
 
 _Chapter 6, Builder Pattern DSLs_, covers the well known Builder Pattern you probably already know from Java, and shows some variations attempting to make builders safer to use.
 
-_Chapter 7, Loan Pattern DSLs_, is about employing extension functions and the Loan Pattern in order to solve similar problems like the Builder Pattern DSL, but in a more idiomatic and convenient way. It is also shown how the DSL code can be written for you by using libraries like AutoDSL.
+_Chapter 7, Loan Pattern DSLs_, is about employing extension functions and the Loan Pattern in order to solve similar problems like the Builder Pattern DSL, but in a more idiomatic and convenient way.
 
-_Chapter 8, Hybrid DSLs_, shows how to deal with situations where one of the already covered DSL categories alone just doesn't cut it, and you have to combine them. Mixing language features comes with its own set of challenges, and this chapter will prepare you to overcome them.
+_Chapter 8, Modeling State Transitions in DSLs_, explores different strategies to model states or stages of elements in your DSL, e.g. when you want to construct an object in stages, or model a finite state machine. There are interesting alternatives to the naive "one state, one class" approach.
 
 _Chapter 9, String-Parsing DSLs_, gives you an overview about DSLs embedded in strings, which can be seen as an edge case between internal and external DSLs. The chapter contains - for educational purposes - a manually written parser, but also shows how the same parser can be written using a parser-combinator library.
 
 _Chapter 10, Annotation-based DSLs_, discusses the use of annotations for a DSL, which allows to add new meaning or additional behavior to existing code. The example code shows also how to use reflection behind the scenes in order to bring the annotations to life.
 
-_Chapter 11, Code Generation for DSLs_, discusses how code generation can help you when writing the DSL manually is just too much boilerplate. At first, this task may sound complicated, but the example shows that it isn't really something to be afraid of.
+_Chapter 11, Hybrid DSLs_, shows how to deal with situations where one of the already covered DSL categories alone just doesn't cut it, and you have to combine them. Mixing language features comes with its own set of challenges, and this chapter will prepare you to overcome them.
 
-_Chapter 12, Java interoperability_, gives an overview of the issues that may arise when Kotlin DSLs are used from Java code, and gives some advice on how to solve these issues.
+_Chapter 12, Code Generation for DSLs_, discusses how code generation can help you when writing the DSL manually is just too much boilerplate. At first, this task may sound complicated, but the example shows that it isn't really something to be afraid of.
 
-_Chapter 13, Real-World DSL Examples_, discusses some well-known and battle-tested DSLs, in order to learn from it. In my opinion, toy-examples are not enough to learn good DSL design. It is important to see how DSLs deal with real-world issues, how they have to compromise and still manage to deliver a great user experience.
+_Chapter 13, Java interoperability_, gives an overview of the issues that may arise when Kotlin DSLs are used from Java code, and gives some advice on how to solve these issues.
+
+_Chapter 14, Real-World DSL Examples_, discusses some well-known and battle-tested DSLs, in order to learn from it. In my opinion, toy-examples are not enough to learn good DSL design. It is important to see how DSLs deal with real-world issues, how they have to compromise and still manage to deliver a great user experience.
 
 === Prerequisites
 
@@ -92,7 +94,7 @@ Definitions or additional information may be presented as follows:
 
 The book is written in the https://asciidoc.org/[AsciiDoc] format. For PDF and eBook generation, I used the https://asciidocfx.com/[AsciidocFX] editor. The main writing and programming tool was https://www.jetbrains.com/idea/[IntelliJ IDEA] by JetBrains, using the https://plugins.jetbrains.com/plugin/7391-asciidoc[Asciidoctor plugin]. The diagrams were made using the https://ditaa.sourceforge.net/[ditaa] library.
 
-I used https://openai.com/blog/chatgpt/[ChatGPT] by OpenAI as writing assistant. As a non-native speaker, it is difficult to avoid grammar mistakes and to find to a natural writing style, and I'm thankful that OpenAI granted public access for testing this incredible technology.
+I used https://openai.com/blog/chatgpt/[ChatGPT] by OpenAI as a writing assistant. As a non-native speaker, it is difficult to avoid grammar mistakes and to find to a natural writing style, and I'm thankful that OpenAI granted public access for testing this incredible technology.
 
 === Feedback
 
