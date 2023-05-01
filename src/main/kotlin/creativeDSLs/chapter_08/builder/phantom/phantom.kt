@@ -19,7 +19,7 @@ interface JoinClause : State
 interface WhereClause : State, CanGroupBy, CanBuild
 interface GroupByClause : State, CanBuild
 
-data class QueryData<out State>(
+data class QueryDTO<out State>(
     val columns: List<String>,
     val tableName: NameWithAlias = NameWithAlias(""),
     val joinTableName: NameWithAlias = NameWithAlias(""),
@@ -28,55 +28,56 @@ data class QueryData<out State>(
     val groupByColumns: List<String> = emptyList()
 )
 
-fun select(vararg columns: String) = QueryData<SelectClause>(columns = columns.toList())
+fun SELECT(vararg columns: String) = QueryDTO<SelectClause>(columns = columns.toList())
 
 @Suppress("UNCHECKED_CAST")
-private fun <S : State> QueryData<*>.cast(): QueryData<S> = this as QueryData<S>
+private fun <S : State> QueryDTO<*>.cast(): QueryDTO<S> = this as QueryDTO<S>
 
-fun QueryData<SelectClause>.from(table: String, alias: String?): QueryData<FromClause> =
+fun QueryDTO<SelectClause>.FROM(table: String, alias: String?): QueryDTO<FromClause> =
     copy(tableName = NameWithAlias(table, alias)).cast()
 
-fun QueryData<FromClause>.join(tableName: String, alias: String?): QueryData<JoinClause> =
+fun QueryDTO<FromClause>.JOIN(tableName: String, alias: String?): QueryDTO<JoinClause> =
     copy(joinTableName = NameWithAlias(tableName, alias)).cast()
 
-fun QueryData<FromClause>.where(condition: String): QueryData<WhereClause> =
+fun QueryDTO<FromClause>.WHERE(condition: String): QueryDTO<WhereClause> =
     copy(whereConditions = whereConditions + condition).cast()
 
-fun QueryData<JoinClause>.on(firstColumn: String, secondColumn: String): QueryData<FromClause> =
+fun QueryDTO<JoinClause>.ON(firstColumn: String, secondColumn: String): QueryDTO<FromClause> =
     copy(joinClauses = joinClauses + TableJoin(joinTableName, firstColumn, secondColumn)).cast()
 
-fun QueryData<WhereClause>.and(condition: String): QueryData<WhereClause> =
+fun QueryDTO<WhereClause>.AND(condition: String): QueryDTO<WhereClause> =
     copy(whereConditions = whereConditions + condition)
 
-fun QueryData<CanGroupBy>.groupBy(vararg groupByColumns: String): QueryData<GroupByClause> =
+fun QueryDTO<CanGroupBy>.GROUP_BY(vararg groupByColumns: String): QueryDTO<GroupByClause> =
     copy(groupByColumns = groupByColumns.toList()).cast()
 
-fun QueryData<CanBuild>.build(): String {
-    val sb = StringBuilder()
-        .append("SELECT ${columns.joinToString(", ")}")
-        .append("\nFROM ")
-        .append(tableName)
+fun QueryDTO<CanBuild>.build(): String = with(StringBuilder()) {
+
+    append("SELECT ${columns.joinToString(", ")}")
+    append("\nFROM $tableName")
+
     joinClauses.forEach { (n, c1, c2) ->
-        sb.append("\n  JOIN $n ON $c1 = $c2")
+        append("\n  JOIN $n ON $c1 = $c2")
     }
-    if (whereConditions.isNotEmpty()) {
-        sb.append("\nWHERE ${whereConditions.joinToString("\n  AND ")}")
-    }
-    if (groupByColumns.isNotEmpty()) {
-        sb.append("\nGROUP BY ${groupByColumns.joinToString(", ")}")
-    }
-    sb.append(';')
-    return sb.toString()
-}
+
+    if (whereConditions.isNotEmpty())
+        append("\nWHERE ${whereConditions.joinToString("\n  AND ")}")
+
+    if (groupByColumns.isNotEmpty())
+        append("\nGROUP BY ${groupByColumns.joinToString(", ")}")
+
+    append(';')
+
+}.toString()
 
 fun main() {
-    val query = select("p.firstName", "p.lastName", "p.income")
-        .from("Person", "p")
-        .join("Address", "a").on("p.addressId", "a.id")
-        .where("p.age > 20")
-        .and("p.age <= 40")
-        .and("a.city = 'London'")
-        .groupBy("a.city")
+    val query = SELECT("p.firstName", "p.lastName", "p.income")
+        .FROM("Person", "p")
+        .JOIN("Address", "a").ON("p.addressId", "a.id")
+        .WHERE("p.age > 20")
+        .AND("p.age <= 40")
+        .AND("a.city = 'London'")
+        .GROUP_BY("a.city")
     println(query.build())
 }
 

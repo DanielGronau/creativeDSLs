@@ -18,70 +18,71 @@ class QueryBuilder private constructor(val columns: List<String>):
     val groupByColumns = mutableListOf<String>()
 
     companion object {
-        fun select(vararg columns: String): SelectClause = QueryBuilder(columns.asList())
+        fun SELECT(vararg columns: String): SelectClause = QueryBuilder(columns.asList())
     }
 
     // SelectClause
-    override fun from(table: String, alias: String?): FromClause =
+    override fun FROM(table: String, alias: String?): FromClause =
         this.apply { tableName = NameWithAlias(table, alias) }
 
     // FromClause
-    override fun join(tableName: String, alias: String?): JoinClause =
+    override fun JOIN(tableName: String, alias: String?): JoinClause =
         this.apply { joinTableName = NameWithAlias(tableName, alias) }
 
-    override fun where(condition: String): WhereClause =
+    override fun WHERE(condition: String): WhereClause =
         this.apply { whereConditions += condition }
 
     // JoinClause
-    override fun on(firstColumn: String, secondColumn: String): FromClause =
+    override fun ON(firstColumn: String, secondColumn: String): FromClause =
         this.apply { joinClauses += TableJoin(joinTableName, firstColumn, secondColumn) }
 
     // WhereClause
-    override fun and(condition: String): WhereClause =
+    override fun AND(condition: String): WhereClause =
         this.apply { whereConditions += condition }
 
     // FromClause and WhereClause
-    override fun groupBy(vararg groupByColumns: String): GroupByClause =
+    override fun GROUP_BY(vararg groupByColumns: String): GroupByClause =
         this.apply { this.groupByColumns += groupByColumns.toList() }
 
     // FromClause, WhereClause and GroupByClause
-    override fun build(): String {
-        val sb = StringBuilder()
-            .append("SELECT ${columns.joinToString(", ")}")
-            .append("\nFROM ")
-            .append(tableName)
+    override fun build(): String = with(StringBuilder()) {
+
+        append("SELECT ${columns.joinToString(", ")}")
+        append("\nFROM $tableName")
+
         joinClauses.forEach { (n, c1, c2) ->
-            sb.append("\n  JOIN $n ON $c1 = $c2")
+            append("\n  JOIN $n ON $c1 = $c2")
         }
-        if (whereConditions.isNotEmpty()) {
-            sb.append("\nWHERE ${whereConditions.joinToString("\n  AND ")}")
-        }
-        if (groupByColumns.isNotEmpty()) {
-            sb.append("\nGROUP BY ${groupByColumns.joinToString(", ")}")
-        }
-        sb.append(';')
-        return sb.toString()
-    }
+
+        if (whereConditions.isNotEmpty())
+            append("\nWHERE ${whereConditions.joinToString("\n  AND ")}")
+
+        if (groupByColumns.isNotEmpty())
+            append("\nGROUP BY ${groupByColumns.joinToString(", ")}")
+
+        append(';')
+
+    }.toString()
 }
 
 interface SelectClause {
-    fun from(table: String, alias: String? = null): FromClause
+    fun FROM(table: String, alias: String? = null): FromClause
 }
 
 interface FromClause{
-    fun join(tableName: String, alias: String? = null): JoinClause
-    fun where(condition: String): WhereClause
-    fun groupBy(vararg groupByColumns: String): GroupByClause
+    fun JOIN(tableName: String, alias: String? = null): JoinClause
+    fun WHERE(condition: String): WhereClause
+    fun GROUP_BY(vararg groupByColumns: String): GroupByClause
     fun build(): String
 }
 
 interface JoinClause {
-    fun on(firstColumn: String, secondColumn: String): FromClause
+    fun ON(firstColumn: String, secondColumn: String): FromClause
 }
 
 interface WhereClause {
-    fun and(condition: String): WhereClause
-    fun groupBy(vararg groupByColumns: String): GroupByClause
+    fun AND(condition: String): WhereClause
+    fun GROUP_BY(vararg groupByColumns: String): GroupByClause
     fun build(): String
 }
 
@@ -90,12 +91,12 @@ interface GroupByClause {
 }
 
 fun main() {
-    val query = QueryBuilder.select("p.firstName", "p.lastName", "p.income")
-        .from("Person", "p")
-        .join("Address", "a").on("p.addressId","a.id")
-        .where("p.age > 20")
-        .and("p.age <= 40")
-        .and("a.city = 'London'")
-        .groupBy("a.city")
+    val query = QueryBuilder.SELECT("p.firstName", "p.lastName", "p.income")
+        .FROM("Person", "p")
+        .JOIN("Address", "a").ON("p.addressId","a.id")
+        .WHERE("p.age > 20")
+        .AND("p.age <= 40")
+        .AND("a.city = 'London'")
+        .GROUP_BY("a.city")
     println(query.build())
 }

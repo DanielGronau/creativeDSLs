@@ -9,7 +9,7 @@ data class NameWithAlias(val name: String, val alias: String? = null) {
 
 data class TableJoin(val nameWithAlias: NameWithAlias, val column1: String, val column2: String)
 
-data class QueryData(
+data class QueryDTO(
     val columns: List<String>,
     val tableName: NameWithAlias = NameWithAlias(""),
     val joinClauses: List<TableJoin> = emptyList(),
@@ -18,23 +18,23 @@ data class QueryData(
 )
 
 fun SELECT(body: SelectBody.() -> Unit) =
-    SelectClause(QueryData(columns = SelectBody().apply(body).columns))
+    SelectClause(QueryDTO(columns = SelectBody().apply(body).columns))
 
 class SelectBody {
     val columns = mutableListOf<String>()
     operator fun String.unaryPlus() { columns += this }
 }
 
-class SelectClause(val queryData: QueryData) {
+class SelectClause(val queryDTO: QueryDTO) {
     fun FROM(body: FromBody.() -> Unit) =
         FromBody().apply(body).let{
-            FromClause(queryData.copy(tableName = it.tableName, joinClauses = it.joinClauses))
+            FromClause(queryDTO.copy(tableName = it.tableName, joinClauses = it.joinClauses))
         }
 }
 
 class FromBody {
     var tableName = NameWithAlias("")
-    val joinClauses  = mutableListOf<TableJoin>()
+    val joinClauses = mutableListOf<TableJoin>()
 
     operator fun String.unaryPlus() { tableName = NameWithAlias(this) }
     infix fun String.AS(alias: String) { tableName = NameWithAlias(this, alias) }
@@ -46,12 +46,12 @@ class FromBody {
     }
 }
 
-data class FromClause(val queryData: QueryData) {
+data class FromClause(val queryDTO: QueryDTO) {
     fun WHERE(body: WhereBody.() -> Unit) =
-        WhereClause(queryData.copy(whereConditions = WhereBody().apply(body).conditions))
+        WhereClause(queryDTO.copy(whereConditions = WhereBody().apply(body).conditions))
     fun GROUP_BY(body: GroupByBody.() -> Unit) =
-        GroupByClause(queryData.copy(groupByColumns = GroupByBody().apply(body).columns))
-    fun build() = build(queryData)
+        GroupByClause(queryDTO.copy(groupByColumns = GroupByBody().apply(body).columns))
+    fun build() = build(queryDTO)
 }
 
 class JoinBody {
@@ -73,10 +73,10 @@ class WhereBody {
     operator fun String.unaryPlus() { conditions += this }
 }
 
-data class WhereClause(val queryData: QueryData) {
+data class WhereClause(val queryDTO: QueryDTO) {
     fun GROUP_BY(body: GroupByBody.() -> Unit) =
-        GroupByClause(queryData.copy(groupByColumns = GroupByBody().apply(body).columns))
-    fun build() = build(queryData)
+        GroupByClause(queryDTO.copy(groupByColumns = GroupByBody().apply(body).columns))
+    fun build() = build(queryDTO)
 }
 
 class GroupByBody {
@@ -84,28 +84,29 @@ class GroupByBody {
     operator fun String.unaryPlus() { columns += this }
 }
 
-data class GroupByClause(val queryData: QueryData) {
-    fun build() = build(queryData)
+data class GroupByClause(val queryDTO: QueryDTO) {
+    fun build() = build(queryDTO)
 }
 
-private fun build(queryData: QueryData): String {
-    val (columns, tableName, joinClauses, conditions, groupByColumns) = queryData
-    val sb = StringBuilder()
-        .append("SELECT ${columns.joinToString(", ")}")
-        .append("\nFROM ")
-        .append(tableName)
+private fun build(queryDTO: QueryDTO): String = with(StringBuilder()) {
+    val (columns, tableName, joinClauses, conditions, groupByColumns) = queryDTO
+
+    append("SELECT ${columns.joinToString(", ")}")
+    append("\nFROM $tableName")
+
     joinClauses.forEach { (n, c1, c2) ->
-        sb.append("\n  JOIN $n ON $c1 = $c2")
+        append("\n  JOIN $n ON $c1 = $c2")
     }
-    if (conditions.isNotEmpty()) {
-        sb.append("\nWHERE ${conditions.joinToString("\n  AND ")}")
-    }
-    if (groupByColumns.isNotEmpty()) {
-        sb.append("\nGROUP BY ${groupByColumns.joinToString(", ")}")
-    }
-    sb.append(';')
-    return sb.toString()
-}
+
+    if (conditions.isNotEmpty())
+        append("\nWHERE ${conditions.joinToString("\n  AND ")}")
+
+    if (groupByColumns.isNotEmpty())
+        append("\nGROUP BY ${groupByColumns.joinToString(", ")}")
+
+    append(';')
+
+}.toString()
 
 fun main() {
    val query = SELECT {

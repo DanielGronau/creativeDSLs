@@ -306,7 +306,7 @@ The first axiom covers the existence of zero, the following four axioms cover ba
 * Zero is not the successor of a natural number
 * Every natural number can be reached from zero by repeatedly applying the successor function (this is also known as "induction")
 
-That's why from a mathematical point of view, the Peano Representation is the most basic way to write natural numbers, and our usual number systems (decimal, binary, hexadecimal...) are "just" convenient abbreviations of it.
+That's why from a mathematical point of view, the Peano Representation is the most basic way to write natural numbers, and our usual number systems (decimal, binary, hexadecimal...) could be regarded as convenient abbreviations.
 ****
 
 The builder class must hide its constructor, because a call like `PolygonBuilder<S<S<Z>>>()` would initialize the builder with a wrong counter. That's why we "simulate" a constructor using the `invoke()` operator in the companion object, which returns only builders with a counter correctly initialized to 0. The `add()` method appends a point to the list, but also casts the instance to one with an incremented counter. This is safe, as the counter is a phantom type(((Phantom Types))). Alternatively, we also could have constructed a new builder object on every `add()` call.

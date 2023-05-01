@@ -1,6 +1,12 @@
 == Modeling State Transitions in DSLs
 
-DSLs often need to model complex state transitions that occur during the execution of the program, or for constructing objects in stages. In this chapter, we will explore three different techniques for modeling such use cases, how to choose the right technique, and how to use these techniques in conjunction with other patterns such as the Builder and Loan pattern.
+DSLs often need to model complex state transitions that occur during the execution of the program, or are needed when objects must be constructed in stages. In this chapter, we will explore three different techniques for modeling such use cases, how to choose the right one, and how to use these techniques in conjunction with other patterns such as the Builder and Loan pattern. The three approaches are:
+
+* *Separate Classes*: The most intuitive implementation. Every State is represented by an independent class.
+* *Chameleon Class*: The different states are represented by interfaces with their respective methods. A single class implements all interfaces, but its methods return always one of the interfaces, never the class itself.
+* *Phantom Type Approach*: A single class has a generic type parameter representing the different states, and extension methods can be only called for the designated state by specifying the corresponding type parameter for their receiver.
+
+=== Case Study: DSL for SQL queries (using the Builder Pattern)
 
 In order to allow a good comparison between the implementations, we will write a DSL for building SQL queries using the different approaches. As the SQL language is very complex, we have to limit our example to queries using just `SELECT`, `FROM`, `WHERE` and `GROUP BY` clauses, and use simple `String` arguments (for a serious SQL-DSL implementation check out https://www.jooq.org/[jOOQ]). The following state diagram gives an overview of the allowed transitions:
 
@@ -27,29 +33,37 @@ The final DSL will allow to write basic SQL queries like this:
 
 [source,kotlin]
 ----
-val queryAll = select("p.firstName", "p.lastName", "p.income")
-    .from("Person", "p")
+val queryAll = SELECT("p.firstName", "p.lastName", "p.income")
+    .FROM("Person", "p")
+    .build()
 
-val queryJoin = select("p.firstName", "p.lastName", "p.income")
-    .from("Person", "p")
-    .join("Address", "a").on("p.addressId","a.id")
-    .where("p.age > 20")
-    .and("p.age <= 40")
-    .and("a.city = 'London'")
+val queryJoin = SELECT("p.firstName", "p.lastName", "p.income")
+    .FROM("Person", "p")
+    .JOIN("Address", "a").ON("p.addressId","a.id")
+    .WHERE("p.age > 20")
+    .AND("p.age <= 40")
+    .AND("a.city = 'London'")
+    .build()
 
-val queryGroupBy = select("min(p.income)", "max(p.income)", "avg(p.income)")
-    .from("Person", "p")
-    .where("p.age > 20")
-    .groupBy("p.income")
+val queryGroupBy = SELECT("p.age", "min(p.income)", "max(p.income)")
+    .FROM("Person", "p")
+    .WHERE("p.age > 20")
+    .GROUP_BY("p.age")
+    .build()
 ----
 
 While this example code is using a builder pattern syntax, we will also discuss how a loan pattern implementation of the same functionality could look like.
 
-=== The 'Separate Classes' Approach
+==== The 'Separate Classes' Approach (Builder Pattern)
 
-The first approach is straight-forward: Every state is represented by a separate class, which is independent of all other classes. While this is conceptually very simple, the main drawback is that all the collected data have to be transferred between the classes representing the states. Often it is more convenient and readable to pass a dedicated data holder object around, instead of using several parameters.
+The first approach is straight-forward: Every state is represented by a separate class, which is independent of all other classes. While this is conceptually very simple, the main drawback is that all the collected data have to be transferred between the classes representing the states. Often it is more convenient and readable to pass a dedicated data transfer object (DTO) (((Data Transfer Object)))around, instead of using several parameters.
 
-In order to implement the SQL query DSL, first we need two helper classes and the data holder class:
+.Data Transfer Objects
+****
+A Data Transfer Object (DTO) is a container object that is used to hold and transfer data across layers, without any business logic or behavior. DTOs are often used to simplify the interface between different subsystems of an application, and to reduce the amount of data that needs to be exchanged between them. The primary purpose of a DTO is to provide a simple, standardized way of representing data that can be easily serialized and deserialized.
+****
+
+As preparation for writing the SQL query DSL we need two helper classes and the DTO:
 
 [source,kotlin]
 ----
@@ -70,7 +84,7 @@ data class TableJoin(
     val column2: String
 )
 
-data class QueryData(
+data class QueryDTO(
     val columns: List<String>,
     val tableName: NameWithAlias,
     val joinClauses: List<TableJoin> = emptyList(),
@@ -79,17 +93,17 @@ data class QueryData(
 )
 ----
 
-Then we can write the SELECT part, which is straightforward:
+Then we can write the `SELECT` part, which is straightforward:
 
 [source,kotlin]
 ----
-fun select(vararg columns: String) = SelectClause(*columns)
+fun SELECT(vararg columns: String) = SelectClause(*columns)
 
 class SelectClause(vararg val columns: String) {
 
-    fun from(tableName: String, alias: String? = null) =
+    fun FROM(tableName: String, alias: String? = null) =
         FromClause(
-            QueryData(
+            QueryDTO(
                 columns = columns.asList(),
                 tableName = NameWithAlias(tableName, alias)
             )
@@ -101,37 +115,37 @@ There is no `build()` method, the only way forward is going into the `FromClause
 
 [source,kotlin]
 ----
-data class FromClause(val queryData: QueryData) {
+data class FromClause(val queryDTO: QueryDTO) {
 
-    fun join(tableName: String, alias: String? = null) =
-        JoinClause(queryData, NameWithAlias(tableName, alias))
+    fun JOIN(tableName: String, alias: String? = null) =
+        JoinClause(queryDTO, NameWithAlias(tableName, alias))
 
-    fun where(condition: String) =
-        WhereClause(queryData.copy(
+    fun WHERE(condition: String) =
+        WhereClause(queryDTO.copy(
             whereConditions = listOf(condition)
         ))
 
-    fun groupBy(vararg groupByColumns: String) =
-        GroupByClause(queryData.copy(
+    fun GROUP_BY(vararg groupByColumns: String) =
+        GroupByClause(queryDTO.copy(
             groupByColumns = groupByColumns.toList()
         ))
 
-    fun build() = build(queryData)
+    fun build() = build(queryDTO)
 }
 ----
 
-From here, you can go to a `JoinClause`, which mimics the SQL syntax by permitting to write something like `fromClause.join("Address","a").on("p.addressId", "a.id")`. The other exit points lead to a `WhereClause` or a `GroupByClause`. Additionally, the `FromClause` has a `build()` method, because the `WHERE` and `GROUP BY` parts are optional. The `JoinClause` offers just an `on()` method, which leads back to the `FromClause`.:
+From here, you can go to a `JoinClause`, which mimics the SQL syntax by permitting to write something like `fromClause.JOIN("Address","a").ON("p.addressId", "a.id")`. The other exit points lead to a `WhereClause` or a `GroupByClause`. Additionally, the `FromClause` has a `build()` method, because the `WHERE` and `GROUP BY` parts are optional. The `JoinClause` offers just an `ON()` method, which leads back to the `FromClause`.:
 
 [source,kotlin]
 ----
 data class JoinClause(
-    val queryData: QueryData,
+    val queryDTO: QueryDTO,
     val tableName: NameWithAlias
 ) {
 
-    fun on(firstColumn: String, secondColumn: String) =
-        FromClause(queryData.copy(
-            joinClauses = queryData.joinClauses +
+    fun ON(firstColumn: String, secondColumn: String) =
+        FromClause(queryDTO.copy(
+            joinClauses = queryDTO.joinClauses +
                 TableJoin(tableName, firstColumn, secondColumn)
         ))
 }
@@ -141,20 +155,20 @@ The `WhereClause` is quite simple, but of course using `String` to represent the
 
 [source,kotlin]
 ----
-data class WhereClause(val queryData: QueryData) {
+data class WhereClause(val queryDTO: QueryDTO) {
 
-    fun and(condition: String) =
-        copy(queryData = queryData.copy(
-            whereConditions = queryData.whereConditions +
+    fun AND(condition: String) =
+        copy(queryDTO = queryDTO.copy(
+            whereConditions = queryDTO.whereConditions +
                 condition
         ))
 
-    fun groupBy(vararg groupByColumns: String) =
-        GroupByClause(queryData.copy(
+    fun GROUP_BY(vararg groupByColumns: String) =
+        GroupByClause(queryDTO.copy(
             groupByColumns = groupByColumns.toList()
         ))
 
-    fun build() = build(queryData)
+    fun build() = build(queryDTO)
 }
 ----
 
@@ -162,61 +176,65 @@ The `GroupByClause` allows just a call to the `build()` method:
 
 [source,kotlin]
 ----
-data class GroupByClause(val queryData: QueryData) {
-    fun build() = build(queryData)
+data class GroupByClause(val queryDTO: QueryDTO) {
+
+    fun build() = build(queryDTO)
 }
 ----
 
-The only missing part is the common `build(queryData)` method used by `FromClause`, `WhereClause` and `GroupByClause`:
+The only missing part is the common `build(queryDTO)` method used by `FromClause`, `WhereClause` and `GroupByClause`:
 
 [source,kotlin]
 ----
-private fun build(queryData: QueryData): String {
-    val (columns, tableName, joinClauses, whereConditions, groupByColumns) = queryData
-    val sb = StringBuilder()
-        .append("SELECT ${columns.joinToString(", ")}")
-        .append("\nFROM ")
-        .append(tableName)
+private fun build(queryDTO: QueryDTO): String = with(StringBuilder()) {
+
+    val (columns, tableName, joinClauses, whereConditions, groupByColumns) =
+        queryDTO
+
+    append("SELECT ${columns.joinToString(", ")}")
+    append("\nFROM $tableName")
+
     joinClauses.forEach { (n, c1, c2) ->
-        sb.append("\n  JOIN $n ON $c1 = $c2")
+        append("\n  JOIN $n ON $c1 = $c2")
     }
-    if (whereConditions.isNotEmpty()) {
-        sb.append("\nWHERE ${whereConditions.joinToString("\n  AND ")}")
-    }
-    if (groupByColumns.isNotEmpty()) {
-        sb.append("\nGROUP BY ${groupByColumns.joinToString(", ")}")
-    }
-    sb.append(';')
-    return sb.toString()
-}
+
+    if (whereConditions.isNotEmpty())
+        append("\nWHERE ${whereConditions.joinToString("\n  AND ")}")
+
+    if (groupByColumns.isNotEmpty())
+        append("\nGROUP BY ${groupByColumns.joinToString(", ")}")
+
+    append(';')
+
+}.toString()
 ----
 
-Bundling all data in a data holder instance as shown here can reduce the overhead of moving all the data around substantially, especially by leveraging the power of the `copy()` method. In the next section, we will explore an alternative implementation of the same DSL.
+Bundling all data in a DTO instance as shown here can reduce the overhead of moving all the data around substantially, especially by leveraging the power of the `copy()` method. In the next section, we will explore an alternative implementation of the same DSL.
 
-=== The Chameleon Class Approach
+==== The Chameleon Class Approach (Builder Pattern)
 
-While having a separate data holder class makes the separate class approach more convenient, it would be nicer if we wouldn't need to copy data around in the first place. But what is with all the guarantees a chained builder provides, e.g. that you can't call `build()` or `join()` in a `SELECT`  clause? One way to achieve this is to use a "chameleon class". The basic idea is to adapt the type of this class to the state it resent currently, and change it accordingly when the state changes. First need to translate our former state classes into interfaces:
+While having a separate DTO class makes the separate class approach more convenient, it would be nicer if we wouldn't need to copy data around in the first place. But what is with all the guarantees a chained builder provides, e.g. that you can't call `build()` or `JOIN()` in a `SELECT`  clause? One way to achieve this is to use a "chameleon class". The basic idea is to adapt the type of this class to the state it resent currently, and change it accordingly when the state changes. First need to translate our former state classes into interfaces:
 
 [source,kotlin]
 ----
 interface SelectClause {
-    fun from(table: String, alias: String? = null): FromClause
+    fun FROM(table: String, alias: String? = null): FromClause
 }
 
 interface FromClause{
-    fun join(tableName: String, alias: String? = null): JoinClause
-    fun where(condition: String): WhereClause
-    fun groupBy(vararg groupByColumns: String): GroupByClause
+    fun JOIN(tableName: String, alias: String? = null): JoinClause
+    fun WHERE(condition: String): WhereClause
+    fun GROUP_BY(vararg groupByColumns: String): GroupByClause
     fun build(): String
 }
 
 interface JoinClause {
-    fun on(firstColumn: String, secondColumn: String): FromClause
+    fun ON(firstColumn: String, secondColumn: String): FromClause
 }
 
 interface WhereClause {
-    fun and(condition: String): WhereClause
-    fun groupBy(vararg groupByColumns: String): GroupByClause
+    fun AND(condition: String): WhereClause
+    fun GROUP_BY(vararg groupByColumns: String): GroupByClause
     fun build(): String
 }
 
@@ -225,7 +243,7 @@ interface GroupByClause {
 }
 ----
 
-Now all left to do is to implement these interfaces in one chameleon class, and to keep track of the data. It is important to make the constructor private, as the initial type shouldn't be the type of the class itself, but `SelectClause`.  That's why the `select()` method in the companion object is used as starting point for the DSL:
+Now all left to do is to implement these interfaces in a single "chameleon" class, and to keep track of the data. It is important to make the constructor private, as the initial type shouldn't be the type of the class itself, but `SelectClause`.  That's why the `SELECT()` method in the companion object is used as starting point for the DSL:
 
 [source,kotlin]
 ----
@@ -238,60 +256,64 @@ class QueryBuilder private constructor(val columns: List<String>):
     val groupByColumns = mutableListOf<String>()
 
     companion object {
-        fun select(vararg columns: String): SelectClause = QueryBuilder(columns.asList())
+        fun SELECT(vararg columns: String): SelectClause =
+            QueryBuilder(columns.asList())
     }
 
     // SelectClause
-    override fun from(table: String, alias: String?): FromClause =
+    override fun FROM(table: String, alias: String?): FromClause =
         this.apply { tableName = NameWithAlias(table, alias) }
 
     // FromClause
-    override fun join(tableName: String, alias: String?): JoinClause =
+    override fun JOIN(tableName: String, alias: String?): JoinClause =
         this.apply { joinTableName = NameWithAlias(tableName, alias) }
 
-    override fun where(condition: String): WhereClause =
+    override fun WHERE(condition: String): WhereClause =
         this.apply { whereConditions += condition }
 
     // JoinClause
-    override fun on(firstColumn: String, secondColumn: String): FromClause =
+    override fun ON(firstColumn: String, secondColumn: String): FromClause =
         this.apply { joinClauses += TableJoin(joinTableName, firstColumn, secondColumn) }
 
     // WhereClause
-    override fun and(condition: String): WhereClause =
+    override fun AND(condition: String): WhereClause =
         this.apply { whereConditions += condition }
 
     // FromClause and WhereClause
-    override fun groupBy(vararg groupByColumns: String): GroupByClause =
+    override fun GROUP_BY(vararg groupByColumns: String): GroupByClause =
         this.apply { this.groupByColumns += groupByColumns.toList() }
 
     // FromClause, WhereClause and GroupByClause
-    override fun build(): String {
-        val sb = StringBuilder()
-            .append("SELECT ${columns.joinToString(", ") { it }}")
-            .append("\nFROM ")
-            .append(tableName)
+    override fun build(): String = with(StringBuilder()) {
+
+        append("SELECT ${columns.joinToString(", ") { it }}")
+        append("\nFROM $tableName")
+
         joinClauses.forEach { (n, c1, c2) ->
-            sb.append("\n  JOIN $n ON $c1 = $c2")
+            append("\n  JOIN $n ON $c1 = $c2")
         }
-        if (whereConditions.isNotEmpty()) {
-            sb.append("\nWHERE ${whereConditions.joinToString("\n  AND ")}")
-        }
-        if (groupByColumns.isNotEmpty()) {
-            sb.append("\nGROUP BY ${groupByColumns.joinToString(", ")}")
-        }
-        sb.append(';')
-        return sb.toString()
-    }
+
+        if (whereConditions.isNotEmpty())
+            append("\nWHERE ${whereConditions.joinToString("\n  AND ")}")
+
+        if (groupByColumns.isNotEmpty())
+            append("\nGROUP BY ${groupByColumns.joinToString(", ")}")
+
+        append(';')
+
+    }.toString()
 }
 ----
 
-For the compiler, it doesn't matter that you give back the same object over and over again at runtime, because the static type decides which methods can be called, and this static type is never `QueryBuilder`, but instead one of the interfaces for the SQL clauses. Calling the DSL looks like before, and you still can't call methods out of order.
+For the compiler, it doesn't matter that you give back the same object over and over again at runtime, because the static type decides which methods can be called, and this static type is never `QueryBuilder`, but instead one of the interfaces for the SQL clauses. Using the DSL looks like before, and you still can't call methods out of order.
 
-The chameleon class concept might look somewhat strange at first, but results usually in compact and  readable code. However, be aware that this approach is susceptible to name clashes, which occur e.g. when the same method signature is used with different return types by multiple interfaces.
+The chameleon class concept might look somewhat strange at first, but results usually in compact and readable code. However, be aware that this approach is susceptible to name clashes, when two interfaces have methods with the same name and parameters, but different return types.
 
-=== The Phantom Type Approach
+==== The Phantom Type Approach (Builder Pattern)
 
-There is an alternative implementation to the chameleon class, which uses <<chapter-04.adoc#typeLevelProgramming,phantom types>>(((Phantom Types))). From a usage perspective, the main difference is that the phantom type approach uses a data holder class and extension functions. The data holder class has a generic parameter (the phantom type), which is used by the extension functions to distinguish the current state:
+The third approach uses <<chapter-04.adoc#typeLevelProgramming,phantom types>>(((Phantom Types))). The implementation is based on a DTO class with a generic parameter. This type parameter isn't used as type for any data inside the class - this is why it is called a "phantom type". Instead, this parameter is used by extension functions, which require that their receiver has the correct state
+
+For the SQL query DSL, we need a type hierarchy containing the different clauses. As a slight complication, we also need two additional interfaces for methods that are present in multiple clauses. Then we need the DTO class itself. The `cast()` extension function allows us to switch easily between states. As the generic parameter doesn't refer to any real data, the cast itself is safe. Of course, the `cast()` function must be private in order to avoid abuse:
 
 [source,kotlin]
 ----
@@ -305,7 +327,7 @@ interface JoinClause : State
 interface WhereClause : State, CanGroupBy, CanBuild
 interface GroupByClause : State, CanBuild
 
-data class QueryData<out State>(
+data class QueryDTO<out State>(
     val columns: List<String>,
     val tableName: NameWithAlias = NameWithAlias(""),
     val joinTableName: NameWithAlias = NameWithAlias(""),
@@ -315,61 +337,347 @@ data class QueryData<out State>(
 )
 
 @Suppress("UNCHECKED_CAST")
-private fun <S : State> QueryData<*>.cast(): QueryData<S> = this as QueryData<S>
+private fun <S : State> QueryDTO<*>.cast(): QueryDTO<S> = this as QueryDTO<S>
 ----
 
-The states are represented by interfaces. We need two additional interfaces `CanGroupBy` and `CanBuild` for the functions that can be called from multiple states. Except for the generic parameter, the data holder class looks as usual. As the generic parameter doesn't refer to any real data, the cast itself is safe. The `cast()` extension function allows us to switch easily between states. Of course, this function must be private in order to avoid abuse. The extension functions for the state transitions are straight-forward:
+The extension functions for the state transitions are straight-forward:
 
 [source,kotlin]
 ----
-fun QueryData<SelectClause>.from(table: String, alias: String?): QueryData<FromClause> =
+fun QueryDTO<SelectClause>.from(table: String, alias: String?): QueryDTO<FromClause> =
     copy(tableName = NameWithAlias(table, alias)).cast()
 
-fun QueryData<FromClause>.join(tableName: String, alias: String?): QueryData<JoinClause> =
+fun QueryDTO<FromClause>.join(tableName: String, alias: String?): QueryDTO<JoinClause> =
     copy(joinTableName = NameWithAlias(tableName, alias)).cast()
 
-fun QueryData<FromClause>.where(condition: String): QueryData<WhereClause> =
+fun QueryDTO<FromClause>.where(condition: String): QueryDTO<WhereClause> =
     copy(whereConditions = whereConditions + condition).cast()
 
-fun QueryData<JoinClause>.on(firstColumn: String, secondColumn: String): QueryData<FromClause> =
+fun QueryDTO<JoinClause>.on(firstColumn: String, secondColumn: String): QueryDTO<FromClause> =
     copy(joinClauses = joinClauses + TableJoin(joinTableName, firstColumn, secondColumn)).cast()
 
-fun QueryData<WhereClause>.and(condition: String): QueryData<WhereClause> =
+fun QueryDTO<WhereClause>.and(condition: String): QueryDTO<WhereClause> =
     copy(whereConditions = whereConditions + condition)
 
-fun QueryData<CanGroupBy>.groupBy(vararg groupByColumns: String): QueryData<GroupByClause> =
+fun QueryDTO<CanGroupBy>.groupBy(vararg groupByColumns: String): QueryDTO<GroupByClause> =
     copy(groupByColumns = groupByColumns.toList()).cast()
 
-fun QueryData<CanBuild>.build(): String {
-    val sb = StringBuilder()
-        .append("SELECT ${columns.joinToString(", ")}")
-        .append("\nFROM ")
-        .append(tableName)
+fun QueryDTO<CanBuild>.build(): String = with(StringBuilder()) {
+
+    append("SELECT ${columns.joinToString(", ")}")
+    append("\nFROM $tableName")
+
     joinClauses.forEach { (n, c1, c2) ->
-        sb.append("\n  JOIN $n ON $c1 = $c2")
+        append("\n  JOIN $n ON $c1 = $c2")
     }
-    if (whereConditions.isNotEmpty()) {
-        sb.append("\nWHERE ${whereConditions.joinToString("\n  AND ")}")
+
+    if (whereConditions.isNotEmpty())
+        append("\nWHERE ${whereConditions.joinToString("\n  AND ")}")
+
+    if (groupByColumns.isNotEmpty())
+        append("\nGROUP BY ${groupByColumns.joinToString(", ")}")
+
+    append(';')
+
+}.toString()
+----
+
+Note that `GROUP_BY()` can be called e.g. on `QueryDTO<FromClause>`, even though it is defined as `fun QueryDTO<CanGroupBy>.groupBy(...)`. This is possible because the phantom type in `QueryDTO` was defined as contravariant using the `out` keyword. Without this, we would have needed a signature like `fun <S: CanGroupBy> QueryBuilder<S>.groupBy(...)` in order to be callable from a DTO with a sub-interface, which looks quite cryptic.
+
+Chameleon classes and the phantom type implementation are conceptually similar, and it depends on the problem at hand whether a class with all the methods, or a DTO with extension methods is preferable. In case the DSL has to be called from Java, it should be considered that only the chameleon approach preserves the DSL syntax. On the other hand, the phantom type approach doesn't have fixed APIs for the different states, just extension functions operating on them, which means that new functionality can be added more easily than for the other techniques.
+
+=== Case Study: DSL for SQL queries (using the Loan Pattern)
+
+So far, all examples used a builder pattern syntax. This doesn't have to be the case. A DSL using the loan pattern (((Loan Pattern))) could look like this:
+
+[source,kotlin]
+----
+val queryAll = SELECT{
+    +"p.firstName"
+    +"p.lastName"
+    +"p.income"
+}.FROM{
+    "Person" AS "p"
+}.build()
+
+val queryJoin = SELECT{
+    +"p.firstName"
+    +"p.lastName"
+    +"p.income"
+}.FROM{
+    "Person" AS "p"
+    JOIN{
+        "Address" AS "a"
+        ON("p.addressId","a.id")
     }
-    if (groupByColumns.isNotEmpty()) {
-        sb.append("\nGROUP BY ${groupByColumns.joinToString(", ")}")
-    }
-    sb.append(';')
-    return sb.toString()
+}.WHERE {
+    +"p.age > 20"
+    +"p.age <= 40"
+    +"a.city = 'London'"
+}.build()
+
+val queryGroupBy = SELECT{
+    +"p.age"
+    +"min(p.income)"
+    +"max(p.income)"
+}.FROM{
+    "Person" AS "p"
+}.WHERE {
+    +"p.age > 20"
+}.GROUB_BY{
+    +"p.age"
+}.build()
+----
+
+This looks quite different from the builder pattern syntax, and it is debatable whether this style looks better for this particular use case. It might be better suited in cases which need deeper nesting, or which require more complex operations in the trailing lambda bodies.
+
+One difference to the builder example is that `JOIN` is now nested, which seems more natural here. The lambda bodies give more freedom to use other DSL techniques, e.g. infix functions like `AS`. Also, we still need `build()` methods, as it is not clear when we are done with constructing the query. In cases with only one exit state, the construction can be performed behind the scenes, as usual in loan pattern implementations.
+
+It should be noted that for a serious implementation the <<chapter-04.adoc#dslMarker,@DslMarker mechanism>> should be used, as the join clause is nested, but it isn't used in the following use cases for the sake of brevity.
+
+==== The 'Separate Classes' Approach (Loan Pattern)
+
+Here is how an implementation using separate classes could look like. We start out as usual with the DTO, using the same helper classes `NameWithAlias` and `TableJoin` as before:
+
+[source,kotlin]
+----
+data class QueryDTO(
+    val columns: List<String>,
+    val tableName: NameWithAlias = NameWithAlias(""),
+    val joinClauses: List<TableJoin> = emptyList(),
+    val whereConditions: List<String> = emptyList(),
+    val groupByColumns: List<String> = emptyList()
+)
+----
+
+Now we need a starting point, in form of a `SELECT` function. It executes the given body (where the columns can be added) and hands the results over to the `SelectClause` class, which in turn has a method for going to the `FromClause`:
+
+[source,kotlin]
+----
+fun SELECT(body: SelectBody.() -> Unit) =
+    SelectClause(QueryDTO(columns = SelectBody().apply(body).columns))
+
+class SelectBody {
+    val columns = mutableListOf<String>()
+    operator fun String.unaryPlus() { columns += this }
+}
+
+class SelectClause(val queryDTO: QueryDTO) {
+    fun FROM(body: FromBody.() -> Unit) =
+        FromBody().apply(body).let{
+            FromClause(queryDTO.copy(tableName = it.tableName, joinClauses = it.joinClauses))
+        }
 }
 ----
 
-Note that `groupBy()` can be called e.g. on `QueryData<FromClause>`, even though it is defined as `fun QueryData<CanGroupBy>.groupBy(...)`. This is possible because the phantom type in `QueryData` was defined as contravariant using the `out` keyword. Without this, we would have needed a signature like `fun <S: CanGroupBy> QueryBuilder<S>.groupBy(...)` in order to be callable from a data holder with a sub-interface.
+The `FromBody` is a little more complex, as it contains the nested `JOIN` clause:
 
-Chameleon classes and the phantom type implementation are conceptually similar, and it depends on the problem at hand whether a class with all the methods, or a data holder with extension methods is preferable. When the DSL needs to be called from Java, it should be considered that only the chameleon approach preserves the DSL syntax.
+[source,kotlin]
+----
+class FromBody {
+    var tableName = NameWithAlias("")
+    val joinClauses  = mutableListOf<TableJoin>()
 
-=== Using the Loan Pattern
+    operator fun String.unaryPlus() { tableName = NameWithAlias(this) }
 
-So far, all examples followed a syntax close to the builder pattern. This doesn't have to be the case.
+    infix fun String.AS(alias: String) { tableName = NameWithAlias(this, alias) }
+
+    fun JOIN(body: JoinBody.() -> Unit) {
+        JoinBody().apply(body).also {
+            joinClauses += TableJoin(it.tableName, it.firstColumn, it.secondColumn)
+        }
+    }
+}
+
+data class FromClause(val queryDTO: QueryDTO) {
+
+    fun WHERE(body: WhereBody.() -> Unit) =
+        WhereClause(queryDTO.copy(whereConditions = WhereBody().apply(body).conditions))
+
+    fun GROUP_BY(body: GroupByBody.() -> Unit) =
+        GroupByClause(queryDTO.copy(groupByColumns = GroupByBody().apply(body).columns))
+
+    fun build() = build(queryDTO)
+}
+
+data class JoinClause(val queryDTO: QueryDTO, val tableName: NameWithAlias) {
+
+    fun ON(firstColumn: String, secondColumn: String) =
+        FromClause(queryDTO.copy(
+            joinClauses = queryDTO.joinClauses +
+                TableJoin(tableName, firstColumn, secondColumn)
+        ))
+}
+----
+
+This schema continues in the same style for the other clauses:
+
+[source,kotlin]
+----
+data class WhereClause(val queryDTO: QueryDTO) {
+
+    fun AND(condition: String) = copy(queryDTO = queryDTO.copy(whereConditions = queryDTO.whereConditions + condition))
+
+    fun GROUP_BY(vararg groupByColumns: String) =
+        GroupByClause(queryDTO.copy(groupByColumns = groupByColumns.toList()))
+
+    fun build() = build(queryDTO)
+}
+
+data class GroupByClause(val queryDTO: QueryDTO) {
+
+    fun build() = build(queryDTO)
+}
+----
+
+The `build(queryDTO)` function is identical to the builder-style version of the code.
+
+Admittedly, the code is more challenging to read and write, but allows for a more flexible syntax inside the trailing lambda blocks, which feels more natural and structured compared to the builder pattern syntax for a wide range of problems. Using the same techniques as before, we can improve the code.
+
+==== The Chameleon Class Approach (Loan Pattern)
+
+To use a chameleon class, first we have to turn the clause data classes in interfaces:
+
+[source,kotlin]
+----
+interface SelectClause {
+    fun FROM(body: FromBody.() -> Unit): FromClause
+}
+
+interface FromClause {
+    fun WHERE(body: WhereBody.() -> Unit): WhereClause
+    fun GROUP_BY(body: GroupByBody.() -> Unit): GroupByClause
+    fun build(): String
+}
+
+interface WhereClause {
+    fun GROUP_BY(body: GroupByBody.() -> Unit): GroupByClause
+    fun build(): String
+}
+
+interface GroupByClause {
+    fun build(): String
+}
+----
+
+All the `...Body` classes remain unchanged, so we will skip them. The only missing part is the chameleon class itself:
+
+[source,kotlin]
+----
+data class QueryBuilder private constructor(val columns: List<String>) :
+    SelectClause, FromClause, WhereClause, GroupByClause {
+    var tableName = NameWithAlias("")
+    val joinClauses = mutableListOf<TableJoin>()
+    val whereConditions = mutableListOf<String>()
+    val groupByColumns = mutableListOf<String>()
+
+    companion object {
+        fun SELECT(body: SelectBody.() -> Unit): SelectClause =
+            QueryBuilder(columns = SelectBody().apply(body).columns)
+    }
+
+    override fun FROM(body: FromBody.() -> Unit): FromClause =
+        this.apply {
+            val fromBody = FromBody().apply(body)
+            tableName = fromBody.tableName
+            joinClauses += fromBody.joinClauses
+        }
+
+    override fun WHERE(body: WhereBody.() -> Unit): WhereClause =
+        this.apply {
+            whereConditions += WhereBody().apply(body).conditions
+        }
+
+    override fun GROUP_BY(body: GroupByBody.() -> Unit): GroupByClause =
+        this.apply {
+            groupByColumns += GroupByBody().apply(body).columns
+        }
+
+    override fun build(): String = with(StringBuilder()) {
+
+        append("SELECT ${columns.joinToString(", ")}")
+        append("\nFROM $tableName")
+
+        joinClauses.forEach { (n, c1, c2) ->
+            append("\n  JOIN $n ON $c1 = $c2")
+        }
+
+        if (whereConditions.isNotEmpty())
+            append("\nWHERE ${whereConditions.joinToString("\n  AND ")}")
+
+        if (groupByColumns.isNotEmpty())
+            append("\nGROUP BY ${groupByColumns.joinToString(", ")}")
+
+        append(';')
+
+    }.toString()
+}
+----
+
+==== The Phantom Type Approach (Loan Pattern)
+
+Implementing the DSL using phantom types is very similar to the corresponding builder pattern code. Again, the `...Body` classes are unchanged, and are left off.
+
+[source,kotlin]
+----
+interface CanGroupBy
+interface CanBuild
+
+sealed interface State
+interface SelectClause : State
+interface FromClause : State, CanGroupBy, CanBuild
+interface WhereClause : State, CanGroupBy, CanBuild
+interface GroupByClause : State, CanBuild
+
+data class QueryDTO<out State>(
+    val columns: List<String>,
+    val tableName: NameWithAlias = NameWithAlias(""),
+    val joinTableName: NameWithAlias = NameWithAlias(""),
+    val joinClauses: List<TableJoin> = emptyList(),
+    val whereConditions: List<String> = emptyList(),
+    val groupByColumns: List<String> = emptyList()
+)
+
+@Suppress("UNCHECKED_CAST")
+private fun <S : State> QueryDTO<*>.cast(): QueryDTO<S> = this as QueryDTO<S>
+
+fun SELECT(body: SelectBody.() -> Unit): QueryDTO<SelectClause> =
+    QueryDTO(columns = SelectBody().apply(body).columns)
+
+fun QueryDTO<SelectClause>.FROM(body: FromBody.() -> Unit): QueryDTO<FromClause> =
+        FromBody().apply(body).let {
+            this@FROM.copy(tableName = it.tableName, joinClauses = it.joinClauses)
+        }.cast()
+
+fun QueryDTO<FromClause>.WHERE(body: WhereBody.() -> Unit): QueryDTO<WhereClause> =
+    copy(whereConditions = WhereBody().apply(body).conditions).cast()
+
+fun QueryDTO<CanGroupBy>.GROUP_BY(body: GroupByBody.() -> Unit): QueryDTO<GroupByClause> =
+    copy(groupByColumns = GroupByBody().apply(body).columns).cast()
+
+private fun QueryDTO<CanBuild>.build(): String = with(StringBuilder()) {
+
+    append("SELECT ${columns.joinToString(", ")}")
+    append("\nFROM $tableName")
+
+    joinClauses.forEach { (n, c1, c2) ->
+        append("\n  JOIN $n ON $c1 = $c2")
+    }
+
+    if (whereConditions.isNotEmpty())
+        append("\nWHERE ${whereConditions.joinToString("\n  AND ")}")
+
+    if (groupByColumns.isNotEmpty())
+        append("\nGROUP BY ${groupByColumns.joinToString(", ")}")
+
+    append(';')
+
+}.toString()
+----
 
 === Conclusion
 
-The Loan Pattern DSL has several advantages over the classic Builder Pattern style, and is very common in Kotlin. It really shines when dealing with nested structures, and allows to integrate other DSL techniques more easily.
+DSL containing state transitions can be expressed using an underlying builder pattern or loan pattern syntax, and there are different techniques available for implementing them. If unsure, I would recommend to start with the separate classes approach. When using a DTO as recommended, the code can be transformed easily into the chameleon or phantom type style later.
 
 ==== Preferable Use Cases
 

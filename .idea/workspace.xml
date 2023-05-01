@@ -4,13 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="34e13fba-44c8-43ad-8704-18715c28c4b8" name="Changes" comment="chapter-08, chameleon">
-      <change afterPath="$PROJECT_DIR$/book/images/generating-a-dsl.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/book/images/preprint.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/book/images/sql-queries.png" afterDir="false" />
+    <list default="true" id="34e13fba-44c8-43ad-8704-18715c28c4b8" name="Changes" comment="fix preface, images">
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/creativeDSLs/chapter_08/loan/chameleon/chameleon.kt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/kotlin/creativeDSLs/chapter_08/loan/phantom/phantom.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/book/book.adoc" beforeDir="false" afterPath="$PROJECT_DIR$/book/book.adoc" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/book/preface.adoc" beforeDir="false" afterPath="$PROJECT_DIR$/book/preface.adoc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/book/chapter-06.adoc" beforeDir="false" afterPath="$PROJECT_DIR$/book/chapter-06.adoc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/book/chapter-08.adoc" beforeDir="false" afterPath="$PROJECT_DIR$/book/chapter-08.adoc" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/creativeDSLs/chapter_08/builder/chameleon/chameleon.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/creativeDSLs/chapter_08/builder/chameleon/chameleon.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/creativeDSLs/chapter_08/builder/phantom/phantom.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/creativeDSLs/chapter_08/builder/phantom/phantom.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/creativeDSLs/chapter_08/builder/separateClasses/separateClasses.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/creativeDSLs/chapter_08/builder/separateClasses/separateClasses.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/kotlin/creativeDSLs/chapter_08/loan/separateClasses/separateClasses.kt" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/kotlin/creativeDSLs/chapter_08/loan/separateClasses/separateClasses.kt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,7 +48,7 @@
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "master",
     "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/User/IdeaProjects/creativeDSLs/book/images",
+    "last_opened_file_path": "C:/Users/User/IdeaProjects/creativeDSLs/src/main/kotlin/creativeDSLs/chapter_08/loan/chameleon",
     "project.structure.last.edited": "SDKs",
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.2",
@@ -54,6 +57,8 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\User\IdeaProjects\creativeDSLs\src\main\kotlin\creativeDSLs\chapter_08\loan\chameleon" />
+      <recent name="C:\Users\User\IdeaProjects\creativeDSLs\src\main\kotlin\creativeDSLs\chapter_08\loan\phantom" />
       <recent name="C:\Users\User\IdeaProjects\creativeDSLs\book\images" />
       <recent name="C:\Users\User\IdeaProjects\creativeDSLs\src\main\kotlin\creativeDSLs\chapter_08\loan\separateClasses" />
     </key>
@@ -61,22 +66,16 @@
       <recent name="C:\Users\User\IdeaProjects\creativeDSLs\src\main\kotlin\creativeDSLs\chapter_08\builder\separateClasses" />
     </key>
   </component>
-  <component name="RunManager" selected="Kotlin.SeparateClassesKt (1)">
-    <configuration name="CallMangledMethods" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="creativeDSLs.chapter_13.valueClassMangling.CallMangledMethods" />
+  <component name="RunManager" selected="Kotlin.ChameleonKt (1)">
+    <configuration name="ChameleonKt (1)" type="JetRunConfigurationType" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="creativeDSLs.chapter_08.loan.chameleon.ChameleonKt" />
       <module name="CreativeDsls" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="creativeDSLs.chapter_13.valueClassMangling.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="ChameleonKt" type="JetRunConfigurationType" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="creativeDSLs.chapter_08.chameleon.ChameleonKt" />
+    <configuration name="PhantomKt (1)" type="JetRunConfigurationType" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="creativeDSLs.chapter_08.loan.phantom.PhantomKt" />
       <module name="CreativeDsls" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -96,8 +95,8 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="SeparateClassesKt" type="JetRunConfigurationType" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="creativeDSLs.chapter_08.separateClasses.SeparateClassesKt" />
+    <configuration name="SeparateClassesKt (2)" type="JetRunConfigurationType" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="creativeDSLs.chapter_08.builder.separateClasses.SeparateClassesKt" />
       <module name="CreativeDsls" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -105,11 +104,11 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Kotlin.ChameleonKt (1)" />
+        <item itemvalue="Kotlin.PhantomKt (1)" />
+        <item itemvalue="Kotlin.SeparateClassesKt (2)" />
         <item itemvalue="Kotlin.SeparateClassesKt (1)" />
         <item itemvalue="Kotlin.PhantomKt" />
-        <item itemvalue="Kotlin.ChameleonKt" />
-        <item itemvalue="Application.CallMangledMethods" />
-        <item itemvalue="Kotlin.SeparateClassesKt" />
       </list>
     </recent_temporary>
   </component>
@@ -171,7 +170,14 @@
       <option name="project" value="LOCAL" />
       <updated>1681683884925</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="fix preface, images">
+      <created>1682022513846</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1682022513846</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -191,7 +197,8 @@
     <MESSAGE value="chapter 4, index" />
     <MESSAGE value="chapter-08, WIP" />
     <MESSAGE value="chapter-08, chameleon" />
-    <option name="LAST_COMMIT_MESSAGE" value="chapter-08, chameleon" />
+    <MESSAGE value="fix preface, images" />
+    <option name="LAST_COMMIT_MESSAGE" value="fix preface, images" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
