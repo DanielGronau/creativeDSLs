@@ -211,9 +211,21 @@ private fun build(queryDTO: QueryDTO): String = with(StringBuilder()) {
 
 Bundling all data in a DTO instance as shown here can reduce the overhead of moving all the data around substantially, especially by leveraging the power of the `copy()` method. In the next section, we will explore an alternative implementation of the same DSL.
 
-==== The Chameleon Class Approach (Builder Pattern)
+==== The Chameleon Class Approach (Builder Pattern) (((Chameleon Class)))
 
-While having a separate DTO class makes the separate class approach more convenient, it would be nicer if we wouldn't need to copy data around in the first place. But what is with all the guarantees a chained builder provides, e.g. that you can't call `build()` or `JOIN()` in a `SELECT`  clause? One way to achieve this is to use a "chameleon class". The basic idea is to adapt the type of this class to the state it resent currently, and change it accordingly when the state changes. First need to translate our former state classes into interfaces:
+While having a separate DTO class makes the separate class approach more convenient, it would be nicer if we wouldn't need to copy data around in the first place. But what is with all the guarantees a chained builder provides, e.g. that you can't call `build()` or `JOIN()` in a `SELECT`  clause? One way to achieve this is using a technique I dubbed "chameleon class". The basic idea is to adapt the type of this class to the state it currently represents, and change it accordingly when the state changes.
+
+.The Chameleon Class
+****
+A chameleon class
+
+* implements different interfaces
+* never exposes its own type, but always acts as one of these interfaces
+* has a private constructor in order to avoid leaking its own type
+* holds common data
+****
+
+First need to translate our former state classes into interfaces:
 
 [source,kotlin]
 ----
@@ -243,7 +255,7 @@ interface GroupByClause {
 }
 ----
 
-Now all left to do is to implement these interfaces in a single "chameleon" class, and to keep track of the data. It is important to make the constructor private, as the initial type shouldn't be the type of the class itself, but `SelectClause`.  That's why the `SELECT()` method in the companion object is used as starting point for the DSL:
+Now all left to do is to implement these interfaces in a single chameleon class, and to keep track of the data. It is important to make the constructor private, as the initial type shouldn't be the type of the class itself, but `SelectClause`.  That's why the `SELECT()` method in the companion object is used as starting point for the DSL:
 
 [source,kotlin]
 ----
@@ -305,9 +317,9 @@ class QueryBuilder private constructor(val columns: List<String>):
 }
 ----
 
-For the compiler, it doesn't matter that you give back the same object over and over again at runtime, because the static type decides which methods can be called, and this static type is never `QueryBuilder`, but instead one of the interfaces for the SQL clauses. Using the DSL looks like before, and you still can't call methods out of order.
+For the compiler, it doesn't matter that you give back the same object over and over again at runtime, because only the static type decides which methods can be called, and this static type is never `QueryBuilder` itself, but instead one of the interfaces for the SQL clauses. Using the DSL looks like before, and you still can't call methods out of order.
 
-The chameleon class concept might look somewhat strange at first, but results usually in compact and readable code. However, be aware that this approach is susceptible to name clashes, when two interfaces have methods with the same name and parameters, but different return types.
+The chameleon class concept might look somewhat strange at first, but results usually in compact and readable code. However, be aware that this approach is susceptible to name clashes, when two interfaces contain methods with the same name and parameters, but different return types.
 
 ==== The Phantom Type Approach (Builder Pattern)
 
@@ -344,22 +356,36 @@ The extension functions for the state transitions are straight-forward:
 
 [source,kotlin]
 ----
-fun QueryDTO<SelectClause>.from(table: String, alias: String?): QueryDTO<FromClause> =
+fun QueryDTO<SelectClause>.from(
+        table: String,
+        alias: String?
+    ): QueryDTO<FromClause> =
     copy(tableName = NameWithAlias(table, alias)).cast()
 
-fun QueryDTO<FromClause>.join(tableName: String, alias: String?): QueryDTO<JoinClause> =
+fun QueryDTO<FromClause>.join(
+        tableName: String,
+        alias: String?
+    ): QueryDTO<JoinClause> =
     copy(joinTableName = NameWithAlias(tableName, alias)).cast()
 
-fun QueryDTO<FromClause>.where(condition: String): QueryDTO<WhereClause> =
+fun QueryDTO<FromClause>.where(
+        condition: String): QueryDTO<WhereClause> =
     copy(whereConditions = whereConditions + condition).cast()
 
-fun QueryDTO<JoinClause>.on(firstColumn: String, secondColumn: String): QueryDTO<FromClause> =
-    copy(joinClauses = joinClauses + TableJoin(joinTableName, firstColumn, secondColumn)).cast()
+fun QueryDTO<JoinClause>.on(
+        firstColumn: String,
+        secondColumn: String
+    ): QueryDTO<FromClause> =
+    copy(joinClauses = joinClauses +
+        TableJoin(joinTableName, firstColumn, secondColumn)
+    ).cast()
 
-fun QueryDTO<WhereClause>.and(condition: String): QueryDTO<WhereClause> =
+fun QueryDTO<WhereClause>.and(
+        condition: String): QueryDTO<WhereClause> =
     copy(whereConditions = whereConditions + condition)
 
-fun QueryDTO<CanGroupBy>.groupBy(vararg groupByColumns: String): QueryDTO<GroupByClause> =
+fun QueryDTO<CanGroupBy>.groupBy(
+        vararg groupByColumns: String): QueryDTO<GroupByClause> =
     copy(groupByColumns = groupByColumns.toList()).cast()
 
 fun QueryDTO<CanBuild>.build(): String = with(StringBuilder()) {
@@ -534,7 +560,7 @@ The `build(queryDTO)` function is identical to the builder-style version of the 
 
 Admittedly, the code is more challenging to read and write, but allows for a more flexible syntax inside the trailing lambda blocks, which feels more natural and structured compared to the builder pattern syntax for a wide range of problems. Using the same techniques as before, we can improve the code.
 
-==== The Chameleon Class Approach (Loan Pattern)
+==== The Chameleon Class Approach (Loan Pattern) (((Chameleon Class)))
 
 To use a chameleon class, first we have to turn the clause data classes in interfaces:
 
@@ -677,12 +703,11 @@ private fun QueryDTO<CanBuild>.build(): String = with(StringBuilder()) {
 
 === Conclusion
 
-DSL containing state transitions can be expressed using an underlying builder pattern or loan pattern syntax, and there are different techniques available for implementing them. If unsure, I would recommend to start with the separate classes approach. When using a DTO as recommended, the code can be transformed easily into the chameleon or phantom type style later.
+In this chapter we discussed how state transitions can be expressed using different techniques. The DSLs can use either an underlying builder pattern or a loan pattern syntax, and there are different approaches to implementing them. If unsure, I would recommend to start with the separate classes approach, especially when prototyping. When using a DTO as recommended, the code can be transformed easily into the chameleon or phantom type style later.
 
 ==== Preferable Use Cases
 
 * Creating data
-* Execute actions
 * Configuring systems
 * Testing
 
@@ -699,8 +724,12 @@ DSL containing state transitions can be expressed using an underlying builder pa
 |===
 |Pros |Cons
 
-|* easy to write and read
+|* enforces the correct state transitions
+* natural way to write code that creates data in stages
+* natural way to write DSLs for Finite State Machines
 
-|* succession rules can't be enforced
-* might be difficult to use from Java client code
+|* hard to read code
+* boilerplate code
+* the "separate classes" approach requires to copy data over
+* the "phantom type" approach is hard to use from Java client code
 |===

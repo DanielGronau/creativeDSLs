@@ -1,23 +1,29 @@
 == String-Parsing DSLs
 
-In some cases, the host language doesn't allow to create the DSL syntax you would like. A string-parsing DSL gives you the freedom to write basically anything. One topic where traditional DSL categories are particularly bad is giving the user some leeway, e.g. concerning upper and lower case syntax, or order of operations. String-based DSLs can easily incorporate such leniency.
+In some cases, the host language doesn't allow to create the DSL syntax you would like. A string-parsing DSL gives you the freedom to write basically anything. One topic where traditional DSL categories are particularly bad is giving the user some leeway, e.g. concerning upper and lower case syntax, order of operations or the use of special characters like symbols. String-based DSLs can easily incorporate such leniency.
 
 The downside is that these DSLs are hidden from the scrutiny of the compiler: There are no compile time checks, no hints for auto-completion etc., which means the user has to rely on the documentation. Another issue is writing the parser: Dissecting a string is usually more involved than collecting the data in other DSL types, although it is also no rocket science.
+
+(((Regular Expressions)))
 
 WARNING: Kotlin supports - like many languages - regular expressions, which can be seen as a kind of mini-parser. For small, isolated use cases they can be very convenient. However, employing them for larger problems can lead to code which is very hard to maintain, because this approach doesn't scale well. In my opinion, using regular expressions as full-blown "parsers" may be acceptable for prototypes and test environments, but not in production code.
 
 === Case Study: Forsyth–Edwards Notation
 
-Before we dive into complicated problems requiring parsers, we will start with an easy example, where we need only a few string functions. If you don't play chess, you probably never heard of the https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation[Forsyth–Edwards Notation] (or short FEN). It is basically a snapshot of an ongoing chess game, and stores the following information:
+Before we dive into complicated problems requiring parsers, we will start with an easy example, where we need only a few string functions. If you don't play chess, you probably never heard of the https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation[Forsyth–Edwards Notation] (FEN):
 
-* the position of the pieces
-* who's turn it is
-* castling rights ("castling" is a special move involving king and rook)
-* a field where a special pawn capture (called "en-passant") could take place
-* number of half-moves without check or pawn moves (for the 50-move rule)
+.Forsyth–Edwards Notation
+****
+The Forsyth–Edwards Notation is a standard notation for describing the current position of pieces on a chessboard. It consists of a string of characters that represent the placement of the pieces, which are organized by rank and file. In FEN, uppercase letters are used to represent white pieces, and lowercase letters are used to represent black pieces. The digits 1-8 are used to represent empty squares, and a forward slash is used to separate ranks. FEN also includes information about:
+
+* which player has the next move
+* castling availability
+* en passant capture availability
+* number of half-moves without check or pawn moves (for the 50- or 75-move rule)
 * number of moves played so far
+****
 
-Rows are separated by `/` and pieces have the usual names used in chess notation (like "Q" for a queen), plus "P" for pawn. Black pieces are notated in lower-case and white pieces in upper-case. To keep the string short, empty squares are written with a kind of run-length encoding, e.g. 3 empty fields are represented by a 3. The castling rights are given by "k" for king-side and "q" for queen-side, again upper-case for white and lower-case for black. If nobody can castle, a `-` is written instead. The en-passant field contains either a square like `b3` or again a `-`.
+Rows are separated by `/` and pieces have the usual names used in chess notation (like "Q" for a queen), plus "P" for pawn. To keep the string short, empty squares are written with a kind of run-length encoding, e.g. 3 empty fields are represented by a 3. The castling rights are given by "k" for king-side and "q" for queen-side, again upper-case for white and lower-case for black. If nobody can castle, a `-` is written instead. The en-passant field contains either a square like `b3` or again a `-`.
 
 A FEN looks like this: `rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2`. If you put the rows one below the other, and expand the numbers to empty fields, you can "see" the board position:
 
@@ -86,7 +92,7 @@ The class contains already a function for generating a FEN - this is not require
 
 .Round-trip Tests
 ****
-When you have code that transforms forth and back between different formats, it is convenient to write round-trip tests: You're providing test data for the "easiest" format, transform it to the other one(s) and back, and compare it with the original. Comparing data in the same format is easier and safer than comparing different ones - sometimes even a simple string comparison is sufficient.
+When you have code that transforms forth and back between different formats, it is convenient to write round-trip tests: You're providing test data for the "easiest" format, transform it to the other one(s) and back, and compare it with the original. Comparing data in the same format is easier and safer than comparing different ones - often even a simple string comparison is sufficient.
 ****
 
 Now we can write the DSL function for parsing a FEN:

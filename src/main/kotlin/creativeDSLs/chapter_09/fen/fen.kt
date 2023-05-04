@@ -30,25 +30,21 @@ data class Position(
     val fiftyMoves: Int,
     val move: Int
 ) {
-    private fun piecesFen() =
-        (8 downTo 1).map { row ->
-            var count = 0
-            ('a'..'h').map { col ->
-                val piece = pieces["$col$row"]
-                when {
-                    piece != null && count == 0 -> piece.symbol
-                    piece != null && count != 0 ->
-                        "$count${piece.symbol}".also { count = 0 }
 
-                    col == 'h' -> "${count + 1}"
-                    else -> "".also { count++ }
-                }
-            }.joinToString("")
-        }.joinToString("/")
+    private fun piecesFen() =
+        (8 downTo 1).joinToString("/") { row ->
+            ('a'..'h').joinToString("") { col ->
+                pieces["$col$row"]?.symbol ?: "1"
+            }
+        }.fold("") { acc, ch ->
+            if (acc.isNotEmpty() && acc.last().isDigit() && ch == '1')
+                acc.dropLast(1) + (acc.last() + 1)
+            else acc + ch
+        }
 
     private fun castlingFen() = when {
         castling.isEmpty() -> "-"
-        else -> castling.map { it.symbol }.joinToString("")
+        else -> castling.joinToString("") { it.symbol }
     }
 
     fun FEN() = "${piecesFen()} ${toMove.symbol} " +
@@ -63,37 +59,45 @@ fun readFEN(s: String): Position {
         enPassantStr,
         fiftyMovesStr,
         movesStr) = s.split(" ")
-    val pieces = mutableMapOf<String, Piece>()
-    piecesStr.split("/").mapIndexed { index, row ->
-        var count = 0
-        row.forEach { ch ->
-            when {
-                ch.isDigit() -> count += ch.toString().toInt()
-                else -> pieces["${"abcdefgh"[count]}${8 - index}"] =
-                    Piece.values().find {
-                        it.symbol == ch.toString()
-                    }!!.also { count++ }
-            }
+
+    return Position(
+        pieces = getPieces(piecesStr),
+        toMove = getToMove(toMoveStr),
+        castling = getCastling(castlingStr),
+        enPassant = enPassantStr,
+        fiftyMoves = fiftyMovesStr.toInt(),
+        move = movesStr.toInt()
+    )
+}
+
+private fun getPieces(piecesStr: String) = piecesStr
+    .fold("") { acc, ch ->
+        if (ch.isDigit()) acc + ".".repeat(ch.toString().toInt()) else acc + ch
+    }
+    .split("/")
+    .mapIndexed { rowIndex, row ->
+        row.mapIndexedNotNull { colIndex, ch ->
+            values().find { it.symbol == ch.toString() }
+                ?.let { "${"abcdefgh"[colIndex]}${8 - rowIndex}" to it }
         }
     }
-    val toMove = Color.values().find { it.symbol == toMoveStr }!!
-    val castling = when (castlingStr) {
-        "-" -> emptyList()
-        else -> castlingStr
-            .map { ch ->
-                Piece.values().find {
-                    it.symbol == ch.toString()
-                }!!
-            }
+    .flatten()
+    .toMap()
+
+private fun getToMove(toMoveStr: String) = when (toMoveStr) {
+    "w" -> Color.White
+    "b" -> Color.Black
+    else -> error("unknown color '$toMoveStr' for player to move")
+}
+
+private fun getCastling(castlingStr: String) = castlingStr.mapNotNull { ch ->
+    when (ch) {
+        'K' -> WhiteKing
+        'k' -> BlackKing
+        'Q' -> WhiteQueen
+        'q' -> BlackQueen
+        else -> null
     }
-    return Position(
-        pieces,
-        toMove,
-        castling,
-        enPassantStr,
-        fiftyMovesStr.toInt(),
-        movesStr.toInt()
-    )
 }
 
 
