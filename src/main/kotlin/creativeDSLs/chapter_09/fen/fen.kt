@@ -31,7 +31,7 @@ data class Position(
     val move: Int
 ) {
 
-    private fun piecesFen() =
+    private fun boardFen() =
         (8 downTo 1).joinToString("/") { row ->
             ('a'..'h').joinToString("") { col ->
                 pieces["$col$row"]?.symbol ?: "1"
@@ -47,32 +47,26 @@ data class Position(
         else -> castling.joinToString("") { it.symbol }
     }
 
-    fun FEN() = "${piecesFen()} ${toMove.symbol} " +
+    fun FEN() = "${boardFen()} ${toMove.symbol} " +
             "${castlingFen()} $enPassant $fiftyMoves $move"
 }
 
-fun readFEN(s: String): Position {
-    operator fun <E> List<E>.component6(): E = this[5]
-    val (piecesStr,
-        toMoveStr,
-        castlingStr,
-        enPassantStr,
-        fiftyMovesStr,
-        movesStr) = s.split(" ")
-
-    return Position(
-        pieces = getPieces(piecesStr),
-        toMove = getToMove(toMoveStr),
-        castling = getCastling(castlingStr),
-        enPassant = enPassantStr,
-        fiftyMoves = fiftyMovesStr.toInt(),
-        move = movesStr.toInt()
-    )
-}
+fun readFEN(fenString: String): Position = fenString
+    .split(" ")
+    .let { part ->
+        Position(
+            pieces = getPieces(part[0]),
+            toMove = getToMove(part[1]),
+            castling = getCastling(part[2]),
+            enPassant = part[3],
+            fiftyMoves = part[4].toInt(),
+            move = part[5].toInt()
+        )
+    }
 
 private fun getPieces(piecesStr: String) = piecesStr
     .fold("") { acc, ch ->
-        if (ch.isDigit()) acc + ".".repeat(ch.toString().toInt()) else acc + ch
+        acc + if (ch.isDigit()) ".".repeat(ch.toString().toInt()) else ch
     }
     .split("/")
     .mapIndexed { rowIndex, row ->

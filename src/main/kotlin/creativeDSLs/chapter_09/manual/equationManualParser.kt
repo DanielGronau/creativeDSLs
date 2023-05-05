@@ -3,6 +3,7 @@ package creativeDSLs.chapter_09.manual
 import java.util.*
 
 import creativeDSLs.chapter_11.*
+import java.lang.Exception
 
 private val elements = setOf(
     "H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si",
@@ -16,11 +17,15 @@ private val elements = setOf(
     "Sg", "Bh", "Hs", "Mt", "Ds", "Rg", "Cn", "Nh", "Fl", "Mc", "Lv", "Ts", "Og"
 )
 
-fun equation(string: String): Optional<Equation> = parseEquation(string.replace(" ", ""))
-    .filter { it.second.isEmpty() }
-    .map { it.first }
-
 typealias ParseResult<T> = Optional<Pair<T, String>>
+
+fun <T : Any> T.optIf(cond: (T) -> Boolean): Optional<T> =
+    Optional.of(this).filter(cond)
+
+fun equation(string: String): Optional<Equation> =
+    parseEquation(string.replace(" ", ""))
+        .filter { it.second.isEmpty() }
+        .map { it.first }
 
 fun parseEquation(string: String): ParseResult<Equation> {
     return parseSide(string).flatMap { (lhs, s1) ->
@@ -33,13 +38,12 @@ fun parseEquation(string: String): ParseResult<Equation> {
 }
 
 fun parseSide(string: String): ParseResult<List<Molecule>> =
-    Optional.of(
-        generateSequence(parseMolecule(string).orElse(null)) { (_, s1) ->
-            parsePattern(s1, "+")
-                .flatMap { (_, s2) -> parseMolecule(s2) }
-                .orElse(null)
-        }.toList()
-    ).filter {
+
+    generateSequence(parseMolecule(string).orElse(null)) { (_, s1) ->
+        parsePattern(s1, "+")
+            .flatMap { (_, s2) -> parseMolecule(s2) }
+            .orElse(null)
+    }.toList().optIf {
         it.isNotEmpty()
     }.map { list ->
         list.map { it.first } to list.last().second
@@ -49,11 +53,9 @@ fun parseMolecule(string: String): ParseResult<Molecule> =
     parseNum(string).or {
         Optional.of(1 to string)
     }.flatMap { (coefficient, s) ->
-        Optional.of(
-            generateSequence(parsePart(s).orElse(null)) { (_, s1) ->
-                parsePart(s1).orElse(null)
-            }.toList()
-        ).filter {
+        generateSequence(parsePart(s).orElse(null)) { (_, s1) ->
+            parsePart(s1).orElse(null)
+        }.toList().optIf {
             it.isNotEmpty()
         }.map { parts ->
             Molecule(coefficient, parts.map { it.first }) to parts.last().second
@@ -77,9 +79,8 @@ fun parseElement(string: String): ParseResult<Element> =
     }
 
 fun findElement(string: String, charCount: Int): ParseResult<String> =
-    Optional.of(
-        "$string!!".substring(0, charCount)
-    ).filter {
+
+    "$string!!".substring(0, charCount).optIf {
         elements.contains("$string!!".substring(0, charCount))
     }.map { symbol ->
         symbol to string.substring(charCount)
@@ -108,19 +109,16 @@ fun parseArrow(string: String): ParseResult<String> =
     parsePattern(string, "<->")
         .or { parsePattern(string, "->") }
 
-fun parsePattern(string: String, pattern: String): ParseResult<String> = when {
-    string.startsWith(pattern) -> Optional.of(pattern to string.substring(pattern.length))
-    else -> Optional.empty()
-}
+fun parsePattern(string: String, pattern: String): ParseResult<String> =
+    string.optIf { it.startsWith(pattern) }
+        .map { pattern to it.substring(pattern.length) }
 
 fun parseNum(string: String): ParseResult<Int> =
-    Optional.of(
-        string.takeWhile { it.isDigit() }.length
-    ).filter { digitCount ->
-        digitCount > 0
-    }.map { digitCount ->
-        string.substring(0, digitCount).toInt() to string.substring(digitCount)
-    }
+    string.takeWhile { it.isDigit() }.length
+        .optIf { digitCount -> digitCount > 0 }
+        .map { digitCount ->
+            string.substring(0, digitCount).toInt() to string.substring(digitCount)
+        }
 
 fun main() {
     val p = equation("3Ba(OH)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2")
@@ -128,4 +126,5 @@ fun main() {
 
     //println(parseGroup("()2"))
 }
+
 
