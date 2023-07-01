@@ -5,7 +5,7 @@
 > A Domain-Specific Language (DSL) is a computer language that's targeted to a particular kind of problem, rather than a general purpose language that's aimed at any kind of software problem.
 -- Martin Fowler, Domain-Specific Languages Guide
 
-The intention for writing a DSL is to make a certain domain more accessible, to make it easier to read and write, to avoid mistakes, and sometimes to follow established standards or conventions (e.g. SQL for database access, or mathematical notation). The target audience for DSLs can be the authors themselves, library users, or people who have domain knowledge, but do usually no or just a little programming. Sometimes it is sufficient when experts can read and understand a DSL, in order to check correctness or to give feedback.
+The intention for writing a DSL is to make a certain domain more accessible, to make it easier to read and write, to avoid mistakes, and sometimes to follow established standards or conventions (e.g. SQL for database access, or mathematical notation). The target audience for DSLs can be the authors themselves, library users, or people who have domain knowledge, but usually don't write code. Sometimes it is sufficient when experts can read and understand, but not write DSL code, in order to check correctness and to give feedback.
 
 Domain-specific languages are often used to model business logic in specific domains, such as financial trades for a financial company. They can also be useful for communicating at the boundaries of a system, including tasks such as database access, serialization, web connectivity, and UI design. Additionally, DSLs can be used for performing calculations or simulations. They are also commonly used in testing and logging, as well as for code generation and even for writing DSLs themselves. In all of these cases, DSLs provide a specialized language that is tailored to the needs of a particular domain, allowing developers to more easily express concepts and perform tasks in a way that is natural and intuitive.
 
@@ -27,14 +27,29 @@ There are also libraries creating DSLs for you. If you need a well-known style o
 
 While it is difficult to clearly distinguish between the various types of use cases, a general classification is still helpful. In particular, every DSL category has use cases it can model better than others. Some common types of use cases for DSLs include:
 
-* *Creating data:* DSLs can be used to define and construct data structures in a domain-specific way, making it easier to represent and manipulate complex data.
-* *Transforming data:* DSLs can provide concise and expressive ways to perform transformations on data, such as filtering, aggregating, or mapping.
-* *Defining operations:* DSLs can be used to specify complex operations in a domain-specific way, making it easier to understand and reason about the behavior of the system.
-* *Executing actions:* DSLs can provide a natural way to specify and execute actions, such as triggering events or initiating processes.
-* *Configuring systems:* DSLs can specify configuration options, and thereby assist in setting up and managing systems.
-* *Generating code:* DSLs can be used to generate code in a specific programming language or format, making it easier to automate repetitive tasks or build complex systems.
-* *Testing:* DSLs can be used to define and execute tests in a domain-specific way, making it easier to validate the behavior of a system.
-* *Logging:* DSLs can provide a specialized language for logging messages and events, making it easier to understand and analyze the behavior of a system.
+* *Implementation Support*
+- *Code Generation:* DSLs can be used to generate code in a specific programming language or format, allowing to automate repetitive tasks and to build complex systems.
+- *Testing:* DSLs can be used to define and execute tests in a domain-specific way, helping to validate the behavior of a system.
+
+* *System Management*
+- *Configuration Management:* DSLs can be used to configure and manage systems, applications, or infrastructure in a declarative way.
+- *Workflow Orchestration:* DSLs can be employed to define and manage complex workflows or business processes.
+
+* *Runtime Behaviour*
+- *Data Creation and Initialization:* DSLs can be used to define and construct data structures in a domain-specific way, helping to represent and manipulate complex data.
+- *Data Transformation:* DSLs can provide concise and expressive ways to perform transformations on data, such as filtering, aggregating, or mapping.
+- *Data Validation:* DSLs can be used to define validation rules and constraints specific to a particular domain.
+- *Defining Operations:* DSLs can be used to specify complex operations in a domain-specific way, helping to understand the behavior of the system, and to reason about it.
+- *Executing Actions:* DSLs can provide a natural way to specify and execute actions, such as triggering events or initiating processes.
+
+* *Peripheral Systems*
+- *Logging:* DSLs can provide a specialized language for logging messages and events, giving the log messages more structure, and therefore simplifying further processing.
+- *Monitoring:* DSLs can be used to observe the system status and to measure parameters like system performance or memory usage.
+- *Reporting and Analytics:* DSLs can be used to define queries, aggregations, and transformations for reporting and analytics purposes.
+
+* *Specific Applications*
+- *Natural Language Processing:* DSLs can be utilized to create language models, define linguistic rules, or implement specific language processing tasks.
+- *Simulation and Modeling:* DSLs can be used to build simulation models or mathematical models for various fields such as physics, engineering, finance, or biology.
 
 Each of these use cases has its own challenges and requirements, and different DSL categories may be better suited to modeling certain types of use cases over others.
 
@@ -42,13 +57,14 @@ Each of these use cases has its own challenges and requirements, and different D
 
 There are a few general principles an internal DSL should follow:
 
-* *Conciseness:* The DSL syntax should be succinct
-* *Consistency:* The DSL syntax should stick to a certain style, similar tasks should require a similar syntax
-* *Coverage:* The DSL needs to cover the problem domain, there should be no gaps, but also no overreach into other areas
-* *Usability:* The DSL should be easy, safe and intuitive to use
-* *Modularity:* If it makes sense to use a part of the DSL on its own, it should be easy to do so
-* *Openness:* The DSL should interact well with non-DSL code or even other DSLs, and should allow custom extensions, where it makes sense
-* *Maintainability:* The DSL code should be easy to read and to maintain
+* *Conciseness:* The DSL syntax should be succinct and expressive.
+* *Consistency:* The DSL syntax should stick to a certain style, similar tasks should require a similar syntax. The behavior of the DSL should be logical and predictable.
+* *Coverage:* The DSL needs to cover the problem domain, there should be no gaps, but also no overreach into other areas.
+* *Usability:* The DSL should be easy, safe and intuitive to use. It isn't enough to make a DSL concise, it should also take user expectations into account, and follow the principle of least astonishment. The error handling should be comprehensive and provide clear and informative error messages that help users identify and fix issues quickly.
+* *Modularity:* If it makes sense to use a part of the DSL on its own, it should be easy to do so.
+* *Extensibility:* A DSL should be designed in a way that allows easy extension and customization. Users should be able to add new functionality or modify existing behavior without significant effort or disrupting the overall design.
+* *Interoperability:*  DSLs often need to interact with existing systems or integrate with other DSLs. Designing a DSL with interoperability in mind allows seamless integration with external components, and simplifies data exchange. Sometimes it might be even necessary to provide a way to _bypass_ DSL functionality, in order to allow access from other languages like Java, or for automated tools.
+* *Maintainability:* The DSL code should be easy to read and to maintain.
 
 In many DSL tutorials and related literature, there is a tendency to focus only on the "sexy" principles of DSL design, such as conciseness and usability. However, in practice, a DSL project can fail if you overlook the other principles or are unable to reach a good compromise between the sometimes conflicting requirements. Ultimately, a successful DSL design requires a holistic approach that takes into account all relevant factors and strikes a balance that meets the needs of the domain and the users.
 
@@ -56,7 +72,7 @@ In many DSL tutorials and related literature, there is a tendency to focus only 
 
 At this point, it's worth considering the characteristics of Kotlin that make it well-suited for building DSLs. Kotlin is a programming language developed by JetBrains, the company behind popular IDEs such as IntelliJ IDEA. From its inception, Kotlin was designed with a focus on readability, practicality, safety, and interoperability.
 
-In comparison to Java, Kotlin has a more concise and expressive syntax, making it easier to write and read code. It also has a number of language features that are particularly useful for building DSLs. Together, these features allow developers to create DSLs with a fluent and intuitive API that is easy to use and understand, and lend themselves naturally to this coding style.
+In comparison to Java, Kotlin has a more concise and expressive syntax, making it easier to write and read code. It also has a number of language features that are particularly useful for building DSLs. Together, these features allow developers to create DSLs with a fluent and intuitive API that is easy to use and understand, and lend themselves naturally to this coding style. We will take a closer look at the most important features in <<chapter-04.adoc#relevant_language_features,chapter 4.>>
 
-It is often easy to add "miniature DSLs" on the fly in existing code. That means the boundary between "everyday code" and DSLs in Kotlin isn't clear-cut, which seems to be a conscious design choice. This flexibility allows developers to gradually adapt and improve existing code in an organic way, without the need for major refactoring. In my opinion, this kind of language design plays a significant role in the success of Kotlin as a language.
+In Kotlin, it is often easy to add "miniature DSLs" on the fly in existing code. That means the boundary between "everyday code" and DSLs isn't clear-cut, which seems to be a conscious design choice. This flexibility allows developers to gradually adapt and improve existing code in an organic way, without the need for major refactoring. In my opinion, this kind of language design plays a significant role in the success of Kotlin as a language.
 

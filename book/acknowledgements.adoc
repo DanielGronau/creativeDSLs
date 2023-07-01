@@ -2,7 +2,7 @@
 
 == Acknowledgements
 
-Contrary to common believe, writing a book isn't that hard if you are passionate. Becoming a passionate person is the hard part. That's why I am grateful to have had many excellent teachers throughout my life, both formal instructors at university and informal mentors among my colleagues and friends. They nurtured my curiosity, helped me to understand new concepts, and encouraged me to develop new skills. Without their guidance and support, this book would not have been possible.
+Writing a book isn't a walk in the park, but is being passionate about it makes it much easier. That's why I am grateful to all the people that helped me to develop and grow this passion: the excellent teachers throughout my life, both formal instructors at university and informal mentors among my colleagues and friends. They nurtured my curiosity, helped me to understand new concepts, and encouraged me to develop new skills. Without their guidance and support, this book would not have been possible.
 ...
 
 And last but not least, I want to thank all the heroes who provide free knowledge and awesome open source tools - like the Kotlin language itself - who make the world a better place.

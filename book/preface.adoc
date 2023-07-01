@@ -8,11 +8,11 @@ Kotlin is a powerful language that is well-suited for writing Domain Specific La
 
 * They often focus on oversimplified examples that do not provide a clear understanding of how to write DSLs in practice
 * They present solutions in a vacuum, without explaining the design process, the requirements and constraints that apply, or the trade-offs that were made
-* They do not provide a categorization of the different types of DSLs, or a comparison of their relative strengths and weaknesses
+* They do not attempt a categorization of the different types of DSLs, or a comparison of their relative strengths and weaknesses
 
 This book aims to fill these gaps by providing a comprehensive guide to writing DSLs in Kotlin, with a focus on practical examples and real-world considerations. One of the main goals of this book is to go beyond toy examples and provide real-world insights into the process of writing DSLs in practice. This includes discussing the design process, the requirements and constraints that apply, the trade-offs that must be made, and the challenges that arise.
 
-To achieve this, the book progresses from "boring" default examples to more challenging and complex cases, culminating in a discussion of real-world DSLs that have been successful in practice. In addition to providing practical guidance, it is attempted to find a comprehensive terminology for classifying DSLs, similar to the way the design patterns movement established a common language for coding solutions.
+To achieve this, the book progresses from common examples to more challenging and complex cases, and finishing with a discussion of real-world DSLs that have been successful in practice. In addition to providing practical guidance, it is attempted to find a comprehensive terminology for classifying DSLs, similar to the way the design patterns movement established a common language for coding solutions.
 
 Overall, the goal of the book is to provide a comprehensive and practical guide to designing and implementing DSLs using Kotlin.
 
