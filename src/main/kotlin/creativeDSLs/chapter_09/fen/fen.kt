@@ -69,10 +69,11 @@ private fun getPieces(piecesStr: String) = piecesStr
         acc + if (ch.isDigit()) ".".repeat(ch.toString().toInt()) else ch
     }
     .split("/")
+    .reversed()
     .mapIndexed { rowIndex, row ->
         row.mapIndexedNotNull { colIndex, ch ->
             values().find { it.symbol == ch.toString() }
-                ?.let { "${"abcdefgh"[colIndex]}${8 - rowIndex}" to it }
+                ?.let { "${'a' + colIndex}${rowIndex + 1}" to it }
         }
     }
     .flatten()
@@ -84,15 +85,16 @@ private fun getToMove(toMoveStr: String) = when (toMoveStr) {
     else -> error("unknown color '$toMoveStr' for player to move")
 }
 
-private fun getCastling(castlingStr: String) = castlingStr.mapNotNull { ch ->
-    when (ch) {
-        'K' -> WhiteKing
-        'k' -> BlackKing
-        'Q' -> WhiteQueen
-        'q' -> BlackQueen
-        else -> null
+private fun getCastling(castlingStr: String) = castlingStr
+    .mapNotNull { ch ->
+        when (ch) {
+            'K' -> WhiteKing
+            'k' -> BlackKing
+            'Q' -> WhiteQueen
+            'q' -> BlackQueen
+            else -> null
+        }
     }
-}
 
 
 fun main() {

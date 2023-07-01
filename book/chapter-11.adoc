@@ -15,6 +15,7 @@ every { car.door(DoorType.FRONT_LEFT).windowState() } returns WindowState.UP
 
 Technically, writing a quasi-lingual DSL is not very different from other Hybrid DSLs, although it might be harder to model grammatical structures correctly. Also, name clashes with keywords like `is`, `as` etc. are more of a problem. As good advice is to keep the DSL grammar simple and well-structured, and to compromise when it helps to reduce complexity. E.g. instead of trying to model words like `should` `be` separated, it is okay to use `shouldBe` instead when it helps to keep the grammar simple.
 
+[#chemicalEquations]
 === Case Study: Chemical Equations
 
 Writing a DSL for chemical equations is no easy task, because the notation is very concise and can't be imitated easily using Kotlin syntax. For our case study, we won't cover the full notation, e.g. we won't support writing ions or bonds.

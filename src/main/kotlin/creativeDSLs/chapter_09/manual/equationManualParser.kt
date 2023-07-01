@@ -1,9 +1,6 @@
 package creativeDSLs.chapter_09.manual
 
-import java.util.*
-
 import creativeDSLs.chapter_11.*
-import java.lang.Exception
 
 private val elements = setOf(
     "H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si",
@@ -17,114 +14,142 @@ private val elements = setOf(
     "Sg", "Bh", "Hs", "Mt", "Ds", "Rg", "Cn", "Nh", "Fl", "Mc", "Lv", "Ts", "Og"
 )
 
-typealias ParseResult<T> = Optional<Pair<T, String>>
+sealed interface ParseResult<out T> {
+    infix fun or(that: () -> ParseResult<@UnsafeVariance T>): ParseResult<T>
+    fun <U> flatMap(body: (T, String) -> ParseResult<U>): ParseResult<U>
+    fun filter(cond: (T) -> Boolean): ParseResult<T>
+}
 
-fun <T : Any> T.optIf(cond: (T) -> Boolean): Optional<T> =
-    Optional.of(this).filter(cond)
+class Failure<T> : ParseResult<T> {
+    override fun or(that: () -> ParseResult<T>): ParseResult<T> = that()
+    override fun <U> flatMap(body: (T, String) -> ParseResult<U>) = Failure<U>()
+    override fun filter(cond: (T) -> Boolean): ParseResult<T> = this
+    override fun toString() = "Failure"
+}
 
-fun equation(string: String): Optional<Equation> =
-    parseEquation(string.replace(" ", ""))
-        .filter { it.second.isEmpty() }
-        .map { it.first }
+data class Success<T>(val value: T, val remaining: String) : ParseResult<T> {
+    override fun or(that: () -> ParseResult<T>): ParseResult<T> = this
+    override fun <U> flatMap(body: (T, String) -> ParseResult<U>): ParseResult<U> =
+        body(value, remaining)
 
-fun parseEquation(string: String): ParseResult<Equation> {
-    return parseSide(string).flatMap { (lhs, s1) ->
-        parseArrow(s1).flatMap { (arrow, s2) ->
-            parseSide(s2).map { (rhs, s3) ->
-                Equation(lhs, rhs, arrow == "<->") to s3
-            }
-        }
+    override fun filter(cond: (T) -> Boolean): ParseResult<T> = when {
+        cond(value) -> this
+        else -> Failure()
     }
 }
 
-fun parseSide(string: String): ParseResult<List<Molecule>> =
-
-    generateSequence(parseMolecule(string).orElse(null)) { (_, s1) ->
-        parsePattern(s1, "+")
-            .flatMap { (_, s2) -> parseMolecule(s2) }
-            .orElse(null)
-    }.toList().optIf {
-        it.isNotEmpty()
-    }.map { list ->
-        list.map { it.first } to list.last().second
+fun <T> successWhen(cond: Boolean, body: () -> Pair<T, String>): ParseResult<T> =
+    when {
+        cond -> body().run { Success(first, second) }
+        else -> Failure()
     }
 
-fun parseMolecule(string: String): ParseResult<Molecule> =
-    parseNum(string).or {
-        Optional.of(1 to string)
-    }.flatMap { (coefficient, s) ->
-        generateSequence(parsePart(s).orElse(null)) { (_, s1) ->
-            parsePart(s1).orElse(null)
-        }.toList().optIf {
-            it.isNotEmpty()
-        }.map { parts ->
-            Molecule(coefficient, parts.map { it.first }) to parts.last().second
+fun <T> ParseResult<T>.successOrNull(): Success<T>? = when (this) {
+    is Success -> this
+    else -> null
+}
+
+fun <T> sequence(start: ParseResult<T>, step: (String) -> ParseResult<T>): ParseResult<List<T>> =
+    Success(
+        generateSequence(start.successOrNull()) { last ->
+            step(last.remaining).successOrNull()
+        }.toList(), ""
+    ).filter {
+        it.isNotEmpty()
+    }.flatMap { list, _ ->
+        Success(list.map { it.value }, list.last().remaining)
+    }
+
+fun equation(string: String): Equation? =
+    parseEquation(string.replace(" ", ""))
+        .successOrNull()
+        ?.let { result ->
+            result.value.takeIf { result.remaining.isEmpty() }
+        }
+
+fun parseEquation(string: String): ParseResult<Equation> =
+    parseSide(string).flatMap { lhs, s1 ->
+        parseArrow(s1).flatMap { arrow, s2 ->
+            parseSide(s2).flatMap { rhs, s3 ->
+                Success(Equation(lhs, rhs, arrow == "<->"), s3)
+            }
         }
     }
 
+fun parseSide(string: String): ParseResult<List<Molecule>> =
+    sequence(parseMolecule(string)) { remaining ->
+        parsePattern(remaining, "+")
+            .flatMap { _, s2 -> parseMolecule(s2) }
+    }
+
+fun parseMolecule(string: String): ParseResult<Molecule> =
+    (parseNum(string) or { Success(1, string) })
+        .flatMap { coefficient, s ->
+            sequence(parsePart(s)) { remaining ->
+                parsePart(remaining)
+            }.flatMap { parts, remaining ->
+                Success(Molecule(coefficient, parts), remaining)
+            }
+        }
+
 fun parsePart(string: String): ParseResult<Part> =
-    Optional.empty<Pair<Part, String>>()
-        .or { parseElement(string) }
-        .or { parseGroup(string) }
+    Failure<Part>() or { parseElement(string) } or { parseGroup(string) }
+
 
 fun parseElement(string: String): ParseResult<Element> =
     findElement(string, 2).or {
         findElement(string, 1)
-    }.map { (symbol, s) ->
-        parseNum(s).map { (subscript, s1) ->
-            Element(symbol, subscript) to s1
-        }.orElseGet {
-            Element(symbol, 1) to s
+    }.flatMap { symbol, s ->
+        parseNum(s).flatMap { subscript, s1 ->
+            Success(Element(symbol, subscript), s1)
+        } or {
+            Success(Element(symbol, 1), s)
         }
     }
 
 fun findElement(string: String, charCount: Int): ParseResult<String> =
-
-    "$string!!".substring(0, charCount).optIf {
-        elements.contains("$string!!".substring(0, charCount))
-    }.map { symbol ->
-        symbol to string.substring(charCount)
+    successWhen(elements.contains("$string!!".take(charCount))) {
+        "$string!!".take(charCount) to string.drop(charCount)
     }
 
 fun parseGroup(string: String): ParseResult<Group> =
-    parsePattern(string, "(").map { (_, s1) ->
-        generateSequence(parsePart(s1).orElse(null)) { (_, s2) ->
-            parsePart(s2).orElse(null)
-        }.toList()
-    }.filter {
-        it.isNotEmpty()
-    }.flatMap { parts ->
-        parsePattern(parts.last().second, ")").map { (_, s3) ->
-            parts.map { it.first } to s3
+    parsePattern(string, "(").flatMap { _, s1 ->
+        sequence(parsePart(s1)) { remaining ->
+            parsePart(remaining)
         }
-    }.map { (parts, s) ->
-        parseNum(s).map { (subscript, s1) ->
-            Group(parts, subscript) to s1
-        }.orElseGet {
-            Group(parts, 1) to s
+    }.flatMap { parts, remaining ->
+        parsePattern(remaining, ")")
+            .flatMap { _, s3 -> Success(parts, s3) }
+    }.flatMap { parts, s ->
+        parseNum(s).flatMap { subscript, s1 ->
+            Success(Group(parts, subscript), s1)
+        } or {
+            Success(Group(parts, 1), s)
         }
     }
 
 fun parseArrow(string: String): ParseResult<String> =
-    parsePattern(string, "<->")
-        .or { parsePattern(string, "->") }
+    parsePattern(string, "<->") or
+            { parsePattern(string, "->") }
 
 fun parsePattern(string: String, pattern: String): ParseResult<String> =
-    string.optIf { it.startsWith(pattern) }
-        .map { pattern to it.substring(pattern.length) }
+    successWhen(string.startsWith(pattern)) {
+        pattern to string.drop(pattern.length)
+    }
 
 fun parseNum(string: String): ParseResult<Int> =
-    string.takeWhile { it.isDigit() }.length
-        .optIf { digitCount -> digitCount > 0 }
-        .map { digitCount ->
-            string.substring(0, digitCount).toInt() to string.substring(digitCount)
+    string.takeWhile { it.isDigit() }.length.let { digitCount ->
+        successWhen(digitCount > 0) {
+            string.take(digitCount).toInt() to
+                    string.drop(digitCount)
         }
+    }
+
 
 fun main() {
     val p = equation("3Ba(OH)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2")
     println(p)
 
-    //println(parseGroup("()2"))
+    println(parseGroup("()2"))
 }
-
 

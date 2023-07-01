@@ -9,11 +9,14 @@ target/
 /.idea/compiler.xml
 /.idea/workspace.xml
 /.idea/uiDesigner.xml
+/.idea/codeStyles/
 /.idea/libraries/
 /.idea/kotlinc.xml
+/.idea/onlineChatGPT.html
 *.iws
 *.iml
 *.ipr
+
 
 ### Eclipse ###
 .apt_generated
@@ -46,4 +49,7 @@ build/
 /.gradle/5.4.1/fileHashes/fileHashes.lock
 /.gradle/5.4.1/gc.properties
 /.gradle/5.4.1/fileChanges/last-build.bin
+
+### AsciiDoc ###
+*.cache
 

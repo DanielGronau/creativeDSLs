@@ -115,10 +115,11 @@ private fun getPieces(piecesStr: String) = piecesStr
         acc + if (ch.isDigit()) ".".repeat(ch.toString().toInt()) else ch
     }
     .split("/")
+    .reversed()
     .mapIndexed { rowIndex, row ->
         row.mapIndexedNotNull { colIndex, ch ->
             values().find { it.symbol == ch.toString() }
-                ?.let { "${"abcdefgh"[colIndex]}${8 - rowIndex}" to it }
+                 ?.let { "${'a' + colIndex}${rowIndex + 1}" to it }
         }
     }
     .flatten()
@@ -144,13 +145,184 @@ private fun getCastling(castlingStr: String) = castlingStr
 
 The `readFEN()` function calls some helper functions for the different parts, and assembles the `Position` class. Most of the sanity checks were omitted for better readability. In easy cases like this, it is probably overkill to write a parser or to use a parser library. The hardest part was to read the piece positions correctly, and this took just a few lines.
 
+[#chemicalEquations]
 === Case Study: Chemical Equations as Strings
 
-In the last chapter, a hybrid DSL for chemical formulas was implemented, but the result wasn't as concise as a chemist would hope for. Wouldn't it be nice to just write `"2CH3OH -{zwsp}> (CH3)2O + H2O"` as a string, and be done with it?
+Writing a DSL for chemical equations is challenging using Kotlin syntax, because the concise notation doesn't naturally lend itself to be easily expressed using language features. That's why using the string parsing approach seems like a good fit. If you are curious how a hybrid DSL for chemicals could look like, you can skip ahead to <<chapter_11.adok#chemicalEquations,Chapter 11 - Hybrid DSLs>>.
 
-Of course, that string must be evaluated, or in other words, we need to write a parser. There are many approaches to do this, and a lot of theory concerning different types of parsers, and efficient ways to implement them.
+For our case study, we won't cover the full notation, e.g. we won't support writing ions or bonds. An example of a simple chemical equation in standard notation would be `3Ba(OH)~2~ + 2H~3~PO~4~ -> 6H~2~O + Ba~3~(PO~4~)~2~`. Of course, in scope of a DSL subscripts and special symbols are not very practical, so the target syntax would look more like `3Ba(OH)2 + 2H3PO4 -{zwsp}> 6H2O + Ba3(PO4)2`. To express such an equation, we use the following code:
+
+[source,kotlin]
+----
+sealed interface Part
+
+data class Element(val symbol: String, val subscript: Int) : Part {
+    override fun toString() = when (subscript) {
+        1 -> symbol
+        else -> symbol + subscript
+    }
+}
+
+data class Group(val parts: List<Part>, val subscript: Int) : Part {
+    override fun toString() = when (subscript) {
+        1 -> parts.joinToString("", "(", ")")
+        else -> parts.joinToString("", "(", ")") + subscript
+    }
+}
+
+data class Molecule(val coefficient: Int, val parts: List<Part>) {
+    override fun toString() = when (coefficient) {
+        1 -> parts.joinToString("")
+        else -> "$coefficient${parts.joinToString("")}"
+    }
+}
+
+data class Equation(val leftSide: List<Molecule>, val rightSide: List<Molecule>, val reversible: Boolean = false) {
+    override fun toString() = leftSide.joinToString(" + ") +
+            (if (reversible) " <-> " else " -> ") +
+            rightSide.joinToString(" + ")
+}
+----
+
+An `Element` contains a chemical symbol, like `"H"` (hydrogen) or `"Ba"` (barium), and optionally a subscript, which is counting the number of atoms. A feature of the chemical notation is that you can also define groups like `"(OH)~2~"` in a molecule, which is why we need the `Group` class as well. A group can contain not only elements, but also other groups.
+
+A `Molecule` is a collection of elements or groups (which we subsume under a `Part` interface), and can also have a coefficient in front. An equation consists of two sides and either an arrow `-{zwsp}>` or - in case of reversible reactions - a double arrow `<{zwsp}-{zwsp}>` in the middle. Both sides consist either of a single molecule or a "sum" of molecules.
+
+The code and overwrites the `toString()` methods in order to give the output in chemical notation. Note that lists were used instead of varargs, because data classes don't allow varargs in their primary constructor.
+
+This chart summarizes the structure of our model classes:
+
+[ditaa,"chemicalEquation"]
+.Model for Chemical Equations
+....
+
+         +--------------+
+         |   Chemical   |
+         |              |
+         |   Equation   |
+         +---+------+---+
+             |1     |1
+        LHS  |      |  RHS
+             vn     vn
+         +--------------+
+         |   Molecule   |
+         |              |
+         | e.g. 2CH3OH  |
+         +------+-------+
+                |1
+                |
+                vn
+         +--------------+
+         |   Molecular  |
+         |              +<--+
+         |     Part     |   |1
+         +-+----------+-+   |
+           |          |     |
+           |is-a  is-a|     |n
+    +------+--+    +--+-----+-+
+    | Element |    |  Group   |
+    |         |    |          |
+    | e.g. H2 |    |e.g. (OH)2|
+    +---------+    +----------+
+
+....
+
+The equation mentioned above for making barium phosphate could be written like this:
+
+[source,kotlin]
+----
+val Ba = Element("Ba")
+val Ba3 = Element("Ba", 3)
+val O = Element("O")
+val O2 = Element("O", 2)
+val O4 = Element("O", 4)
+val H2 = Element("H", 2)
+val H3 = Element("H", 3)
+val P = Element("P")
+
+val bariumHydroxide = Molecule(3, listOf(Ba, Group(listOf(O, H), 2)))
+val phosphoricAcid = Molecule(2, listOf(H3, P, O4))
+val water = Molecule(6, listOf(H2, O))
+val bariumPhosphate = Molecule(1, listOf(Ba3, Group(listOf(P, O4), 2)))
+
+val equation = Equation(
+    listOf(bariumHydroxide, phosphoricAcid),
+    listOf(water, bariumPhosphate),
+    false)
+
+println(equation)
+//3Ba(HO)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2
+----
+
+==== Writing a parser for Chemical Equations
 
 If you never worked with parsers, it can be a little confusing. Writing them by yourself is not really difficult, but boring and tedious, so most of the time using a library will be the better choice. Nevertheless, I think it is instructive to see how a simple parser works, so a naive manual implementation is presented first, before utilizing a parser combinator library.
+
+First, we need some general code for a rudimentary parser. We start from a common interface `ParseResult`, as we also have to cover the case when parsing a certain element fails. Real-world implementations would include useful information in this `Failure` class, but for our use case, we will leave this class empty. We then need a class `Success` to hold the current successful parsing result, together with current location we are working on. For the location, we simply use the remaining string - more performance-oriented implementations typically use just the index of the input string. Overall, these classes have a lot in common with Java's `Optional` class:
+
+[source,kotlin]
+----
+sealed interface ParseResult<out T> {
+
+    infix fun or(that: () -> ParseResult<@UnsafeVariance T>): ParseResult<T>
+
+    fun <U> flatMap(body: (T, String) -> ParseResult<U>): ParseResult<U>
+
+    fun filter(cond: (T) -> Boolean): ParseResult<T>
+}
+
+class Failure<T> : ParseResult<T> {
+
+    override fun or(that: () -> ParseResult<T>): ParseResult<T> = that()
+
+    override fun <U> flatMap(body: (T, String) -> ParseResult<U>) = Failure<U>()
+
+    override fun filter(cond: (T) -> Boolean): ParseResult<T> = this
+
+    override fun toString() = "Failure"
+}
+
+data class Success<T>(val value: T, val remaining: String) : ParseResult<T> {
+
+    override fun or(that: () -> ParseResult<T>): ParseResult<T> = this
+
+    override fun <U> flatMap(body: (T, String) -> ParseResult<U>): ParseResult<U> =
+        body(value, remaining)
+
+    override fun filter(cond: (T) -> Boolean): ParseResult<T> = when {
+        cond(value) -> this
+        else -> Failure()
+    }
+}
+----
+
+Then we have some helper functions for reading parse results, and for generating lists from individual results:
+
+[source,kotlin]
+----
+fun <T> successWhen(cond: Boolean, body: () -> Pair<T, String>): ParseResult<T> =
+    when {
+        cond -> body().run { Success(first, second) }
+        else -> Failure()
+    }
+
+fun <T> ParseResult<T>.successOrNull(): Success<T>? = when (this) {
+    is Success -> this
+    else -> null
+}
+
+fun <T> sequence(start: ParseResult<T>, step: (String) -> ParseResult<T>): ParseResult<List<T>> =
+    Success(
+        generateSequence(start.successOrNull()) { last ->
+            step(last.remaining).successOrNull()
+        }.toList(), ""
+    ).filter {
+        it.isNotEmpty()
+    }.flatMap { list, _ ->
+        Success(list.map { it.value }, list.last().remaining)
+    }
+----
+
 
 First, the element names must be known:
 
