@@ -12,5 +12,6 @@ fun testIfExpected(s: String) {
 }
 
 infix fun Double.`^`(exponent: Double) = this.pow(exponent)
+infix fun Double.`^`(exponent: Int) = this.pow(exponent)
 
-val x = 1.2 `^` 3.0
+val x = 1.2 `^` 3

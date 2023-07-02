@@ -16,19 +16,19 @@ When the application already employs other DSLs, it should be considered whether
 
 After specifying the problem domain, you should check out existing DSLs. You might be surprised by the plethora of existing solutions, and of course it makes little sense to reinvent the wheel. Even if the results don't fit your use case perfectly, they might serve as a base implementation, or as a source of inspiration.
 
-TIP: There is an ongoing debate of how much software should depend on libraries, and you should be aware of related problems like the dreaded "dependency hell". On the other hand, you shouldn't fall into the "Not Invented Here" trap, where an organization tries to build everything from scratch. As in most cases, it is important to find a good balance. A decision whether to use a library should be always deliberate, and the decision process should be documented.
+TIP: There is an ongoing debate of how much software should depend on libraries, and you should be aware of related problems like the dreaded "dependency hell". On the other hand, you shouldn't fall into the "Not Invented Here" (((Not Invented Here)))trap, where an organization tries to build everything from scratch. As in most cases, it is important to find a good balance. A decision whether to use a library should be always deliberate, and the decision process should be documented.
 
 If there is no existing DSL for your problem, you might also investigate whether using a DSL generator could be an option for you. Using such libraries can make designing a DSL a breeze. This book covers https://github.com/F43nd1r/autodsl[AutoDSL for Kotlin] to give you an impression of this approach.
 
 === Specifying the Output of the DSL
 
-In most cases it is rather obvious which kind of output is expected. Sometimes you have a choice of executing some action (like a query) directly, or to create classes being able to perform that action instead. Most of the time, creating classes should be preferred. Usually this approach is easier to test and to debug, and sometimes it is convenient to be able to create these classes by other means.
+In most cases it is rather obvious which kind of output is expected. Sometimes you have a choice of executing some action (like a query) directly, or to create objects being able to perform that action instead. Most of the time, creating objects should be preferred. Usually this approach is easier to test and to debug, and sometimes it is convenient to be able to create these instances by other means.
 
 Another potential question is whether to generate the target entities of an external API directly, or to follow the Adapter Pattern or similar approaches. In this case the decision depends on the intended architecture of your application (like Hexagonal Architecture, Onion Architecture etc.), but generally you should try to use non-essential external APIs only at the boundaries of the application, and DSLs should follow this guideline as well.
 
 === Syntactical Gap (((Syntactical Gap)))
 
-Usually, an internal DSL can only be an approximation of the syntax we really wish for, there is a "syntactical gap". It is tempting to subordinate everything else in order to come as close as possible to our ideal syntax. But of course beauty has its price, pushing the limits of the host language's syntax can be problematic, and neglecting the other requirements can render a beautiful DSL useless.
+Usually, an internal DSL can only be an approximation of the syntax you really wish for, there is a "syntactical gap". It is tempting to subordinate everything else in order to come as close as possible to the intended ideal syntax. But of course beauty has its price, pushing the limits of the host language's syntax can be problematic, and neglecting the other requirements can render a beautiful DSL useless.
 
 That's why it is important to have a rough idea how close the internal DSL needs to come to the ideal syntax, and when to start compromising. One relevant question in this context is how "tech-savvy" users of the DSL are. Generally, people without coding experience need more streamlined DSLs than software engineers, who will often tolerate a few "warts" in the DSL syntax.
 
@@ -38,7 +38,7 @@ Having a beautiful and concise Syntax for a DSL doesn't necessarily mean that it
 
 The DSL itself can be designed in a way to have a shallow learning curve, e.g. by mimicking known systems, or by emphasizing consistency over conciseness. An example for a "too concise" DSL might be regular expressions, as many users - including me - have to look up the syntax over and over again.
 
-Of course, training and documentation are essential factors for a good learning experience. However, it's important not to overlook the quality of error and warning messages, which can have a significant impact on how easily users can learn and understand a new DSL. In order to get those factors right, you have to know your target audience and their skill-set.
+Of course, training and documentation are essential factors for a good learning experience. However, an often overlooked topic is the quality of error and warning messages, which can have a significant impact on how easily users can learn and understand a new DSL. In order to get those factors right, you have to know your target audience and their skill-set.
 
 TIP: In the end it's not the DSL itself which generates value, but the people using it effectively, and this is something we should never forget. Planning for the required assistance upfront can help to improve the DSL, and empower the users to get the most out of it.
 
@@ -52,11 +52,11 @@ Some level of unsafe behaviour might be acceptable for tech-savvy or experienced
 
 === Ensuring Extensibility (((Extensibility)))
 
-Insufficient extensibility is a common pitfall when designing internal DSLs, which usually operate with quite specialized techniques and language features. Sometimes new DSL requirement can't be properly implemented with the chosen feature set, which may render the whole DSL useless.
+Insufficient extensibility is a common pitfall when designing internal DSLs, which usually operate with quite specialized techniques and language features. Sometimes new DSL requirements can't be properly implemented with the chosen feature set, which may render the whole DSL useless.
 
 Therefore, it makes sense to get upfront a rough idea which extensions could be requested after the first version of the DSL. Later, in the implementation phase, this information helps to avoid using techniques that are not flexible enough to handle future requirements.
 
-Another type of extensibility that is often overlooked is extensibility by users. For instance, consider a DSL for working with physical quantities: there are too many units to cover all of them, but users might have a particular set of units that they require in their daily work. Therefore, it would be beneficial if the DSL allows users to add custom units. Such considerations can significantly increase the usefulness and success of a DSL. If possible, it is recommended to open your DSL for extension by users, and also provide documentation on how to do it. However, it may be advisable to restrict extensibility when you can predict that extending the DSL may lead to unexpected or unsafe outcomes.
+Another type of extensibility that is often overlooked is customization by users. For instance, consider a DSL for working with physical quantities: there are too many units to cover all of them, but users might have a particular set of units that they require in their daily work. Therefore, it would be beneficial if the DSL allows users to add custom units. Such considerations can significantly increase the usefulness and success of a DSL. If possible, it is recommended to open your DSL for extension by users, and also provide documentation on how to do it. However, it may be advisable to restrict extensibility when you can predict that extending the DSL may lead to unexpected or unsafe outcomes.
 
 === Maintainability (((Maintainability)))
 

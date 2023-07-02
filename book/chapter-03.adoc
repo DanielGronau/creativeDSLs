@@ -2,7 +2,7 @@
 
 Now that you have defined the requirements for your DSL and are ready to move on to the design and implementation phase, it's important to take a structured approach to the process. While it's natural to be excited to get started, adding a little structure to your workflow can help you avoid common pitfalls and ensure that your DSL is successful.
 
-The following four-step workflow can be a helpful guide as you begin designing and implementing your DSL:
+The following four-step workflow can be a helpful guide when you begin designing and implementing your DSL:
 
 * *Imagine the ideal syntax:* Begin by considering the concepts and ideas that you want to express in your DSL, and brainstorm possible syntaxes that could be used to represent them. Consider readability, expressiveness, and usability as you explore different options.
 * *Prototyping:* Once you have a rough idea of the syntax you want to use, create a prototype of your DSL using Kotlin's language features. This will allow you to experiment with different approaches and see how they work in practice.
@@ -53,11 +53,11 @@ If you find that you have missed some details when specifying the ideal syntax f
 
 Once a prototype has demonstrated how a realistic syntax could look, it's time to formalize the syntax. This process involves defining the structure and rules of your DSL in a more precise and detailed way, to ensure that it is clear and consistent. The extent of this process will depend on the scope and complexity of your project, and on the level of precision and formality required.
 
-In some cases, formalizing the syntax of your DSL may involve creating a simple documentation page or a set of examples that demonstrate the structure and usage of your DSL. In other cases, it may be necessary to define a formal grammar that specifies the syntax of your DSL in a more precise and formal way.
+In some cases, formalizing the syntax of your DSL may involve creating a simple documentation page or a set of examples that demonstrate the structure and usage of your DSL. In other cases, it may be necessary to define a grammar that specifies the syntax of your DSL in a more precise and formal way.
 
 Regardless of the approach you take, it's important to pay careful attention to the documentation of the mapping from your DSL to its output. This documentation should clearly explain how the various elements of your DSL are translated into the desired output, and should be thorough and complete to ensure that your DSL is clear and easy to use.
 
-Ensuring completeness is an important aspect of designing a DSL: It's important to make sure that the language is capable of expressing all "allowed" configurations, and that no rare or unusual cases are overlooked.
+Ensuring completeness is a crucial aspect of designing a DSL: It's essential to make sure that the language is capable of expressing all "allowed" configurations, and that no rare or unusual cases are overlooked.
 
 One completeness issue in DSL design is a lack of orthogonality, which refers to the idea that different elements of the language should be independent and not overlap or interfere with each other. For example, consider a DSL for describing animals that doesn't allow you to choose both "mammal" and "lays eggs" as characteristics, even though this combination actually exists (e.g. for the platypus). In this case, the DSL would be lacking in orthogonality, as it doesn't allow you to fully and accurately describe certain animals.
 
@@ -107,15 +107,15 @@ It's generally a good practice to avoid tightly integrating a DSL into the class
 * *Limiting the usefulness of the result classes:* Tightly coupled result classes may not be able to work on their own or may be hard to use with other tools and frameworks, or from other JVM languages like Java. This can limit their usefulness in a variety of contexts, such as when working with big data, testing or code generation.
 * *Making the DSL harder to replace:* It can be difficult to replace a tightly coupled DSL if the need arises. This can make it harder to evolve your codebase over time and take advantage of new technologies or approaches.
 
-In general, it's a good idea to design your DSL in a way that minimizes coupling between the DSL and the classes it creates, in order to avoid these kinds of issues. In Kotlin, you can use features like extension methods to create DSLs that are flexible and easy to use, while still keeping the DSL and the classes it creates separate.
+In general, it's a good idea to design your DSL in a way that minimizes coupling between the DSL and the classes it creates or operates on, in order to avoid these kinds of issues. In Kotlin, you can use features like extension methods to create DSLs that are flexible and easy to use, while still keeping the DSL and the classes it creates separate.
 
 ==== Code Conventions (((Code Conventions)))
 
-It's generally a best practice to follow code conventions, as this can make your code more consistent and easier to understand for other developers. However, there may be cases where you need to compromise on certain conventions in order to create an expressive DSL. If you do need to make compromises on code conventions, it's important to document your decision and the reasoning behind it, as this can make it easier for other developers to use and maintain your DSL.
+It's generally a good practice to follow code conventions, as this can make your code more consistent and easier to understand for other developers. However, there may be cases where you need to compromise on certain conventions in order to create an expressive DSL. If you do need to make compromises on code conventions, it's important to document your decision and the reasoning behind it, as this can make it easier for other developers to use and maintain your DSL.
 
 ==== Testing (((Testing)))
 
-For some DSL categories, testing can be more difficult than for normal code, as the code might be less rigid than usual, or - to put it in mechanical terms - it can have more moving parts and degrees of freedom. This makes it more likely to overlook edge-cases or unwanted behavior. A particular challenge are compile-time guarantees: There is no convenient way to test that certain unwanted code structures don't compile. Overall, depending on the type of DSL, testing can be more challenging than for ordinary code, and might require more attention and effort.
+For some DSL categories, testing can be more difficult than for normal code, as the code might be less rigid than usual, or - to use a mechanical analogy - it can have more moving parts and degrees of freedom. This makes it more likely to overlook edge-cases or unwanted behavior. A particular challenge are compile-time guarantees: There is no convenient way to test that certain unwanted code structures don't compile. Overall, depending on the type of DSL, testing can be more challenging than for ordinary code, and might require more attention and effort.
 
 Some common challenges in testing DSLs include:
 
@@ -130,9 +130,9 @@ Overall, it's important to be mindful of the unique challenges of testing DSLs, 
 
 Many software developers don't like to write documentations, but it is important. When writing documentation for a DSL, keep in mind that it is essentially its own language, and that users may not be familiar with all of its features and concepts. Therefore, it's crucial to provide clear, concise explanations of how the DSL works and how it should be used, as well as plenty of examples to illustrate key concepts. It's also a good idea to include visualizations or diagrams to help users understand complex concepts or interactions between different parts of the DSL.
 
-Creating an example project can be a very effective way to help users understand and learn how to use the DSL. By providing a complete, working example that shows how the different elements of the DSL can be combined and used in a real-world context, you can give users a much better understanding of how to apply the DSL to their own problem domain. There are a few key things to keep in mind when creating an example project for a DSL:
+Creating an example project can be a very effective way to help users understand and learn how to use the DSL. By providing a complete, working example that shows how the different elements of the DSL can be used and combined in a real-world context, you can give users a much better understanding of how to apply the DSL to their own problem domain. There are a few key things to keep in mind when creating an example project for a DSL:
 
-* *Make it clear and concise:* Keep the example project focused and to the point, and avoid including unnecessary details or complexity.
+* *Make it clear and concise:* Keep the example project focused and to the point, and avoid including unnecessary details, complexity and external dependencies.
 * *Use meaningful examples:* Choose examples that are relevant to the problem domain and that demonstrate the key features and capabilities of the DSL.
 * *Provide clear explanations:* Along with the example code, provide clear explanations of what the code is doing and how it is using the DSL.
 

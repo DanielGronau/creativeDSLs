@@ -4,34 +4,34 @@
 Kotlin is a modern and beautiful programming language that offers several key features not found in Java.Here are some of the most notable features that set Kotlin apart:
 
 * *Null-Safe Type System:* Kotlin's null-safety feature is a major improvement over Java, where null values can cause null pointer exceptions.This feature ensures that a variable cannot be null unless explicitly declared as such, reducing the risk of runtime errors.
-* *Concise Syntax:* Kotlin's syntax is designed to be as concise as possible, reducing the amount of boilerplate code that developers need to write.Optional semicolons, operator overloading and expression-body functions are just a few examples of the syntactical sugar that makes Kotlin code not only more readable and easier to maintain, it also helps to write expressive DSL.
+* *Concise Syntax:* Kotlin's syntax is designed to be as concise as possible, reducing the amount of boilerplate code that developers need to write. Optional semicolons, operator overloading and expression-body functions are just a few examples of the syntactical sugar that makes Kotlin code not only more readable and easier to maintain, it also helps to write expressive DSLs.
 * *Object-Oriented Design:* Kotlin takes a more object-oriented approach than Java, replacing static members with object declarations that can be used in a more flexible and modular way.
 * *Functional Programming Features:* Kotlin also supports functional programming, including top-level and local functions, as well as trailing lambda syntax.
 * *Multiplatform Support:* Kotlin can be compiled to run on multiple platforms, notably the JVM, JavaScript, and as a native application
 
-In addition, Kotlin has excellent interoperability with Java,(((Java Interoperability))) making it easy to call Java code from Kotlin and vice versa.Kotlin also includes several annotations that make it easier to call Kotlin code from Java, ensuring that the two languages can work together seamlessly.
+In addition, Kotlin has excellent interoperability with Java,(((Java Interoperability))) making it easy to call Java code from Kotlin and vice versa. Kotlin also includes several annotations that make it easier to call Kotlin code from Java, ensuring that the two languages can work together seamlessly.
 
 As mentioned in the preface, this book assumes that the reader has basic Kotlin knowledge. However, DSLs often use little-known language features, or they use some features in other ways than common code. Sometimes, even the users of the DSL might not be aware of the kind of "machinery" used to make it work.
 
-This chapter gives a short overview of language features that might be relevant for writing DSLs. I hope that after reading the chapter, you better understand how some DSL "tricks" work.
+This chapter gives a short overview of language features that might be relevant for writing DSLs. After reading this chapter, you should have a better understanding of how some common DSL "tricks" work.
 
 [#backtickIdentifiers]
 === Backtick Identifiers (((Backtick Notation)))
 
-Kotlin allows almost arbitrary identifiers, as long as they are enclosed in backticks. The main reason for introducing this feature was to allow the usage of identifiers which are keywords in Kotlin but not in Java, like `fun` or `when`. For DSLs, we can use them when we need descriptive identifiers which don't follow the usual syntactic rules.
+Kotlin allows almost arbitrary identifiers, as long as they are enclosed in backticks. The main reason for introducing this feature was to allow the usage of identifiers that are keywords in Kotlin but not in Java, like `fun` or `when`. For DSLs, we can use them when we need descriptive identifiers which don't follow the usual syntactic rules.
 
 Backtick identifiers start and end with a backtick `{backtick}` - these are not part of the identifier, but just delimiters - and can contain almost all characters. E.g. for Kotlin on the JVM, all characters except `\r\n,.;:\|/[]<>{backtick}` are allowed.
 
 A typical use case for backticks are DSLs for test libraries. While Java limits you to underscores and camelCase, Kotlin allows very descriptive names for test functions by using the backtick syntax:
 
-[source]
+[source,kotlin]
 ----
-fun `check that the slithy toves gyre and gimble in the wabe` {
+fun `check that the slithy toves gyre and gimble in the wabe`() {
    ...
 }
 ----
 
-Another common use case is to simulate an operator with an infix function, e.g. the exponentiation of numbers could be written as `5 {backtick}^{backtick} 3`.
+Another common use case is to simulate an operator with an infix function, e.g. you could define an exponentiation operation using a syntax like `5.0 {backtick}^{backtick} 3` (see section <<infix_notation, Infix Notation for Functions>>).
 
 === Named Arguments (((Named Arguments))) and Default Values (((Default Values)))
 
@@ -42,24 +42,32 @@ Java relies on the order of the parameters when calling a method or constructor,
 fun makeColor(red: Int, green: Int, blue: Int, alpha: Int)
    = Color(red, green, blue, alpha)
 
-// call by parameter order
+// call by argument order
 val color1 =
     makeColor(220, 200, 100, 128)
 
-// call by parameter name
+// call by named argument
 val color2 =
-    makeColor(alpha = 128, red = 220, green = 200, blue = 100)
+    makeColor(
+        alpha = 128,
+        red = 220,
+        green = 200,
+        blue = 100
+    )
 ----
 
 In Java, a similar naming behavior can be imitated by using the builder pattern, but in many cases Kotlin's built-in solution is more convenient.
 
-Function and constructor arguments can also have default values assigned. In Java, you would have to write multiple methods or constructors with different combinations of default values set, which leads to a lot of hard to read, boilerplate code. In the example above, it would be sensible to set the alpha value to 255, as it is more common to define an opaque color than a translucent one:
+In Kotlin, you can also assign default values to function and constructor arguments, which greatly simplifies the code compared to Java, where you need to write multiple methods or constructors with different combinations of default values to achieve the same effect. Therefore, Kotlin's default-value approach reduces boilerplate code and enhances readability. In the example above, it would be sensible to set the alpha value to 255, as it is more common to define an opaque color than a translucent one:
 
 [source,kotlin]
 ----
-// function with a default value of 255 for alpha
-fun makeColor(red: Int, green: Int, blue: Int, alpha: Int = 255) =
-    Color(red, green, blue, alpha)
+fun makeColor(
+        red: Int,
+        green: Int,
+        blue: Int,
+        alpha: Int = 255 // setting a default value
+    ) = Color(red, green, blue, alpha)
 
 // setting all parameters
 val color1 =
@@ -75,19 +83,27 @@ Both language features are useful on their own, but they complement each other v
 [source,kotlin]
 ----
 data class Person(val firstName: String, val lastName: String, val age: Int) {
-    // the method is autogenerated, but would look like this:
+    // the method is autogenerated, but would look roughly like this:
     fun copy(firstName: String = this.firstName,
              lastName: String = this.lastName,
-             age: Int = this.age ) =
-        Person(firstName, lastName, age)
+             age: Int = this.age
+        ) = Person(firstName, lastName, age)
 }
 
 val person = Person("John", "Doe", 23)
 
-val olderPerson = person.copy(age = person.age + 1)
+val agedPerson = person.copy(age = person.age + 1)
 ----
 
-The values of the current object are set as default values of the new instance, and thanks to the named argument feature you can pick the arguments which should be changed, and leave all others untouched.
+In the `copy()` method, the values of the current object are set as default values of the new instance, and thanks to the named argument feature you can pick just the arguments which should be changed, and leave all others untouched.
+
+(((Lenses)))
+[TIP]
+====
+While the `copy()` method is convenient when working with immutable data classes, it doesn't scale well for nested data classes: Imagine you need a copy of a company, with the email of the address of the CEO changed. That means you need nested `copy()` calls as well, going down level by level. This is lengthy, hard to read and error-prone.
+
+In functional programming, this problem is often solved with an "optics" package, containing "lenses" and similar abstractions, which allow to easily compose copy operations for different nesting levels. If you want to learn more about this topic, I would suggest to check out https://arrow-kt.io/learn/immutable-data/intro[Arrow Optics].
+====
 
 === Trailing Lambda Arguments (((Trailing Lambda)))
 
@@ -116,7 +132,7 @@ listOf("one", "two", "three").map {
 }
 ----
 
-While this syntactic sugar doesn't look very impressive at the first glance, it allows to write very natural looking DSLs for nested structures. Here is an example from the Kotlin documentation:
+While this syntactic sugar might not look very impressive at first glance, it allows to write very natural looking DSLs for nested structures. Here is an example from the Kotlin documentation:
 
 [source,kotlin]
 .https://kotlinlang.org/docs/type-safe-builders.html#how-it-works
@@ -133,19 +149,19 @@ html {
 
 Varargs (from "variable arguments") are a useful feature in both Java and Kotlin, allowing methods to accept a variable number of arguments. However, Kotlin has made several improvements to varargs, making them safer and more convenient to use.
 
-One of the main improvements in Kotlin is that the syntax for varargs is now unambiguous. In Java, it was sometimes difficult to tell whether an array was intended to be a single argument for a vararg, or if its elements should be used as individual arguments. Kotlin addressed this problem by introducing the "spread operator" `*`, which indicates that the elements of an array should be used as arguments for a vararg.
+One of the main improvements in Kotlin is that the syntax for varargs is now unambiguous. In Java, it was sometimes difficult to tell whether an array was intended to be a single argument for a vararg, or if its elements should be used as individual arguments. Kotlin addressed this problem by introducing the unary "spread operator" `*`, which indicates that the elements of an array (and not the array itself) should be used as arguments for a vararg.
 
 Furthermore, Kotlin allows for a more flexible use of varargs. You can freely combine single-value arguments with elements from spread arrays, which looks like this:
 
 [source,kotlin]
 ----
 val someArray = arrayOf(4, 6, 8)
-val list = listOf(2, 0, *someArray, 4) // contains 2, 0, 4, 6, 8, 4
+val list = listOf(2, 0, *someArray, ) // contains 2, 0, 4, 6, 8, 5
 ----
 
 ==== Vararg Position and Trailing Lambda Syntax
 
-In contrast to Java, where a vararg must occur as last argument, Kotlin allows to put the vararg anywhere, even though you might have to use named arguments in order to avoid ambiguity:
+In contrast to Java, where a vararg must always occur as last argument, Kotlin allows to put the vararg anywhere, even though you might need to use named arguments in order to avoid ambiguity:
 
 [source,kotlin]
 ----
@@ -154,7 +170,7 @@ fun someMethod(vararg numbers: Int, someString: String) { ... }
 someMethod(1, 2, 3, someString = "Hi!")
 ----
 
-At first glance, having the choice to put varargs wherever you want doesn't seem to be terribly useful. But there is one use case which is particularly interesting from a DSL design perspective: You can put a vararg as second to last argument before a trailing lambda argument.
+At first glance, having the choice to put varargs wherever you want doesn't seem to be terribly useful. But there is one particular use case which is very interesting from a DSL design perspective: You can put a vararg as second to last argument before a trailing lambda argument.
 
 [source,kotlin]
 ----
@@ -185,119 +201,12 @@ class TemperatureSensor {
 }
 ----
 
-There are many things you can do with explicit setters or getters, like caching, lazy evaluation or input sanitation. Later in the extensions section we'll discuss another use of the property syntax.
+There are many things you can do with properties, like caching, lazy evaluation, delegation to other properties or input sanitation. Later in the <<extensions_and_receivers, Extensions and Receivers>> section we'll discuss another use of the property syntax.
 
-=== Operator Overloading (((Operator Overloading)))
-
-Kotlin allows operator overloading, but is conservative in the sense that it permits only a fixed set of operators.
-
-NOTE: The boolean operators `&&` and `||`, the access operators `.`, `?.` and `!!`, the (unary) spread operator `*` and the Elvis operator `?:` cannot be overloaded.
-
-Some overloading functions require specific return types. The type `R` is used in the following tables to indicate that there are no such restrictions.
-
-==== Unary Operators
-
-[cols="1a,2a,3a"]
-|===
-|Operator |Overwriting Function | Remarks
-
-| `+a` | `fun A.unaryPlus(): R` |
-| `-a` | `fun A.unaryMinus(): R` |
-| `!a` | `fun A.not(): R` |
-| `++a` | `fun A.inc(): A`| Assigns the result to `a` and returns it
-| `a++` | `fun A.inc(): A`| Assigns the result to `a` and returns the original value
-| `--a` | `fun A.dec(): A`| Assigns the result to `a` and returns it
-| `a--` | `fun A.dec(): A`| Assigns the result to `a` and returns the original value
-|===
-
-==== Binary Arithmetic Operators
-
-[cols="1a,2a,3a"]
-|===
-|Operator |Overwriting Function | Remarks
-
-| `a + b` | `fun A.plus(b: B): R` |
-| `a - b` | `fun A.minus(b: B): R` |
-| `a * b` | `fun A.times(b: B): R` |
-| `a / b` | `fun A.div(b: B): R`|
-| `a % b` | `fun A.rem(b: B): R`| Until Kotlin 1.1, `mod` was used, but is now deprecated.
-|===
-
-When these operators are defined, `a` is mutable, and left hand side and right hand side have matching types (`B` is a subtype of `A`), they can be also used in the assignments  `+=`, `-=`, `*=`, `/=` and `%=`.
-
-When you don't want the normal binary form, but only the assignment, you can define it explicitly:
-
-[cols="1a,2a,3a"]
-|===
-|Operator |Overwriting Function | Remarks
-
-| `a += b` | `fun A.plusAssign(b: B): Unit` |
-| `a -= b` | `fun A.minusAssign(b: B): Unit` |
-| `a *= b` | `fun A.timesAssign(b: B): Unit` |
-| `a /= b` | `fun A.divAssign(b: B): Unit`|
-| `a %= b` | `fun A.remAssign(b: B): Unit`|
-|===
-
-Again, `a` must be mutable, `B` must be a subtype of `A`. Also, the return type for the function must be `Unit`. Having both the binary and the assignment version of an operator in scope leads to an ambiguity error.
-
-==== Range and In Operators
-
-[cols="1a,2a,3a"]
-|===
-|Operator |Overwriting Function | Remarks
-
-| `a .. b` | `fun A.rangeTo(b: B): R` |
-| `a ..< b` | `fun A.rangeUntil(b: B): R` | Introduced in Kotlin 1.8, experimental in 1.7.20
-| `a in b` | `fun B.contains(a: A): R` | Defines also `!in`.
-|===
-
-The `..<` operator is new, and is thought as a replacement for the `until` infix function.
-
-==== Index Access and Invoke Operators
-
-[cols="1a,2a,3a"]
-|===
-|Operator |Overwriting Function | Remarks
-
-| `a[b]` | `fun A.get(b: B): R` |
-| `a[b, c]` | `fun A.get(b: B, c: C): R` | Or more arguments
-| `a[b] = x` | `fun A.set(b: B, x: X): Unit` |
-| `a[b, c] = x` | `fun A.set(b: B, c: C, x: X): Unit` | Or more arguments
-| `a()` | `fun A.invoke(): R` |
-| `a(b)` | `fun A.invoke(b: B): R` |
-| `a(b, c)` | `fun A.invoke(b: B, c: C): R` | Or more arguments
-|===
-
-Note that the index access operator `[]` requires at least one element, while the invoke operator `()` can be also used without arguments.
-
-==== Equality and Comparison Operators
-
-[cols="1a,2a,3a"]
-|===
-|Operator |Overwriting Function | Remarks
-
-| `a == b` | `fun equals(b: Any): Boolean` | Must be defined in `class A`. Also defines `!=`.
-| `a < b` | `fun A.compareTo(b: B): Int` | Evaluates `a.compareTo(b) < 0`
-| `a <{zwsp}= b` | `fun A.compareTo(b: B): Int` | Evaluates `a.compareTo(b) <{zwsp}= 0`
-| `a > b` | `fun A.compareTo(b: B): Int` | Evaluates `a.compareTo(b) > 0`
-| `a >= b` | `fun A.compareTo(b: B): Int` | Evaluates `a.compareTo(b) >= 0`
-|===
-
-==== Overload Responsibly
-
-While overloaded operators can be a powerful tool in designing DSLs, it is important to use them judiciously and with care. While there are many potential applications for overloaded operators, it is important to ensure that there is some clear association or analogy between the operation being performed and the chosen operator.
-
-For example, using the `/` operator to concatenate file paths makes sense, as it is a common path separator. Similarly, using the unary `+` operator to "add" a single value inside a trailing lambda block has become a standard convention. And using `..` instead of `:` may be acceptable due to its visual similarity.
-
-However, at some point overloading operators can become confusing or even counterproductive. For example, using the `!` operator to invert a matrix may be a stretch, as it does not have a clear association with matrix inversion. In general, it is important to avoid being too clever when designing a DSL, as users may not have the same associations or understandings of certain symbols or operators.
-
-One solution is to use meaningful infix functions (((Infix Notation))) with clear names instead of relying solely on overloaded operators. While this may be less concise, it can make code easier to understand and less prone to confusion. Ultimately, the goal should be to create a DSL that is intuitive and easy to use, without sacrificing clarity or consistency.
-
+[#extensions_and_receivers]
 === Extensions (((Extensions))) and Receivers (((Receivers)))
 
-One of the most important features for DSL design are extension functions, lambdas and properties. These are stand-alone constructs operating on a so-called receiver, which is the target class they are extending. The function body is put in the scope of the receiver, so you can access its public fields, methods etc., and you can also refer to the receiver itself using `this`. From the user's point of view, the call with receiver looks exactly how a normal method call (or property access) on a receiver instance would look like. This makes extension methods a great tool to add DSL features to classes that you have no control over.
-
-Extension methods were first introduced in C#. In Kotlin, they particularly allow to adapt existing Java classes, in order to make them more convenient to use. A great example for this are the `apply()`, `run()`, `let()` and `also()` functions, which make it easier to use e.g. expression body syntax for functions, or succinct variable assignments.
+One of the most important features for DSL design are extension functions, lambdas and properties. These are stand-alone constructs operating on a so-called receiver, which is the target class they are extending. The function body is put in the scope of the receiver, so you can access its public fields, methods etc., and you can also refer to the receiver itself using `this`. From the user's point of view, the call with receiver looks exactly how a normal method call (or property access) on a receiver instance would look like. This makes extension methods a great tool for adding DSL features to classes that you have no control over. A great example are the `apply()`, `run()`, `let()` and `also()` functions in the Kotlin API, which make it easier to use e.g. expression body syntax for functions, or succinct variable assignments.
 
 [#typeNarrowing]
 ==== Type Narrowing (((Type Narrowing)))
@@ -326,7 +235,7 @@ The Loan Pattern is particularly useful when resources are limited or expensive 
 
 Lambdas can have receivers too, which is practical when applying the Loan Pattern. Using this pattern can be beneficial in DSLs, as it helps to control the life-cycle of the receiver class, and to hide the steps necessary for initializing and finalizing the instance creation or operation.
 
-Take for instance the well known `java.util.StringBuilder` class. It allows to do perform complex String operations, but in order to use it, you need to construct it, and to call its `toString()` method at the end. When applying the Loan Pattern, these steps can be hidden, and the code looks much cleaner:
+Take for instance the well known `java.util.StringBuilder` class. It allows to do perform complex String operations, but in order to use it, you need to construct it, and to call its `toString()` method at the end. When applying the Loan Pattern, these steps can be hidden, and the code looks cleaner:
 
 [source,kotlin]
 ----
@@ -437,11 +346,118 @@ fun test() {
 
 Context receivers have some similarities with extension functions, but go more in the direction of dependency injection. They can be used when you would like to have some global information in scope, but want to stay flexible and support different versions. Providing DSL functionality using a context receiver could help to control its scope, e.g. in order to avoid name clashes.
 
+=== Operator Overloading (((Operator Overloading)))
+
+Kotlin allows operator overloading, but is conservative in the sense that it permits only a fixed set of operators.
+
+NOTE: The boolean operators `&&` and `||`, the access operators `.`, `?.` and `!!`, the (unary) spread operator `*` and the Elvis operator `?:` cannot be overloaded.
+
+Some overloading functions require specific return types. The type `R` is used in the following tables to indicate that there are no such restrictions.
+
+==== Unary Operators
+
+[cols="1a,2a,3a"]
+|===
+|Operator |Overwriting Function | Remarks
+
+| `+a` | `fun A.unaryPlus(): R` |
+| `-a` | `fun A.unaryMinus(): R` |
+| `!a` | `fun A.not(): R` |
+| `++a` | `fun A.inc(): A`| Assigns the result to `a` and returns it
+| `a++` | `fun A.inc(): A`| Assigns the result to `a` and returns the original value
+| `--a` | `fun A.dec(): A`| Assigns the result to `a` and returns it
+| `a--` | `fun A.dec(): A`| Assigns the result to `a` and returns the original value
+|===
+
+==== Binary Arithmetic Operators
+
+[cols="1a,2a,3a"]
+|===
+|Operator |Overwriting Function | Remarks
+
+| `a + b` | `fun A.plus(b: B): R` |
+| `a - b` | `fun A.minus(b: B): R` |
+| `a * b` | `fun A.times(b: B): R` |
+| `a / b` | `fun A.div(b: B): R`|
+| `a % b` | `fun A.rem(b: B): R`| Until Kotlin 1.1, `mod` was used, but is now deprecated.
+|===
+
+When these operators are defined, `a` is mutable, and left hand side and right hand side have matching types (`B` is a subtype of `A`), they can be also used in the assignments  `+=`, `-=`, `*=`, `/=` and `%=`.
+
+When you don't want the normal binary form, but only the assignment, you can define it explicitly:
+
+[cols="1a,2a,3a"]
+|===
+|Operator |Overwriting Function | Remarks
+
+| `a += b` | `fun A.plusAssign(b: B): Unit` |
+| `a -= b` | `fun A.minusAssign(b: B): Unit` |
+| `a *= b` | `fun A.timesAssign(b: B): Unit` |
+| `a /= b` | `fun A.divAssign(b: B): Unit`|
+| `a %= b` | `fun A.remAssign(b: B): Unit`|
+|===
+
+Again, `a` must be mutable, `B` must be a subtype of `A`. Also, the return type for the function must be `Unit`. Having both the binary and the assignment version of an operator in scope leads to an ambiguity error.
+
+==== Range and In Operators
+
+[cols="1a,2a,3a"]
+|===
+|Operator |Overwriting Function | Remarks
+
+| `a .. b` | `fun A.rangeTo(b: B): R` |
+| `a ..< b` | `fun A.rangeUntil(b: B): R` | Introduced in Kotlin 1.8, experimental in 1.7.20
+| `a in b` | `fun B.contains(a: A): R` | Defines also `!in`.
+|===
+
+The `..<` operator is new, and is thought as a replacement for the `until` infix function.
+
+==== Index Access and Invoke Operators
+
+[cols="1a,2a,3a"]
+|===
+|Operator |Overwriting Function | Remarks
+
+| `a[b]` | `fun A.get(b: B): R` |
+| `a[b, c]` | `fun A.get(b: B, c: C): R` | Or more arguments
+| `a[b] = x` | `fun A.set(b: B, x: X): Unit` |
+| `a[b, c] = x` | `fun A.set(b: B, c: C, x: X): Unit` | Or more arguments
+| `a()` | `fun A.invoke(): R` |
+| `a(b)` | `fun A.invoke(b: B): R` |
+| `a(b, c)` | `fun A.invoke(b: B, c: C): R` | Or more arguments
+|===
+
+Note that the index access operator `[]` requires at least one element, while the invoke operator `()` can be also used without arguments.
+
+==== Equality and Comparison Operators
+
+[cols="1a,2a,3a"]
+|===
+|Operator |Overwriting Function | Remarks
+
+| `a == b` | `fun equals(b: Any): Boolean` | Must be defined in `class A`. Also defines `!=`.
+| `a < b` | `fun A.compareTo(b: B): Int` | Evaluates `a.compareTo(b) < 0`
+| `a <{zwsp}= b` | `fun A.compareTo(b: B): Int` | Evaluates `a.compareTo(b) <{zwsp}= 0`
+| `a > b` | `fun A.compareTo(b: B): Int` | Evaluates `a.compareTo(b) > 0`
+| `a >= b` | `fun A.compareTo(b: B): Int` | Evaluates `a.compareTo(b) >= 0`
+|===
+
+==== Overload Responsibly
+
+While overloaded operators can be a powerful tool in designing DSLs, it is important to use them judiciously and with care. While there are many potential applications for overloaded operators, it is important to ensure that there is some clear association or analogy between the operation being performed and the chosen operator.
+
+For example, using the `/` operator to concatenate file paths makes sense, as it is a common path separator. Similarly, using the unary `+` operator to "add" a single value inside a trailing lambda block has become a standard convention. And using `..` instead of `:` may be acceptable due to its visual similarity.
+
+However, at some point overloading operators can become confusing or even counterproductive. For example, using the `!` operator to invert a matrix may be a stretch, as it does not have a clear association with matrix inversion. In general, it is important to avoid being too clever when designing a DSL, as users may not have the same associations or understandings of certain symbols or operators.
+
+One solution is to use meaningful infix functions (((Infix Notation))) with expressive names instead of relying solely on overloaded operators. While this may be less concise, it can make code easier to understand and less prone to confusion. Ultimately, the goal should be to create a DSL that is intuitive and easy to use, without sacrificing clarity or consistency.
+
+[#infix_notation]
 === Infix Notation for Functions (((Infix Notation)))
 
 The infix notation allows names of functions to be used like binary operators. Well-known examples in the Kotlin API include `to` for creating pairs, and `until` and `downTo` for creating ranges.
 
-The respective function must be an extension function with one argument. The receiver becomes the left-hand side and the argument becomes the right-hand side of the operator. Note that you can still use the normal function call syntax. Here is an example for checking preconditions:
+The respective function must be an extension function with one argument.The receiver becomes the left-hand side and the argument becomes the right-hand side of the operator.Note that you can still use the normal function call syntax.Here is an example for checking preconditions:
 
 [source,kotlin]
 ----
@@ -457,13 +473,13 @@ fun testIfExpected(s: String) {
 
 A weakness of the infix notation is that you can't explicitly specify generics. In this case, you can fall back to the normal function call syntax - but users of the DSL might not know this.
 
-As already mentioned in the operator overloading section, combining infix and backtick notation allows to define at least visually new "operators":
+As already mentioned, combining infix and backtick notation allows to define at least visually new "operators":
 
 [source,kotlin]
 ----
-infix fun Double.`^`(exponent: Double) = this.pow(exponent)
+infix fun Double.`^`(exponent: Int) = this.pow(exponent)
 
-val result = 1.2 `^` 3.0
+val result = 1.2 `^` 3
 ----
 
 [#functionalInterfaces]
