@@ -206,7 +206,27 @@ There are many things you can do with properties, like caching, lazy evaluation,
 [#extensions_and_receivers]
 === Extensions (((Extensions))) and Receivers (((Receivers)))
 
-One of the most important features for DSL design are extension functions, lambdas and properties. These are stand-alone constructs operating on a so-called receiver, which is the target class they are extending. The function body is put in the scope of the receiver, so you can access its public fields, methods etc., and you can also refer to the receiver itself using `this`. From the user's point of view, the call with receiver looks exactly how a normal method call (or property access) on a receiver instance would look like. This makes extension methods a great tool for adding DSL features to classes that you have no control over. A great example are the `apply()`, `run()`, `let()` and `also()` functions in the Kotlin API, which make it easier to use e.g. expression body syntax for functions, or succinct variable assignments.
+One of the most important Kotlin features for DSL design are extension functions, lambdas and properties, which allow to add functionality to existing classes - even final ones - without touching them. These extensions are stand-alone constructs operating on a so-called receiver, which is the target class they are extending. The function body is put in the scope of the receiver, so you can access its public fields, methods etc., and you can also refer to the receiver itself using `this`. Here is how an extension function looks like:
+
+[source,kotlin]
+----
+fun Int.digits(base: Int = 10): List<Int> =
+    generateSequence(this.absoluteValue) {
+        (it / base).takeIf { it > 0 }
+    }.map { it % base }.toList().reversed()
+
+val zero = 0.digits() // [0]
+val taxiCab = 1729.digits() // [1, 7, 2, 9]
+val taxiBin = 1729.digits(2) // [1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1]
+val taxiHex = 1729.digits(16) //[6, 12, 1]
+----
+
+From the user's point of view, the call with receiver looks exactly how a normal method call (or property access) on a receiver instance would look like. This makes extension functions a great tool for adding DSL features to classes that you have no control over. A great example are the `apply()`, `run()`, `let()` and `also()` functions in the Kotlin API, which make it easier to use e.g. expression body syntax for functions, or succinct variable assignments.
+
+.Extension Method History
+****
+Extension methods, initially introduced in C#, found their way into Kotlin as "extension functions", especially with the seamless integration of Java classes into the Kotlin ecosystem in mind. This approach was chosen over Scala's implicit conversion approach, which, although more powerful, was deemed more complex to comprehend and manage. The advantages of extension methods became so evident that they were incorporated in Scala 3 as well. It is safe to say that extension methods are an important and successful advancement in contemporary object-oriented programming.
+****
 
 [#typeNarrowing]
 ==== Type Narrowing (((Type Narrowing)))
