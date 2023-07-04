@@ -156,7 +156,7 @@ Furthermore, Kotlin allows for a more flexible use of varargs. You can freely co
 [source,kotlin]
 ----
 val someArray = arrayOf(4, 6, 8)
-val list = listOf(2, 0, *someArray, ) // contains 2, 0, 4, 6, 8, 5
+val list = listOf(2, 0, *someArray, 5) // contains 2, 0, 4, 6, 8, 5
 ----
 
 ==== Vararg Position and Trailing Lambda Syntax
@@ -477,7 +477,7 @@ One solution is to use meaningful infix functions (((Infix Notation))) with expr
 
 The infix notation allows names of functions to be used like binary operators. Well-known examples in the Kotlin API include `to` for creating pairs, and `until` and `downTo` for creating ranges.
 
-The respective function must be an extension function with one argument.The receiver becomes the left-hand side and the argument becomes the right-hand side of the operator.Note that you can still use the normal function call syntax.Here is an example for checking preconditions:
+The respective function must be an extension function with one argument.The receiver becomes the left-hand side and the argument becomes the right-hand side of the operator.Note that you can still use the normal function call syntax. Here is an example for checking preconditions:
 
 [source,kotlin]
 ----
@@ -613,6 +613,11 @@ value class Kilometers(val value: Double)
 
 @JvmInline
 value class Miles(val value: Double)
+
+fun Kilometers.toMiles() : Miles =
+    Miles(this.value * 0.6214)
+
+val marathonInMiles = Kilometers(42.195).toMiles() // Miles(value=26.219973)
 ----
 
 [#annotations]
@@ -620,7 +625,7 @@ value class Miles(val value: Double)
 
 You can write whole DSLs using annotations, but more often annotations can support DSLs, e.g. by describing out how certain fields or classes should be handled. They are especially powerful when your DSL shows a certain default behavior, but needs to consider some edge cases or exceptions, like "don't persist this property".
 
-Another useful application for annotations is code generation(((Code Generation))). E.g. the already mentioned AutoDSL library (((AutoDSL))) uses the information provided via annotations to construct the DSL classes for you.
+Another useful application for annotations is code generation(((Code Generation))). E.g. the AutoDSL library (((AutoDSL))) uses the information provided via annotations to construct the DSL classes for you.
 
 .Annotation Processors (((Annotation Processors))) (((KSP))) (((kapt))) (((Kotlin Symbol Processing API)))
 ****
@@ -652,3 +657,8 @@ dependencies {
 ----
 
 Depending on your use case, you might also consider alternatives like https://github.com/Kotlin/kotlinx.reflect.lite[kotlinx.reflect.lite].
+
+=== Conclusion
+
+This chapter provided a concise and high-level overview of numerous Kotlin language features that are relevant from a DSL standpoint. While further details can be explored in the comprehensive Kotlin documentation, this brief tour should have already given you a solid understanding of the extensive toolkit available for building DSLs. Kotlin offers remarkable creative freedom in this domain, empowering you to use your imagination to create powerful and intuitive DSLs.
+

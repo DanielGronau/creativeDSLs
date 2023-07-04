@@ -16,7 +16,7 @@ When the application already employs other DSLs, it should be considered whether
 
 After specifying the problem domain, you should check out existing DSLs. You might be surprised by the plethora of existing solutions, and of course it makes little sense to reinvent the wheel. Even if the results don't fit your use case perfectly, they might serve as a base implementation, or as a source of inspiration.
 
-TIP: There is an ongoing debate of how much software should depend on libraries, and you should be aware of related problems like the dreaded "dependency hell". On the other hand, you shouldn't fall into the "Not Invented Here" (((Not Invented Here)))trap, where an organization tries to build everything from scratch. As in most cases, it is important to find a good balance. A decision whether to use a library should be always deliberate, and the decision process should be documented.
+TIP: There is an ongoing debate of how much software should depend on libraries, and you should be aware of related problems like the dreaded "dependency hell". On the other hand, you shouldn't fall into the "Not Invented Here" (((Not Invented Here))) trap, where an organization tries to build everything from scratch. As in most cases, it is important to find a good balance. A decision whether to use a library should be always deliberate, and the decision process should be documented.
 
 If there is no existing DSL for your problem, you might also investigate whether using a DSL generator could be an option for you. Using such libraries can make designing a DSL a breeze. This book covers https://github.com/F43nd1r/autodsl[AutoDSL for Kotlin] to give you an impression of this approach.
 
