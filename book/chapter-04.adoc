@@ -335,7 +335,7 @@ With an extension function, the best syntax we could achieve is `22.46.USD()`, b
 
 ==== Context Receivers (((Context Receivers)))
 
-https://github.com/Kotlin/KEEP/blob/master/proposals/context-receivers.md[Context receivers] are still an experimental feature in Kotlin, so some details could change in the future. We won't use them in this book, but they are an interesting concept, and might turn out very useful for writing DSLs. The idea is to get a class providing a certain service into scope:
+https://github.com/Kotlin/KEEP/blob/master/proposals/context-receivers.md[Context receivers] are still an experimental feature in Kotlin, so some details could change in the future. We won't use them in this book, but they are an interesting concept, and might turn out very useful for writing DSLs. The basic idea is to get a class providing a certain service into scope:
 
 [source,kotlin]
 ----
@@ -364,7 +364,7 @@ fun test() {
 }
 ----
 
-Context receivers have some similarities with extension functions, but go more in the direction of dependency injection. They can be used when you would like to have some global information in scope, but want to stay flexible and support different versions. Providing DSL functionality using a context receiver could help to control its scope, e.g. in order to avoid name clashes.
+Context receivers in Kotlin share similarities with extension functions but lean more towards the concept of dependency injection. They come into play when there's a need to incorporate global information within a specific scope while maintaining flexibility to accommodate different versions. By using a context receiver to offer DSL functionality, you gain control over the scope, can influence the general behavior of the DSL and can prevent potential name conflicts.
 
 === Operator Overloading (((Operator Overloading)))
 
@@ -374,7 +374,7 @@ NOTE: The boolean operators `&&` and `||`, the access operators `.`, `?.` and `!
 
 Some overloading functions require specific return types. The type `R` is used in the following tables to indicate that there are no such restrictions.
 
-==== Unary Operators
+==== Unary Operators (((Unary Operator)))
 
 [cols="1a,2a,3a"]
 |===
@@ -389,7 +389,7 @@ Some overloading functions require specific return types. The type `R` is used i
 | `a--` | `fun A.dec(): A`| Assigns the result to `a` and returns the original value
 |===
 
-==== Binary Arithmetic Operators
+==== Binary Arithmetic Operators (((Binary Operator)))
 
 [cols="1a,2a,3a"]
 |===
@@ -419,7 +419,7 @@ When you don't want the normal binary form, but only the assignment, you can def
 
 Again, `a` must be mutable, `B` must be a subtype of `A`. Also, the return type for the function must be `Unit`. Having both the binary and the assignment version of an operator in scope leads to an ambiguity error.
 
-==== Range and In Operators
+==== Range (((Range Operator))) and In Operators (((In Operator)))
 
 [cols="1a,2a,3a"]
 |===
@@ -432,7 +432,7 @@ Again, `a` must be mutable, `B` must be a subtype of `A`. Also, the return type 
 
 The `..<` operator is new, and is thought as a replacement for the `until` infix function.
 
-==== Index Access and Invoke Operators
+==== Index Access (((Index Access Operator))) and Invoke Operators (((Invoke Operator)))
 
 [cols="1a,2a,3a"]
 |===
@@ -449,7 +449,7 @@ The `..<` operator is new, and is thought as a replacement for the `until` infix
 
 Note that the index access operator `[]` requires at least one element, while the invoke operator `()` can be also used without arguments.
 
-==== Equality and Comparison Operators
+==== Equality (((Equality Operator))) and Comparison Operators (((Comparison Operator)))
 
 [cols="1a,2a,3a"]
 |===

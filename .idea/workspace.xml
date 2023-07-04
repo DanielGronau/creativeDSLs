@@ -4,8 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="34e13fba-44c8-43ad-8704-18715c28c4b8" name="Changes" comment="chapter-04 improvements">
-      <change afterPath="$PROJECT_DIR$/src/main/kotlin/creativeDSLs/chapter_04/extensionSnippet.kt" afterDir="false" />
+    <list default="true" id="34e13fba-44c8-43ad-8704-18715c28c4b8" name="Changes" comment="chapter-04 extension history and snippet">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/book/chapter-04.adoc" beforeDir="false" afterPath="$PROJECT_DIR$/book/chapter-04.adoc" afterDir="false" />
     </list>
@@ -209,7 +208,14 @@
       <option name="project" value="LOCAL" />
       <updated>1688336192600</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="chapter-04 extension history and snippet">
+      <created>1688426747387</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1688426747387</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -235,7 +241,8 @@
     <MESSAGE value="chapter-09 Manual Parser" />
     <MESSAGE value="chapter-01 improvements" />
     <MESSAGE value="chapter-04 improvements" />
-    <option name="LAST_COMMIT_MESSAGE" value="chapter-04 improvements" />
+    <MESSAGE value="chapter-04 extension history and snippet" />
+    <option name="LAST_COMMIT_MESSAGE" value="chapter-04 extension history and snippet" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
