@@ -165,18 +165,18 @@ In contrast to Java, where a vararg must always occur as last argument, Kotlin a
 
 [source,kotlin]
 ----
-fun someMethod(vararg numbers: Int, someString: String) { ... }
+fun varargMethod(vararg numbers: Int, someString: String) { ... }
 
-someMethod(1, 2, 3, someString = "Hi!")
+varargMethod(1, 2, 3, someString = "Hi!")
 ----
 
 At first glance, having the choice to put varargs wherever you want doesn't seem to be terribly useful. But there is one particular use case which is very interesting from a DSL design perspective: You can put a vararg as second to last argument before a trailing lambda argument.
 
 [source,kotlin]
 ----
-fun someMethod(someString: String, vararg numbers: Int, block: () -> Unit) { ... }
+fun varargAndLambda(someString: String, vararg numbers: Int, block: () -> Unit) { ... }
 
-someMethod("Hi!", 1, 2, 3) {
+varargAndLambda("Hi!", 1, 2, 3) {
     ...
 }
 ----
@@ -185,23 +185,35 @@ As the code snippet shows, in this case there are no named arguments required.
 
 === Property-Syntax (((Properties)))
 
-Kotlin allows to control how properties are read and written. This makes it easy to hide DSL functionality in plain sight. A straightforward example is checking preconditions:
+Kotlin allows to control how properties are read and written. This makes it easy to hide DSL functionality in plain sight. A straightforward example is checking preconditions before setting a value:
 
 [source,kotlin]
 ----
 class TemperatureSensor {
     var celsius: Double = 0.0
         set(value) {
-            if(value < -273.15) {
-                throw IllegalArgumentException("Temperature is under absolute zero.")
-            }
+            require(value >= -273.15) { "Temperature is under absolute zero." }
             field = value
-       }
-   ...
+        }
 }
 ----
 
-There are many things you can do with properties, like caching, lazy evaluation, delegation to other properties or input sanitation. Later in the <<extensions_and_receivers, Extensions and Receivers>> section we'll discuss another use of the property syntax.
+Similarly, you can perform additional actions when reading a value (or even change the return value itself):
+
+[source,kotlin]
+----
+class SensitiveData {
+    val logger = Logger.getLogger(this::class.java.name)
+
+    var secretValue: Int = 42
+        get() {
+            logger.info("Access to secret value $field at ${LocalDateTime.now()}")
+            return field
+        }
+}
+----
+
+There are many more things you can do with properties, like caching, lazy evaluation, delegation to other properties or input sanitation. Later in the <<extensions_and_receivers, Extensions and Receivers>> section we'll discuss another use of the property syntax.
 
 [#extensions_and_receivers]
 === Extensions (((Extensions))) and Receivers (((Receivers)))
