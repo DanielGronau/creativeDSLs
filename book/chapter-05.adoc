@@ -6,7 +6,7 @@ NOTE: As for many other categories of DSLs, there seems to be no established nam
 
 The Kotlin API itself contains some nice examples for small Algebraic DSLs, e.g. for `BigInteger` and `BigDecimal`, which can be used pretty much like "normal" numbers.
 
-Even if your problem domain hasn't exactly an algebraic structure, some ideas in this chapter might be at least partially applicable. Take chemical formulas as an example: Although though they are not number-like, they contain concepts like (scalar) multiplication and addition, and can be modelled accordingly.
+Even if your problem domain hasn't exactly an algebraic structure, some ideas in this chapter might be at least partially applicable. Take chemical equations as an example: Although though their components are not number-like, they contain concepts like "addition" of molecules and scalar multiplication by coefficients, and they can be modelled accordingly.
 
 === Case Study: A DSL for Complex Numbers
 
@@ -41,14 +41,14 @@ operator fun Double.plus(that: Complex): Complex =
 
 The other operations look basically the same. We could also support interoperability with `Int` in addition to `Double`, but it was omitted for the sake of brevity. A little improvement would be a helper method for the conversion from double to complex, instead of relying on the awkward `Complex.ofCartesian` factory.
 
-Next, we need also to support negation of complex numbers (and probably the unary plus, too, for symmetry reasons). This looks very similar to the code above:
+Next, we need also to support negation of complex numbers (and maybe the unary plus, too, for symmetry reasons). This looks very similar to the code above:
 
 [source,kotlin]
 ----
 operator fun Complex.unaryMinus(): Complex = this.negate()
 ----
 
-When you can't find an appropriate operator to overload, you can use infix functions instead. In our example, we could define `pow` as exponentiation operation, so we can write e.g. `3.0 + 4.0*i pow 3.0`:
+When you can't find an appropriate operator to overload, you can use infix functions instead. In our example, we could define `pow` as exponentiation operation, so we can write e.g. `3.0 + 4.0*i pow 3.0`. The infix operations have lower priority than the overloaded operators, so the example calculation would be interpreted as `(3.0 + 4.0*i) pow 3.0`. Note that the infix extension function can have the same name and arguments as an existing function (here `Complex.pow()`), but in this case it will be only called when using infix notation, else the original method will be called.
 
 [source,kotlin]
 ----
@@ -106,7 +106,7 @@ Using complex numbers feels now as intuitive as using one of the built-in numeri
 
 === Conclusion
 
-I hope the case study demonstrates that writing algebraic DLSs is usually not that difficult. There are still a few points to consider when deciding whether to use an algebraic DSL. For some use-cases it might be a stretch to use algebraic notation: Take e.g. sum and product types (a.k.a. `Either` and tuples), where using `+` and `*` would be surprising for some users, even though the underlying structure is algebraic. Even if the notation is appropriate for the use-case, there might be surprising behaviours like non-commutative multiplication (e.g. in case of quaternions and matrices) that could lead to usage errors.
+I hope the case study demonstrates that writing algebraic DLSs is usually not that difficult. There are still a few points to consider when deciding whether to use an algebraic DSL. For some use-cases it might be a stretch to use algebraic notation: Take e.g. sum and product types (a.k.a. `Either` and tuples like `Pair`and `Triple`), where using `+` and `*` would be surprising for some users, even though the underlying structure is algebraic. Even if the notation is appropriate for the use-case, there might be surprising behaviours like non-commutative multiplication (e.g. in case of quaternions and matrices) that could lead to usage errors.
 
 ==== Preferable Use Cases
 

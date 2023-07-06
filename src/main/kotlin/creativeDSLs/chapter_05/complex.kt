@@ -32,5 +32,6 @@ private fun fromDouble(d: Double) = Complex.ofCartesian(d, 0.0)
 fun main() {
     val c = (3.0 + 4.0 * i) pow (5.0 + 6.0* i)
     println(c)
+    val d = 3.0 + 4.0 * i pow 5.0 + 6.0* i
+    println(d)
 }
-
