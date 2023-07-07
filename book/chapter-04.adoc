@@ -170,6 +170,16 @@ fun varargMethod(vararg numbers: Int, someString: String) { ... }
 varargMethod(1, 2, 3, someString = "Hi!")
 ----
 
+Note that varargs can't be assigned one by one when referred by a named arguments, but have to be bundled up in an array instead:
+
+[source,kotlin]
+----
+varargMethod(
+    someString = "Hi!",
+    numbers = intArrayOf(1, 2, 3)
+)
+----
+
 At first glance, having the choice to put varargs wherever you want doesn't seem to be terribly useful. But there is one particular use case which is very interesting from a DSL design perspective: You can put a vararg as second to last argument before a trailing lambda argument.
 
 [source,kotlin]

@@ -4,11 +4,12 @@
 
 === Why another book about DSLs in Kotlin?
 
-Kotlin is a powerful language that is well-suited for writing Domain Specific Languages. There is already a wealth of literature available on this topic, but I find that many of these books fall short in a few key areas:
+Kotlin is a powerful language that is well-suited for writing Domain Specific Languages. There is already a lot of literature available on this topic, but I find that many of these books fall short in a few key areas:
 
 * They often focus on oversimplified examples that do not provide a clear understanding of how to write DSLs in practice
 * They present solutions in a vacuum, without explaining the design process, the requirements and constraints that apply, or the trade-offs that were made
 * They do not attempt a categorization of the different types of DSLs, or a comparison of their relative strengths and weaknesses
+* They don't take into account that Kotlin and Java code often coexists, and ignore the resulting interoperability issues occurring when a Kotlin DSL must be called from Java
 
 This book aims to fill these gaps by providing a comprehensive guide to writing DSLs in Kotlin, with a focus on practical examples and real-world considerations. One of the main goals of this book is to go beyond toy examples and provide real-world insights into the process of writing DSLs in practice. This includes discussing the design process, the requirements and constraints that apply, the trade-offs that must be made, and the challenges that arise.
 

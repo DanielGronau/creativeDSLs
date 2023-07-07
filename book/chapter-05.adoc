@@ -2,11 +2,11 @@
 
 A common class of problems deals with objects that exhibit numeric-like behavior. These "algebraic" structures include complex numbers, quaternions, vectors, matrices, physical and monetary quantities, and many more. With Kotlin, it is relatively easy to write DSLs for these problems, especially when the required operators match with the existing ones.
 
-NOTE: As for many other categories of DSLs, there seems to be no established name for this kind of DSL in the literature. I think calling them "Algebraic DSLs" covers their behavior quite well, but you might find the same concept under different names elsewhere.
+NOTE: As for many other categories of DSLs, there seems to be no established name for this kind of DSL in the literature. I think calling them _Algebraic DSLs_ covers their behavior quite well, but you might find the same concept under different names elsewhere.
 
 The Kotlin API itself contains some nice examples for small Algebraic DSLs, e.g. for `BigInteger` and `BigDecimal`, which can be used pretty much like "normal" numbers.
 
-Even if your problem domain hasn't exactly an algebraic structure, some ideas in this chapter might be at least partially applicable. Take chemical equations as an example: Although though their components are not number-like, they contain concepts like "addition" of molecules and scalar multiplication by coefficients, and they can be modelled accordingly.
+Even if your problem domain does not possess an inherent algebraic structure, the concepts and ideas presented in this chapter can still be partially applicable. Consider chemical equations as an example: While their components may not be inherently number-like, they do involve operations such as "addition" of molecules and scalar multiplication by coefficients. This demonstrates the versatility and flexibility of algebraic DSLs, as they can be adapted and utilized in various domains beyond traditional numeric applications.
 
 === Case Study: A DSL for Complex Numbers
 
@@ -104,9 +104,15 @@ val e = a pow b
 
 Using complex numbers feels now as intuitive as using one of the built-in numeric types.
 
+=== Java Interoperability
+
+Java doesn't allow operator overloading, and extension methods become just normal static methods with the receiver as the first argument. That means that our DSL definitely looks no longer elegant in Java. Given that in our case the underlying Apache Commons Numbers library itself is written in Java, we are probably better off using their methods.
+
+However, our DSL is still working, and is quite straightforward to use, when you know how the operators translate to method names: Instead of `val a = 3.0 + 4.0*i`, you would have to write `Complex a = plus(3.0, times(4.0, getI()));` in a Java class.
+
 === Conclusion
 
-I hope the case study demonstrates that writing algebraic DLSs is usually not that difficult. There are still a few points to consider when deciding whether to use an algebraic DSL. For some use-cases it might be a stretch to use algebraic notation: Take e.g. sum and product types (a.k.a. `Either` and tuples like `Pair`and `Triple`), where using `+` and `*` would be surprising for some users, even though the underlying structure is algebraic. Even if the notation is appropriate for the use-case, there might be surprising behaviours like non-commutative multiplication (e.g. in case of quaternions and matrices) that could lead to usage errors.
+The case study presented in this chapter serves to illustrate that creating algebraic DSLs is usually not that difficult. However, it is important to consider certain factors when deciding whether to employ an algebraic DSL. While algebraic notation can be powerful and expressive, it may not always be suitable for every use case. For instance, using algebraic notation for sum and product types, such as `Either` and tuples like `Pair` and `Triple`, might be unconventional and potentially confusing to some users, despite the underlying algebraic structure. Additionally, certain behaviors, like non-commutative multiplication found in quaternions and matrices, can introduce unexpected complexities and increase the likelihood of usage errors. Therefore, it is crucial to exercise good judgment and adhere to the _Principle of Least Surprise_ (((Principle of Least Surprise))) when designing algebraic DSLs, rather than simply adopting them because of their ease of implementation.
 
 ==== Preferable Use Cases
 
@@ -131,5 +137,5 @@ I hope the case study demonstrates that writing algebraic DLSs is usually not th
 
 |* possible name clashes with other DSLs
 * operator precedence can't be changed
-* hard to use from Java client code
+* difficult to use from Java client code
 |===
