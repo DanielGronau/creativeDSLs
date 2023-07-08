@@ -2,7 +2,7 @@
 
 A common task is the initialization of a complex, sometimes nested object. The classical solution for this is the Builder Pattern. The builder class is mutable, uses method chaining (a.k.a. "((Fluent Interfaces))") to simplify value assignments, and contains a terminal build method, which constructs the domain object.
 
-This chapter covers the classical builder as often used in Java. Sometimes this is overkill is Kotlin, as named arguments can be used for smaller classes. We will also discuss nesting builders. Next, we will address the problem of mandatory fields in builders by presenting the _Typesafe Builder Pattern_. The following sections cover some more exotic variations _Counting Builder_, and _Chameleon builder_. In the conclusion section we discuss why in Kotlin builders are not as widely used as in Java.
+This chapter covers the classical builder as often used in Java. Sometimes this is overkill is Kotlin, as named arguments can be used for smaller classes. We will also discuss nesting builders. Next, we will address the problem of mandatory fields in builders by presenting the _Typesafe Builder Pattern_. Finally, we will cover the  more exotic _Counting Builder_. In the conclusion section we discuss why in Kotlin builders are not as widely used as in Java.
 
 === Classical Builder
 
@@ -19,7 +19,13 @@ val request = HttpRequest.newBuilder(URI.create("https://acme.com:9876/products"
     .build()
 ----
 
-TODO - DISCUSS
+As this example illustrates, a builder has three parts:
+
+* *Builder Initialization:* The builder requires a starting point, which can be achieved through a constructor or a factory method. This initializes the builder instance and prepares it for data collection.
+* *Data Collection:* Through method chaining, the builder instance accumulates the necessary data and configuration options. Each method call adds a specific attribute or behavior to the final object being constructed.
+* *Target Object Construction*: To finalize the construction process, a terminal method, often named `build()`, is invoked. This method performs any necessary validation on the collected data and proceeds to instantiate the target object with the provided configuration.
+
+By following this pattern, builders offer a structured approach to construct objects with customizable parameters, providing a convenient and readable way to initialize complex objects in a flexible manner.
 
 If you want to write a builder in Kotlin, you can take advantage of the `apply()` or `also()` method. Consider this example:
 
@@ -153,6 +159,82 @@ val file = FileSpec.builder("", "HelloWorld")
 ----
 
 As this example demonstrates, the necessity to call `build()` at the end of every nested builder leads to a lot of visual clutter. To avoid this issue, some DSLs make builder nesting more convenient by having two versions of every "nested" method: One version that takes as usual the constructed object as argument, and another version that accepts a builder of the object instead. This way, the user doesn't need to call repeatedly `build()` methods for the nested builders.
+
+=== Flattening instead of Nesting
+
+An alternative to nesting builders is to handle everything in the top-level builder, by putting the nested content between a start and end method. In KotlinPoet, control flows are implemented this way:
+
+[source,kotlin]
+----
+val funSpec = FunSpec.constructorBuilder()
+    .addParameter("value", String::class)
+    .beginControlFlow("require(value.isNotEmpty())")
+    .addStatement("%S", "value cannot be empty")
+    .endControlFlow()
+    .build()
+----
+
+Using this approach can make the DSL code more readable, but it requires more discipline from the user, who has to ensure that the start and end methods are placed properly.
+
+To give an example implementation, consider a person class containing a name, a phone number and a list of contacts, which in turn also have a name, and optionally a phone:
+
+[source,kotlin]
+----
+data class Contact(val name: String, val phone: String?)
+
+data class Person(val name: String, val phone: String, val contacts: List<Contact>)
+
+class PersonBuilder {
+    private var name: String? = null
+    private var phone: String? = null
+    private var addingContact = false
+    private var contactName: String? = null
+    private var contactPhone: String? = null
+    private val contacts: MutableList<Contact> = mutableListOf()
+
+    fun beginContact() = apply {
+        require(!addingContact)
+        addingContact = true
+    }
+
+    fun endContact() = apply {
+        require(addingContact)
+        contacts.add(Contact(contactName!!, contactPhone))
+        contactName = null
+        contactPhone = null
+        addingContact = false
+    }
+
+    fun setName(name: String) = apply {
+        if (addingContact) this.contactName = name else this.name = name
+    }
+
+    fun setPhone(phone: String) = apply {
+        if (addingContact) this.contactPhone = phone else this.phone = phone
+    }
+
+    fun build(): Person {
+        require(!addingContact)
+        return Person(name!!, phone!!, contacts)
+    }
+}
+----
+
+And this is how the DSL could be used:
+
+[source,kotlin]
+----
+val superman = PersonBuilder()
+    .setName("Superman")
+    .beginContact().setName("Wonder Woman").endContact()
+    .setPhone("555-3213-125")
+    .beginContact().setName("Lois Lane").setPhone("555-4112-423").endContact()
+    .build()
+----
+
+The process flow of a flattened builder can be also regarded as a very simple state transition, namely from the outer level to the inner level and back. xref:chapter-08.adoc[Chapter 8] demonstrates techniques to implement such state transitions in a safe way, so the code wouldn't compile when start and end methods are placed incorrectly.
+
+While there are certainly valid use cases for a flattening builder, the usual approach based on nesting is both conceptually and implementation-wise simpler, and should be therefore preferred.
 
 === The Typesafe Builder Pattern
 
@@ -346,7 +428,7 @@ It is possible to build objects in different stages. However, as there are sever
 
 === Conclusion
 
-The Builder Pattern is quite popular in Java - there are even libraries like https://projectlombok.org/[Project Lombok] which generate builders for you. The downside is that builders are quite inflexible and might be not very safe to use (although variations like the Typesafe Builder Pattern can help). The next chapter will present an approach which is more common in Kotlin, and has some advantages over the Builder Pattern.
+The Builder Pattern is quite popular in Java - there are  libraries like https://projectlombok.org/[Project Lombok] which generate builders for you. The downside is that builders are quite inflexible and might be not very safe to use (although variations like the Typesafe Builder Pattern can help). In Kotlin, using named and default parameters can already provide a functionality similar to a builder. The next chapter will present another common approach in Kotlin, which has some advantages over the Builder Pattern.
 
 ==== Preferable Use Cases
 
