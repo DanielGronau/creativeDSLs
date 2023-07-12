@@ -267,7 +267,7 @@ With the help of these classes, we can write the builder:
 
 [source,kotlin]
 ----
-class ProductBuilder<
+data class ProductBuilder<
       ID: Val<UUID>,
       NAME: Val<String>,
       PRICE: Val<BigDecimal>> private constructor(
@@ -321,9 +321,9 @@ data class ProductBuilder<
 }
 ----
 
-The inferred return type of this `invoke()` operation is `ProductBuilder<Without<UUID>, Without<String>, Without<BigDecimal>>`, which we thankfully don't have to write out. When an optional field is set, these type parameters don't change, but when a mandatory field is set, the signature will change from `Without` to `With` for this particular field. As the setters for the mandatory fields return a builder with a changed signature, we can't use the `copy()` method in these cases.
+The inferred return type of this `invoke()` operation is `ProductBuilder<Without<UUID>, Without<String>, Without<BigDecimal>>`, which we thankfully don't have to write out. When an optional field is set, these type parameters don't change, but when a mandatory field is set, the signature will change from `Without` to `With` for this particular field. As the setters for the mandatory fields return a builder with a changed signature, we can't use the `copy()` method in these cases (at least if we don't want to use casts).
 
-Of course, one crucial part is missing: The `build()` method. However, we can't write it as part of the builder class, as it needs to inspect the generic signature. It has to be an extension method, because only there you can "fix" the type parameters to concrete types, which is known as <<chapter-04.adoc#typeNarrowing, Type Narrowing>>(((Type Narrowing))):
+Of course, one crucial part is missing: The `build()` method. However, we can't write it as part of the builder class, as it needs to inspect the generic signature. It _has_ to be an extension method, because only there you can "fix" the type parameters to concrete types, which is known as <<chapter-04.adoc#typeNarrowing, type narrowing>>(((Type Narrowing))):
 
 [source,kotlin]
 ----
@@ -331,7 +331,7 @@ fun ProductBuilder<With<UUID>, With<String>, With<BigDecimal>>.build() =
     Product(id.value, name.value, price.value, description, images)
 ----
 
-Note that you can access the `value` fields of the `With` classes, as the type inference is based on the "narrowed down" type. Now we have a builder with a `build()` method that can be only called if all mandatory fields are set:
+Note that you can access the `value` fields of the `With` classes, as the type inference matches on the "narrowed down" type. Now we have a builder with a `build()` method that can be only called if all mandatory fields are set:
 
 [source,kotlin]
 ----
@@ -424,7 +424,7 @@ Of course, you can use this pattern to count more than one thing, and you can co
 
 === Builders with multiple stages
 
-It is possible to build objects in different stages. However, as there are several ways to implement this, and as these techniques are not only applicable for builders, xref:chapter-08.adoc[Chapter 8] covers this topic in detail.
+It is possible to build objects in different stages. However, as there are several ways to implement this use case, and as these techniques are not only applicable for builders, xref:chapter-08.adoc[Chapter 8] covers this topic in detail.
 
 === Conclusion
 
