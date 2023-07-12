@@ -1,10 +1,10 @@
 == Loan Pattern DSLs
 
-The Loan Pattern DSL type is Kotlin's common answer to the Builder Pattern, and covers the same use cases. Instead of having a mutable builder using method chaining, we have a mutable builder class exposing its members using the Loan Pattern. The main ingredients to make it work are extension methods and the trailing lambda syntax.
+This pattern is known by various names, and it can indeed be confusing. One of these names is the "builder pattern," which can lead to ambiguity since it shares similar use-cases with the classical builder pattern. However, in Kotlin, this pattern is often used as a replacement for the classical builder pattern. To provide a more accurate description of the underlying mechanism and avoid confusion, it will be referred here as the "Loan Pattern DSL".
 
-This approach can be particularly useful for creating deeply nested structures. In such cases, the code can quickly become cluttered and hard to read when using the builder pattern. Further, it can be easier to enforce constraints and ensure type safety with this approach compared to using builders. Sometimes, the greater flexibility of Loan Pattern DSLs allows to incorporate other DSL techniques like operator overloading, while the builder approach is often too rigid for such improvements.
+In contrast to the classic builder pattern, the Loan Pattern DSL takes a different approach by using a mutable builder class that exposes its members through the Loan Pattern. This approach leverages the power of extension methods and the trailing lambda syntax in Kotlin. It is particularly useful for creating deeply nested structures. In such cases, the code can quickly become cluttered and hard to read when using the classical builder pattern. Further, it can be easier to enforce constraints and ensure type safety with this approach compared to using builders. Sometimes, the greater flexibility of Loan Pattern DSLs allows to incorporate other DSL techniques like operator overloading, while the builder approach is often too rigid for such improvements.
 
-In this chapter, we will first write a more convenient replacement for the `HttpRequest.Builder` presented in the last chapter. Next, we implement and discuss an example for the Chained Loan Pattern. If you have control over the business classes you want to construct, you can use libraries like AutoDSL to generate a DSL for you. We will explore this in the second part of this chapter.
+In this chapter, we will first write a more convenient replacement for the `HttpRequest.Builder` presented in the last chapter. If you have control over the business classes you want to construct, you can use libraries like AutoDSL to generate a DSL for you. We will explore this in the second part of this chapter.
 
 === Case Study: HttpRequest
 
@@ -249,7 +249,7 @@ data class HttpRequestBuilder(
 
 It can't get much simpler than that: All classes which should be included in the DSL are marked with the `@AutoDsl` annotation, and when there are lists that should be specified element-wise and not as a whole, you add an `@AutoDslSingular` annotation containing the name of the helper method.
 
-If you compile the project using IntelliJ IDEA, you should usually find the generated classes `HeaderDsl` and `HttpRequestBuilderDsl` in a `generated-sources/...` folder, depending on how you integrated the AutoDSL processor, and how you set up your project).
+If you compile the project using IntelliJ IDEA, you should usually find the generated classes `HeaderDsl` and `HttpRequestBuilderDsl` in a `generated-sources/...` folder, but of course this depends on how you integrated the AutoDSL processor, and how you set up your project.
 
 The example call from the previous section would now like this:
 
@@ -270,234 +270,7 @@ val request = httpRequestBuilder {
 }.build()
 ----
 
-Granted, the code isn't quite as comfortable and concise, but it comes close, and looks definitely nicer and more intuitive than a traditional builder. AutoDSL also keeps track of mandatory fields like `uri`, and throws an `IllegalStateException` if they were not set.
-
-=== Chained Loan Pattern
-
-It is possible to have a "chained" version of the Loan Pattern, but it depends on the use case whether it looks better than the chained Builder Pattern. In case of the SQL DSL from the last chapter one could argue that the Loan Pattern version wouldn't be a significant improvement, and I would agree. However, it could turn out that the more flexible Loan Pattern approach scales better when attempting to cover the whole SQL syntax. Here is an example call of the Loan Pattern version:
-
-[source,kotlin]
-----
-val query = SELECT {
-    +"p.firstName"
-    +"p.lastName"
-    +"p.income"
-}.FROM {
-    "Person" AS "p"
-    JOIN {
-        "Address" AS "a"
-        ON("p.addressId","a.id")
-    }
-}.WHERE {
-    +"p.age > 20"
-    +"p.age <= 40"
-    +"a.city = 'London'"
-}.build()
-----
-
-The implementation of this DSL is quite similar to the builder version (sanity checks were omitted for brevity):
-
-[source,kotlin]
-----
-fun SELECT(body: SelectBody.() -> Unit) =
-    SelectClause(SelectBody().apply(body).columns)
-
-class SelectBody {
-    val columns = mutableListOf<String>()
-
-    operator fun String.unaryPlus() { columns += this }
-}
-
-class SelectClause(val columns : List<String>) {
-
-    fun FROM(body: FromBody.() -> Unit) =
-        FromBody().apply(body).let {
-            FromClause(columns, it.tableName, it.joinClauses)
-        }
-}
-
-typealias NameWithAlias = Pair<String, String?>
-
-typealias TableJoin = Triple<NameWithAlias, String, String>
-
-class FromBody {
-    var tableName: NameWithAlias = "" to null
-    val joinClauses  = mutableListOf<TableJoin>()
-
-    operator fun String.unaryPlus() { tableName = this to null }
-
-    infix fun String.AS(that: String) { tableName = this to that }
-
-    fun JOIN(body: JoinBody.() -> Unit) {
-        JoinBody().apply(body).also {
-            joinClauses += TableJoin(it.tableName, it.firstColumn, it.secondColumn)
-        }
-    }
-}
-
-data class FromClause(
-    val columns: List<String>,
-    val tableName: NameWithAlias,
-    val joinClauses: List<TableJoin>
-) {
-
-    fun WHERE(body: WhereBody.() -> Unit) =
-        WhereClause(columns, tableName, joinClauses,
-            WhereBody().apply(body).conditions)
-
-    fun build() = build(columns, tableName, joinClauses, listOf())
-}
-
-class JoinBody {
-    var tableName: NameWithAlias = "" to null
-    var firstColumn = ""
-    var secondColumn = ""
-
-    operator fun String.unaryPlus() { tableName = this to null }
-
-    infix fun String.AS(that: String) { tableName = this to that }
-
-    fun ON(firstColumn: String, secondColumn: String) {
-        this.firstColumn = firstColumn
-        this.secondColumn = secondColumn
-    }
-}
-
-class WhereBody {
-    val conditions = mutableListOf<String>()
-
-    operator fun String.unaryPlus() { conditions += this }
-}
-
-data class WhereClause(
-    val columns: List<String>,
-    val tableName: NameWithAlias,
-    val joinClauses: List<TableJoin>,
-    val conditions: List<String>
-) {
-
-    fun build() = build(columns, tableName, joinClauses, conditions)
-}
-
-private fun build(
-    columns: List<String>,
-    tableName: NameWithAlias,
-    joinClauses: List<TableJoin>,
-    conditions: List<String>
-): String {
-    // as in chapter 6
-}
-----
-
-It is important to have different classes for the body of a clause, and the result. E.g., the receiver for the `SELECT` function is the `SelectBody` class, but the result of the call is a `SelectClause`. This is because we want to be able to call different functions in both classes, e.g. the `SelectBody` allows to add columns, but `SelectClause` can call the `FROM` function. It would be very confusing and unsafe to have this functionality in a single class.
-
-Also, the explicit call to the `build()` function is necessary in this example, because we don't know whether the chain should be stopped after FROM or after WHERE. In use cases with only one possible exit point, the `build()` call could be performed internally.
-
-It is possible to simplify this code using the "chameleon" approach discussed in the last chapter, although it can come to name clashes. In our case, the unary `+` is used in both the select and the where clause, but it can't be part of the main builder class, because it wouldn't be clear in which list the values have to go. Here is a "chameleon" version of the code:
-
-[source,kotlin]
-----
-fun SELECT(body: ListBody.() -> Unit): SelectClause =
-    QueryBuilder().select(body)
-
-private class QueryBuilder : SelectClause, FromBody, FromClause, WhereClause {
-    private val columns = mutableListOf<String>()
-    private val conditions = mutableListOf<String>()
-
-    fun select(body: ListBody.() -> Unit) =
-        this.apply { ListBody(columns).apply(body) }
-
-    //SelectClause
-    override fun FROM(body: FromBody.() -> Unit) =
-        apply(body)
-
-    //FromBody
-    override var tableName: NameWithAlias = "" to null
-
-    override val joinClauses = mutableListOf<TableJoin>()
-
-    override infix fun String.AS(that: String) {
-        tableName = this to that
-    }
-
-    override fun JOIN(body: JoinBody.() -> Unit) =
-        JoinBody().apply(body).also {
-            joinClauses += TableJoin(it.tableName, it.firstColumn, it.secondColumn)
-        }
-
-    //FromClause
-    override fun WHERE(body: ListBody.() -> Unit) =
-        this.apply { ListBody(conditions).apply(body) }
-
-    //FromClause and WhereClause
-    override fun build() = build(columns, tableName, joinClauses, conditions)
-}
-
-class ListBody(val list:MutableList<String>) {
-
-    operator fun String.unaryPlus() {
-        list += this
-    }
-}
-
-interface SelectClause {
-
-    fun FROM(body: FromBody.() -> Unit): FromClause
-}
-
-typealias NameWithAlias = Pair<String, String?>
-
-interface FromBody {
-    var tableName: NameWithAlias
-    val joinClauses: List<TableJoin>
-
-    infix fun String.AS(that: String)
-
-    fun JOIN(body: JoinBody.() -> Unit): JoinBody
-}
-
-interface FromClause {
-
-    fun WHERE(body: ListBody.() -> Unit): WhereClause
-
-    fun build(): String
-}
-
-class JoinBody {
-    var tableName: NameWithAlias = "" to null
-    var firstColumn = ""
-    var secondColumn = ""
-
-    operator fun String.unaryPlus() {
-        tableName = this to null
-    }
-
-    infix fun String.AS(that: String) {
-        tableName = this to that
-    }
-
-    fun ON(firstColumn: String, secondColumn: String) {
-        this.firstColumn = firstColumn
-        this.secondColumn = secondColumn
-    }
-}
-
-interface WhereClause {
-
-    fun build(): String
-}
-
-private fun build(
-    columns: List<String>,
-    tableName: NameWithAlias,
-    joinClauses: List<TableJoin>,
-    conditions: List<String>
-): String {
-    // same as before
-}
-----
-
-Arguably, the code became a bit more confusing, but doesn't copy the data around as much as the original version did.
+Granted, the code isn't quite as comfortable and concise as for the manually written DSL, but it comes close, and looks definitely nicer and more intuitive than a traditional builder. AutoDSL also keeps track of mandatory fields like `uri`, and throws an `IllegalStateException` if they were not set.
 
 === Builder Type Inference
 
@@ -505,7 +278,7 @@ In some cases, the compiler can improve its type inference by inspecting the met
 
 === Conclusion
 
-The Loan Pattern DSL has several advantages over the classic Builder Pattern style, and is very common in Kotlin. It really shines when dealing with nested structures, and allows to integrate other DSL techniques more easily.
+The Loan Pattern DSL has several advantages over the classic Builder Pattern style, and is very common in Kotlin. It really shines when dealing with nested structures, and allows to integrate other DSL techniques more easily. The Kotlin language provides several features to improve the user experience, like the `@DslMarker` mechanism and builder type inference.
 
 ==== Preferable Use Cases
 
@@ -536,5 +309,5 @@ The Loan Pattern DSL has several advantages over the classic Builder Pattern sty
 
 |* behavior is harder to control than for the Builder Pattern
 * safe usage can't be always guaranteed
-* might be difficult to use from Java client code
+* might be more difficult to use from Java client code
 |===
