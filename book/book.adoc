@@ -26,37 +26,37 @@ include::preface.adoc[]
 
 = Part I - Writing DSLs
 
-include::chapter-01.adoc[]
+include::chapter-01_intro.adoc[]
 
-include::chapter-02.adoc[]
+include::chapter-02_requirements.adoc[]
 
-include::chapter-03.adoc[]
+include::chapter-03_writing.adoc[]
 
-include::chapter-04.adoc[]
+include::chapter-04_features.adoc[]
 
 = Part II - DSL Categories
 
-include::chapter-05.adoc[]
+include::chapter-05_algebraic.adoc[]
 
-include::chapter-06.adoc[]
+include::chapter-06_builder.adoc[]
 
-include::chapter-07.adoc[]
+include::chapter-07_loan.adoc[]
 
-include::chapter-08.adoc[]
+include::chapter-08_transitions.adoc[]
 
-include::chapter-09.adoc[]
+include::chapter-09_strings.adoc[]
 
-include::chapter-10.adoc[]
+include::chapter-10_annotations.adoc[]
 
-include::chapter-11.adoc[]
+include::chapter-11_hybrid.adoc[]
 
 = Part III - Supplemental Topics
 
-include::chapter-12.adoc[]
+include::chapter-12_generation.adoc[]
 
-include::chapter-13.adoc[]
+include::chapter-13_java.adoc[]
 
-include::chapter-14.adoc[]
+include::chapter-14_examples.adoc[]
 
 = &nbsp;
 

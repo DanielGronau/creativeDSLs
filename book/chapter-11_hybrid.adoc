@@ -332,7 +332,7 @@ fun <T> match(obj: Any, body: Matcher<T>.() -> MatchResult<T>): T =
     Matcher<T>(obj).run(body).value
 ----
 
-As a reminder, the `fun interface` syntax defines a <<chapter-04.adoc#functionalInterfaces, functional interface>>. Note that the `body` parameter of the `match()` method requires a `MatchResult` as return value. This is a trick to force users to call the `otherwise()` method at the end of the block.
+As a reminder, the `fun interface` syntax defines a <<chapter-04_features.adoc#functionalInterfaces, functional interface>>. Note that the `body` parameter of the `match()` method requires a `MatchResult` as return value. This is a trick to force users to call the `otherwise()` method at the end of the block.
 
 Of course, there are still patterns missing for the left-hand sides of the `then` expressions. For implementing them, we can take advantage of the simplified syntax for functional interfaces (a.k.a. SAM conversion). Most of them are quite easy to write:
 
@@ -362,7 +362,7 @@ fun isA(kClass: KClass<*>) = Pattern { kClass.isInstance(it) }
 fun isSame(value: Any) = Pattern { it === value }
 ----
 
-For comparing values, some type checks are needed in order to ensure that the value is comparable. That's why we need <<chapter-04.adoc#reifiedGenerics, reified generics>> in this case:
+For comparing values, some type checks are needed in order to ensure that the value is comparable. That's why we need <<chapter-04_features.adoc#reifiedGenerics, reified generics>> in this case:
 
 [source,kotlin]
 ----

@@ -2,7 +2,7 @@
 
 Annotations can be used to tie specify actions or behavior to classes, methods, fields etc. Typical examples include dependency injection frameworks (like Spring or Dagger), transformers to formats like XML or JSON (like Gson, Jackson or JAXB), or authorization (like Spring Security). In Java, https://projectlombok.org/[Project Lombok] aims to reduce the boilerplate of the language in many ways, and uses annotations as well.
 
-As mentioned in <<chapter-04.adoc#annotations,4.10 Annotations>>, you might want to look into annotation processors, when you want to integrate your DSL somehow in the build process.
+As mentioned in <<chapter-04_features.adoc#annotations,4.10 Annotations>>, you might want to look into annotation processors, when you want to integrate your DSL somehow in the build process.
 
 === Case Study: Mapper DSL
 
@@ -98,7 +98,7 @@ abstract class Mapper<S : Any, T : Any> {
 }
 ----
 
-As it uses reflection, you need to include a dependency to the `kotlin-reflect` library, as described in chapter <<chapter-04.adoc#reflection,4.11 Reflection>>. Of course, the example could be improved in many ways, e.g. sometimes you would need multiple source fields to calculate a target field.
+As it uses reflection, you need to include a dependency to the `kotlin-reflect` library, as described in chapter <<chapter-04_features.adoc#reflection,4.11 Reflection>>. Of course, the example could be improved in many ways, e.g. sometimes you would need multiple source fields to calculate a target field.
 
 For serious applications, I would suggest to give https://mapstruct.org[MapStruct] a try. It is a Java library, but seems to work well with Kotlin, and has much more functionality than our example DSL. One main difference is that MapStruct generates sourcecode, avoiding the performance hit of using reflection, and making debugging much more convenient.
 

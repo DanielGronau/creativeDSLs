@@ -323,7 +323,7 @@ The chameleon class concept might look somewhat strange at first, but results us
 
 ==== The Phantom Type Approach (Builder Pattern)
 
-The third approach uses <<chapter-04.adoc#typeLevelProgramming,phantom types>>(((Phantom Types))). The implementation is based on a DTO class with a generic parameter. This type parameter isn't used as type for any data inside the class - this is why it is called a "phantom type". Instead, this parameter is used by extension functions, which require that their receiver has the correct state
+The third approach uses <<chapter-04_features.adoc#typeLevelProgramming,phantom types>>(((Phantom Types))). The implementation is based on a DTO class with a generic parameter. This type parameter isn't used as type for any data inside the class - this is why it is called a "phantom type". Instead, this parameter is used by extension functions, which require that their receiver has the correct state
 
 For the SQL query DSL, we need a type hierarchy containing the different clauses. As a slight complication, we also need two additional interfaces for methods that are present in multiple clauses. Then we need the DTO class itself. The `cast()` extension function allows us to switch easily between states. As the generic parameter doesn't refer to any real data, the cast itself is safe. Of course, the `cast()` function must be private in order to avoid abuse:
 
@@ -459,7 +459,7 @@ This looks quite different from the builder pattern syntax, and it is debatable 
 
 One difference to the builder example is that `JOIN` is now nested, which seems more natural here. The lambda bodies give more freedom to use other DSL techniques, e.g. infix functions like `AS`. Also, we still need `build()` methods, as it is not clear when we are done with constructing the query. In cases with only one exit state, the construction can be performed behind the scenes, as usual in loan pattern implementations.
 
-It should be noted that for a serious implementation the <<chapter-04.adoc#dslMarker,@DslMarker mechanism>> should be used, as the join clause is nested, but it isn't used in the following use cases for the sake of brevity.
+It should be noted that for a serious implementation the <<chapter-04_features.adoc#dslMarker,@DslMarker mechanism>> should be used, as the join clause is nested, but it isn't used in the following use cases for the sake of brevity.
 
 ==== The 'Separate Classes' Approach (Loan Pattern)
 

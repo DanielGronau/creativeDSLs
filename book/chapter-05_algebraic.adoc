@@ -56,7 +56,7 @@ infix fun Complex.pow(that: Complex): Complex = pow(that)
 infix fun Complex.pow(that: Double): Complex = pow(that)
 ----
 
-Alternatively, we could have used `{backtick}^{backtick}` in <<chapter-04.adoc#backtickIdentifiers, backtick notation>>(((Backtick Notation))), which may be more readable than `pow`, but is harder to type.
+Alternatively, we could have used `{backtick}^{backtick}` in <<chapter-04_features.adoc#backtickIdentifiers, backtick notation>>(((Backtick Notation))), which may be more readable than `pow`, but is harder to type.
 
 And that's already it, we have a basic DSL for complex numbers. Here is the complete code:
 

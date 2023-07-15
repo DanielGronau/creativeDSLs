@@ -74,7 +74,7 @@ class HttpRequestBuilder(var uri: URI) {
 }
 ----
 
-The `headers` field can't be set directly, because we want to use a nested structure here. The `headers()` method works analogous to the `httpRequest()` method, and exposes the inner `Headers` class, which in turn enables to fill the `headers` field. The range operator `..` was chosen to collect the key-value-pairs because it looks somewhat like `:`. As discussed in the <<chapter-04.adoc#dslMarker,fourth chapter>>, we don't want to expose all the `HttpRequestBuilder` fields from its inner class `Headers`, and that's why we use te `@DslMarker` (((@DslMarker))) mechanism to limit the scope inside of `Headers`.
+The `headers` field can't be set directly, because we want to use a nested structure here. The `headers()` method works analogous to the `httpRequest()` method, and exposes the inner `Headers` class, which in turn enables to fill the `headers` field. The range operator `..` was chosen to collect the key-value-pairs because it looks somewhat like `:`. As discussed in the <<chapter-04_features.adoc#dslMarker,fourth chapter>>, we don't want to expose all the `HttpRequestBuilder` fields from its inner class `Headers`, and that's why we use te `@DslMarker` (((@DslMarker))) mechanism to limit the scope inside of `Headers`.
 
 [source,kotlin]
 ----
