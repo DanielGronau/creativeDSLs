@@ -323,8 +323,9 @@ fun <T> sequence(start: ParseResult<T>, step: (String) -> ParseResult<T>): Parse
     }
 ----
 
+Now that we have some minimal parsing support in place, we can start with working on the equation parsing. Note that we assume there are no whitespaces in the formula, because handling them everywhere is painful, and we can easily filter them out at top level.
 
-First, the element names must be known:
+First, all the element names must be known:
 
 [source,kotlin]
 ----
@@ -333,18 +334,7 @@ private val elements = setOf(
 )
 ----
 
-//TODO fix this
-
-All the parser functions will have a similar return type, so this alias is used for convenience:
-
-[source,kotlin]
-----
-typealias ParseResult<T> = Optional<Pair<T, String>>
-----
-
-What does this mean? Well, trying to parse information from a string can be successful or not. In this example, an empty `Optional` is returned when the parser got no result, but serious implementations often use more elaborate failure classes, which give detailed information about why and where the operation failed. When the parsing rule could be applied successfully, it is not enough to keep track of the result, but also of the remaining string (or the new position inside the original string). That's why a `Pair` is used in the alias.
-
-We will assume that the input string is free of whitespaces, which can be already enforced by the top-level function calling the parser. Here are the two most basic functions:
+Next, we need functions who can recognize given patterns and natural numbers:
 
 [source,kotlin]
 ----
@@ -364,7 +354,9 @@ fun parseNum(string: String): ParseResult<Int> =
     }
 ----
 
-The easiest function is `parsePattern()`, which tries to find a given prefix in the string. `parseNum()` is slightly more involved, as it needs to determine the number of digits first. Except `parseElement()`, all other functions don't read directly from the string, but use these two and combine the results in certain ways - that's why this approach is known as "parser combinator". The first example for this "assembling" is the function for reading the equation arrow, which can be either `-{zwsp}>` or `<{zwsp}-{zwsp}>`:
+The easiest function is `parsePattern()`, which tries to find a given prefix in the string. `parseNum()` is slightly more involved, as it needs to determine the number of digits first. With one exception (the function `findElement()`), all functions don't read directly from the string, but use these two low level functions and combine the results in certain ways - that's why this approach is known as "parser combinator".
+
+The first example for this "assembling" is the function for reading the equation arrow, which can be either `-{zwsp}>` or `<{zwsp}-{zwsp}>`:
 
 [source,kotlin]
 ----
@@ -375,83 +367,68 @@ fun parseArrow(string: String): ParseResult<String> =
 
 Reading an element is not difficult, the only pitfall is that two-letter symbols must be checked before the one-letter symbols, else the function would just find `H` in a string starting with `He`.
 
-WARNING: It is a common problem that two parsers could match for the same input. In most cases, the parser reading the longer prefix is the one you want to execute, so you have to make sure to evaluate it first.
+WARNING: It is a common problem that two parsers could match for the same input. Usually the parser reading the longer prefix is the one you want to execute, so you have to make sure to evaluate it first.
 
 [source,kotlin]
 ----
 fun parseElement(string: String): ParseResult<Element> =
     findElement(string, 2).or {
         findElement(string, 1)
-    }.map { (symbol, s) ->
-        parseNum(s).map { (subscript, s1) ->
-            Element(symbol, subscript) to s1
-        }.orElseGet {
-            Element(symbol, 1) to s
+    }.flatMap { symbol, s ->
+        parseNum(s).flatMap { subscript, s1 ->
+            Success(Element(symbol, subscript), s1)
+        } or {
+            Success(Element(symbol, 1), s)
         }
     }
 
 fun findElement(string: String, charCount: Int): ParseResult<String> =
-    Optional.of(
-        "$string##".substring(0, charCount)
-    ).filter {
-        elements.contains("$string##".substring(0, charCount))
-    }.map { symbol ->
-        symbol to string.substring(charCount)
+    successWhen(elements.contains("$string!!".take(charCount))) {
+        "$string!!".take(charCount) to string.drop(charCount)
     }
 ----
 
-First, the `findElement()` function tries to find elements, first with two, and then - if this was unsuccessful - with one character. Prolonging the string with some characters (here `#`) avoids a possible `IndexOutOfBoundException`. The `map` block in `parseElement()` attempts to find a trailing number. If the number is found, it is used to construct the element, else the default subscript of 1 is used.
+First, the `findElement()` function tries to find elements, first with two, and then - if this was unsuccessful - with one character. Artificially prolonging the string with some characters that definitely won't match (here `!`) avoids a possible `IndexOutOfBoundException`. The `map` block in `parseElement()` attempts to find a trailing number. If the number is found, it is used to construct the element, else the default subscript of 1 is used.
 
 Now the groups can be tackled:
 
 [source,kotlin]
 ----
 fun parsePart(string: String): ParseResult<Part> =
-    Optional.empty<Pair<Part, String>>()
-        .or { parseElement(string) }
-        .or { parseGroup(string) }
+    Failure<Part>() or { parseElement(string) } or { parseGroup(string) }
 
 fun parseGroup(string: String): ParseResult<Group> =
-    parsePattern(string, "(").map { (_, s1) ->
-        generateSequence(parsePart(s1).orElse(null)) { (_, s2) ->
-            parsePart(s2).orElse(null)
-        }.toList()
-    }.filter {
-        it.isNotEmpty()
-    }.flatMap { parts ->
-        parsePattern(parts.last().second, ")").map { (_, s3) ->
-            parts.map { it.first } to s3
+    parsePattern(string, "(").flatMap { _, s1 ->
+        sequence(parsePart(s1)) { remaining ->
+            parsePart(remaining)
         }
-    }.map { (parts, s) ->
-        parseNum(s).map { (subscript, s1) ->
-            Group(parts, subscript) to s1
-        }.orElseGet {
-            Group(parts, 1) to s
+    }.flatMap { parts, remaining ->
+        parsePattern(remaining, ")")
+            .flatMap { _, s3 -> Success(parts, s3) }
+    }.flatMap { parts, s ->
+        parseNum(s).flatMap { subscript, s1 ->
+            Success(Group(parts, subscript), s1)
+        } or {
+            Success(Group(parts, 1), s)
         }
     }
 ----
 
-The `parsePart()` method reads either an element or a group. The chain starts with an empty, but typed `Optional`, which is a trick to avoid casts for the more specialized return types of `parseElement()` and `parseGroup()`. The `parseGroup()` looks first for an opening parenthesis. Then it tries to read as many parts as possible. The `filter()` method ensures that an empty group `()` is not accepted. After this, it looks for a closing parenthesis. The final `map()` call handles an optional subscript, just like in `parseElement()`.
+The `parsePart()` method reads either an element or a group. The chain starts with an `Failure<Part>`, which is a trick to avoid casts for the more specialized return types of `parseElement()` and `parseGroup()`. The `parseGroup()` looks first for an opening parenthesis. Then it tries to read as many parts as possible, but at least one. After this, it looks for a closing parenthesis. The final `map()` call handles an optional subscript for the whole group, similar to `parseElement()`.
 
-Now everything is there to assemble a molecule:
+Now everything is in place to assemble a molecule:
 
 [source,kotlin]
 ----
 fun parseMolecule(string: String): ParseResult<Molecule> =
-    parseNum(string).or {
-        Optional.of(1 to string)
-    }.flatMap { (coefficient, s) ->
-        Optional.of(
-            generateSequence(parsePart(s).orElse(null)) { (_, s1) ->
-                parsePart(s1).orElse(null)
-            }.toList()
-        ).filter {
-            it.isNotEmpty()
-        }.map { parts ->
-            Molecule(coefficient, parts.map { it.first }) to
-                parts.last().second
+    (parseNum(string) or { Success(1, string) })
+        .flatMap { coefficient, s ->
+            sequence(parsePart(s)) { remaining ->
+                parsePart(remaining)
+            }.flatMap { parts, remaining ->
+                Success(Molecule(coefficient, parts), remaining)
+            }
         }
-    }
 ----
 
 First, the function looks for a possible coefficient in front, else it uses 1 as default. Then it tries to read as many element or group parts as possible. If some parts were found, the molecule is build, else the parser fails.
@@ -461,46 +438,39 @@ This is the parser for gathering the left- and right-hand side of the equation:
 [source,kotlin]
 ----
 fun parseSide(string: String): ParseResult<List<Molecule>> =
-    Optional.of(
-        generateSequence(parseMolecule(string).orElse(null)) { (_, s1) ->
-            parsePattern(s1, "+")
-                .flatMap { (_, s2) -> parseMolecule(s2) }
-                .orElse(null)
-        }.toList()
-    ).filter {
-        it.isNotEmpty()
-    }.map { list ->
-        list.map { it.first } to list.last().second
+    sequence(parseMolecule(string)) { remaining ->
+        parsePattern(remaining, "+")
+            .flatMap { _, s2 -> parseMolecule(s2) }
     }
 ----
 
-The function generates a sequence of `Pair<Molecule, String>` (while requiring that there is a `+` between the molecules), and converts it to a list. The `filter()` checks that the list is not empty, and the last `map()` call brings the return value in the right shape.
-
-Now the parser for the whole equation can be written as follows:
+The function generates a list of molecules, while requiring that there is always a `+` in between. Now the parser for the whole equation can be written as follows:
 
 [source,kotlin]
 ----
-fun parseEquation(string: String): ParseResult<Equation> {
-    return parseSide(string).flatMap { (lhs, s1) ->
-        parseArrow(s1).flatMap { (arrow, s2) ->
-            parseSide(s2).map { (rhs, s3) ->
-                Equation(lhs, rhs, arrow == "<->") to s3
+fun parseEquation(string: String): ParseResult<Equation> =
+    parseSide(string).flatMap { lhs, s1 ->
+        parseArrow(s1).flatMap { arrow, s2 ->
+            parseSide(s2).flatMap { rhs, s3 ->
+                Success(Equation(lhs, rhs, arrow == "<->"), s3)
             }
         }
     }
-}
 ----
 
 It just reads the left-hand side, the arrow symbol, the right-hand side, and combines them. Now the only missing part is a `equation()` function, which is the only part of our DSL which will be exposed to the user:
 
 [source,kotlin]
 ----
-fun equation(string: String) = parseEquation(string.replace(" ", ""))
-    .filter { it.second.isEmpty() }
-    .map { it.first }
+fun equation(string: String): Equation? =
+    parseEquation(string.replace(" ", ""))
+        .successOrNull()
+        ?.let { result ->
+            result.value.takeIf { result.remaining.isEmpty() }
+        }
 ----
 
-This function removes all spaces from the input string, calls the parser, checks that no "unparsed" string is left, and returns the result wrapped in an `Optional`. Again, an empty `Optional` indicates that some kind of error occurred. Now we can write e.g. `equation("3Ba(OH)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2")`, which is as concise at it can get for an internal DSL.
+This function removes all spaces from the input string, calls the parser, checks that no "unparsed" string is left, and returns the result or null. Now we can write e.g. `equation("3Ba(OH)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2")`, which is as concise at it can get for an internal DSL.
 
 As mentioned in the last chapter, a "real" chemical equation looks more like `3Ba(OH)~2~ + 2H~3~PO~4~ -> 6H~2~O + Ba~3~(PO~4~)~2~`, and with a few simple modifications, we could allow this syntax as well. Generally speaking, allowing the syntax of a String-based DSL to be more lenient is relatively easy, while other DSL categories often struggle with this kind of flexibility.
 
@@ -553,7 +523,7 @@ Going into the details of this specific library is beyond the scope of this book
 
 === Conclusion
 
-String-based DSLs allow to use a very idiomatic syntax. The price to pay for this is a lack of compile-time checks and the complexity and overhead involved with parsing.
+String-based DSLs allow to provide a very idiomatic syntax, and can also give the user some leeway by being more lenient than other DSL types. The price to pay is a lack of compile-time checks, less tooling support (e.g. autocomplete features), and from the implementation side the complexity and overhead involved with parsing, and the difficulty to extend them later.
 
 ==== Preferable Use Cases
 
@@ -578,12 +548,14 @@ String-based DSLs allow to use a very idiomatic syntax. The price to pay for thi
 |Pros |Cons
 
 |* allows almost any syntax
+* it is easy to allow for some leniency
 * very flexible and extendable
 * parser libraries help to write readable parser code
 
 |* no compile time checks
-* no IDE support like code suggestions or autocomplete when using the DSL
+* no tooling support like code suggestions or autocomplete when using the DSL
 * writing parsers must be learned
-* dependency on a parser library
+* having a dependency on a parser library
+* difficult to extend at a later point in time
 * hard to combine with other DSL types
 |===
