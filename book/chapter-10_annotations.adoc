@@ -8,7 +8,7 @@ As mentioned in <<chapter-04_features.adoc#annotations,4.10 Annotations>>, you m
 
 Mapping between similar classes is a common and often tedious task. There exist already many solutions, e.g. the https://mapstruct.org/[MapStruct] library, which is a code generator for mapper classes.
 
-In this case study, we will write a very simple mapper DSL to transform e.g. data classes at runtime. The actual transformation code is not for the faint of heart, it relies on reflection and is very unsafe in order to keep it short. Explaining the details is beyond the scope of this book.
+In this case study, we will write a very simple mapper DSL to transform e.g. data classes at runtime. The actual transformation code is not for the faint of heart, it relies on reflection and is very unsafe in order to keep it short. Explaining the details is beyond the scope of this book, the focus of the case study lies on how to employ annotations for expressing your intentions.
 
 Let's start with an example. Assume we have a `User` and a `Person` class, and that we want to transform users into persons:
 
@@ -43,7 +43,7 @@ object UserToPerson : Mapper<User, Person>()
 val person = UserToPerson.map(getSomeUser())
 ----
 
-The definition of the `@Mapping` annotations is straightforward. They need to be present at runtime, they should be only valid on classes, and it must be possible to use multiple ones (which requires the `@Repeatable` annotation). As the annotation fields cannot be null, we have to use a dummy default class for the `transformer` field:
+The definition of the `@Mapping` annotations is straightforward. They need to be present at runtime, they should be only valid on classes, and it must be possible to use several of them (which requires the `@Repeatable` annotation). As the annotation fields cannot be null, we have to use a dummy default class for the `transformer` field:
 
 [source,kotlin]
 ----
@@ -100,6 +100,13 @@ abstract class Mapper<S : Any, T : Any> {
 
 As it uses reflection, you need to include a dependency to the `kotlin-reflect` library, as described in chapter <<chapter-04_features.adoc#reflection,4.11 Reflection>>. Of course, the example could be improved in many ways, e.g. sometimes you would need multiple source fields to calculate a target field.
 
+.((Convention over Code))
+****
+One design choice in our example deserves attention: When the names and types of the source and target classes match, no `@Mapping` annotation is needed. This implicit mapping behavior may seem obvious and trivial, but it highlights the principle of _Convention over Code_, which suggests that common use-cases should work seamlessly without requiring explicit instructions or extra configuration. It applies to language design in general, but seems to be more often applicable to annotation based DSLs than to other DSL categories.
+
+It is important to remember that not everything needs to be explicitly stated, and that common use-cases should seamlessly work "out of the box" whenever possible. By following the _Convention over Code_ approach and providing a well-defined default behavior, which requires no additional effort, decision-making, or actions from the user, you can improve the user experience and enhance usability considerably.
+****
+
 For serious applications, I would suggest to give https://mapstruct.org[MapStruct] a try. It is a Java library, but seems to work well with Kotlin, and has much more functionality than our example DSL. One main difference is that MapStruct generates sourcecode, avoiding the performance hit of using reflection, and making debugging much more convenient.
 
 === Synergy with String-based DSLs
@@ -117,11 +124,11 @@ Implementing such a DSL wouldn't give much new insights, however, Spring Data JP
 }
 ----
 
-The `@Query` annotation doesn't have fields for the `FROM` and `WHERE` clause, it allows to specify the whole query as a string (which is a DSL itself), and I think this is clearly the better solution here.
+The `@Query` annotation doesn't have fields for the `FROM` and `WHERE` clause, it allows to specify the whole query as a string (which is a DSL itself). In my opinion, this is clearly the better approach for this use-case.
 
 === Conclusion
 
-In some cases, it can feel very natural to integrate a DSL in the existing user code, and use it to influence how certain structures are processed or translated. In these cases, annotation-based DSLs are a good choice. While these DSLs are often easy to use, the implementation overhead can be substantial.
+In some cases, it can feel very natural to integrate a DSL in the existing user code, and use it to influence how certain structures are processed or translated. In these cases, annotation-based DSLs are a good choice. While these DSLs are often easy to use, the implementation overhead can be substantial. Another problem can be overusing annotations to the point of unreadability, and using annotations from different frameworks on the same class, method or property, which can be very confusing.
 
 ==== Preferable Use Cases
 
