@@ -1,10 +1,10 @@
-== Hybrid DSLs
+== Hybrid DSLs (((Hybrid DSLs)))
 
 In many cases, it is hard to categorize a DSL because it uses a mix of different techniques: Some parts could resemble a builder, others look like an algebraic DSL, and in one place annotations are used. That's what I call a "hybrid DSL".
 
-When most of a DSL can be written in a certain style, it is usually a good idea to stick with it in order to ensure a coherent look and feel. So I wouldn't advocate to mix builder and loan pattern styles together, but to decide on one. But if this is not possible, there is nothing wrong with designing a DSL which combines different approaches, when it gets the job done.
+When most of a DSL can be written in a certain style, it is usually a good idea to stick with it in order to ensure a coherent look and feel. So I wouldn't advocate to mix builder and loan pattern styles together, but to decide on one. But there is nothing wrong with designing a DSL which combines different approaches, when it gets the job done, and manages to provide a coherent language.
 
-=== Quasi-lingual DSLs
+=== Quasi-lingual DSLs (((Quasi-lingual DSLs)))
 
 A common reason for mixing features from different DSL categories is to imitate - to a degree - natural language. I call this important subgroup of Hybrid DSLs "quasi-lingual". Even though the syntax is usually rigid and contains artifacts like braces, parenthesis or commas, it is still "readable" in a very literal sense. This snippet from the mocking library https://mockk.io/#dsl-examples[MockK] should give you a good impression:
 
@@ -18,9 +18,7 @@ Technically, writing a quasi-lingual DSL is not very different from other Hybrid
 [#chemicalEquationsAsHybrid]
 === Case Study: Chemical Equations
 
-Writing a DSL for chemical equations is no easy task, because the notation is very concise and can't be imitated easily using Kotlin syntax. For our case study, we won't cover the full notation, e.g. we won't support writing ions or bonds.
-
-An example of a simple chemical equation in standard notation would be `3Ba(OH)~2~ + 2H~3~PO~4~ -> 6H~2~O + Ba~3~(PO~4~)~2~`. Of course, in scope of a DSL subscripts and special symbols are not very practical, so the target syntax would look more like `3Ba(OH)2 + 2H3PO4 -{zwsp}> 6H2O + Ba3(PO4)2`. To express such an equation, we use the following code:
+Writing a DSL for chemical equations is no easy task, because the notation is very concise and can't be imitated easily using Kotlin syntax. For our case study, we will attempt to recreate the <<chapter-09_strings.adoc#chemicalEquationsAsString,string-based DSL>> from chapter 9 using a hybrid approach. We will use the same underlying model classes:
 
 [source,kotlin]
 ----
@@ -54,13 +52,7 @@ data class Equation(val leftSide: List<Molecule>, val rightSide: List<Molecule>,
 }
 ----
 
-An `Element` contains a chemical symbol, like `"H"` (hydrogen) or `"Ba"` (barium), and optionally a subscript, which is counting the number of atoms. A feature of the chemical notation is that you can also define groups like `"(OH)~2~"` in a molecule, which is why we need the `Group` class as well. A group can contain not only elements, but also other groups.
-
-A `Molecule` is a collection of elements or groups, and can also have a coefficient in front. An equation consists of two sides and either an arrow `-{zwsp}>` or - in case of reversible reactions - a double arrow `<{zwsp}-{zwsp}>` in the middle. Both sides consist either of a single molecule or a "sum" of molecules.
-
-The code and overwrites the `toString()` methods in order to give the output in chemical notation. Note that lists were used instead of varargs, because data classes don't allow varargs in their primary constructor.
-
-We will use the same chart as in chapter 9 as base for our model classes:
+As a refresher, here is the related structure chart:
 
 [ditaa,"chemicalEquationAsHybrid"]
 .Model for Chemical Equations
@@ -97,34 +89,7 @@ We will use the same chart as in chapter 9 as base for our model classes:
 
 ....
 
-The equation mentioned above for making barium phosphate could be written like this:
-
-[source,kotlin]
-----
-val Ba = Element("Ba")
-val Ba3 = Element("Ba", 3)
-val O = Element("O")
-val O2 = Element("O", 2)
-val O4 = Element("O", 4)
-val H2 = Element("H", 2)
-val H3 = Element("H", 3)
-val P = Element("P")
-
-val bariumHydroxide = Molecule(3, listOf(Ba, Group(listOf(O, H), 2)))
-val phosphoricAcid = Molecule(2, listOf(H3, P, O4))
-val water = Molecule(6, listOf(H2, O))
-val bariumPhosphate = Molecule(1, listOf(Ba3, Group(listOf(P, O4), 2)))
-
-val equation = Equation(
-    listOf(bariumHydroxide, phosphoricAcid),
-    listOf(water, bariumPhosphate),
-    false)
-
-println(equation)
-//3Ba(HO)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2
-----
-
-This code works, but a little improvement wouldn't be the worst idea. Let's write a Hybrid DSL for it. First, we predefine all elements:
+As a first step, we define the elements as `val`{nbsp}s:
 
 [source,kotlin]
 ----
@@ -134,7 +99,7 @@ val Li = Element("Li", 1)
 // etc.
 ----
 
-Next, we need a convenient way to add the subscript to an element or a group. For this, we could use the invoke-operator `()` or the index access operator `[]`. As we will need parentheses in other places as well, the index access operator seems to be the better choice. We can now write `H[2]` to denote `H~2~`:
+Next, we need a convenient way to add the subscript to an element or a group. For this, we could use the invoke-operator `()` or the index access operator `[]`. As we will need parentheses in other places as well, the index access operator seems to be the better choice for this job. We can now write `H[2]` to denote `H~2~`:
 
 [source,kotlin]
 ----
@@ -148,29 +113,33 @@ operator fun Group.get(subscript: Int) =
 
 The code for both functions contains a sanity check, which won't allow nonsensical calls like `H[-5]` or `H[2][7]`.
 
-The next task is to assemble molecules from either elements or groups. We can use the minus operator `-` to represent a chemical bond, e.g. a water molecule could be written as `(H[2]-O)`. We also need to assemble groups, and from the few remaining operators the range `..` seems like a good fit, so we can write e.g. a carboxyl group as `(C..O..O..H)`:
+The next task is to assemble molecules from either elements or groups. We can use the minus operator `-` to represent a chemical bond, e.g. a water molecule could be written as `H[2]-O`. We also need to assemble groups, and we have to distinguish them from molecules, so we need to use a different operator. From the few remaining choices the range operator `..` seems like a good fit, so we can write e.g. a carboxyl group as `(C..O..O..H)`:
 
 [source,kotlin]
 ----
 operator fun Part.minus(that: Part) =
     Molecule(1,listOf(this, that))
+
 operator fun Molecule.minus(that: Part) =
     copy(parts = parts + that)
+
 operator fun Element.rangeTo(that: Part) =
     Group(listOf(this, that),1)
+
 operator fun Group.rangeTo(that: Part) =
     copy(parts = parts + that)
 ----
 
-Generally, we need to put molecules and groups in parentheses because of the precedence rules.
+Generally, we have to put groups and sometimes molecules in parentheses because of the precedence rules.
 
-A molecule can have an optional coefficient in front. Also, the same operation should "promote" an element or group to a molecule, allowing e.g. to write `2*O[2]` resulting in an oxygen molecule with a coefficient of two. Again, we need sanity checks, rendering calls like `-2*H[2]` or `3*(2*O[2])` invalid:
+A molecule can have an optional coefficient in front. Also, the same multiplication operation should "promote" an element or group to a molecule, allowing e.g. to write `2*O[2]` resulting in an oxygen molecule with a coefficient of two. Again, we need sanity checks, rendering calls like `-2*H[2]` or `3*(2*O[2])` invalid:
 
 [source,kotlin]
 ----
 operator fun Int.times(that: Molecule) =
     that.apply { require(coefficient == 1 && this@times > 1) }
         .copy(factor = this)
+
 operator fun Int.times(that: Part) =
     Molecule(this, listOf(that))
         .apply { require(coefficient > 1) }
@@ -182,41 +151,52 @@ Next, we need a way to group the left and right side of an equation to a list of
 ----
 operator fun Molecule.plus(that: Molecule) =
     listOf(this, that)
+
 operator fun Molecule.plus(that: Part) =
     listOf(this, Molecule(1,listOf(that)))
+
 operator fun Part.plus(that: Molecule) =
     listOf(Molecule(1,listOf(this)), that)
+
 operator fun List<Molecule>.plus(that: Part) =
-    this + Molecule( 1, listOf( that))
+    this + Molecule(1, listOf( that))
 ----
 
 In case you wonder why there is no `List<Molecule>.plus(that: Molecule)` function: This would be just a special case of adding elements to a list, which is already defined in the standard library.
 
-The last part is collecting everything in an equation. This is not complicated, but lengthy, because we might encounter not only lists of molecules, but single molecules or molecule parts on both sides of the equation. Further, we have to account for the two different equation types:
+The last part of the DSL is collecting everything in an equation. This is not complicated, but lengthy, because we might encounter not only lists of molecules, but single molecules or molecule parts on both sides of the equation. Further, we have to account for the two different equation types:
 
 [source,kotlin]
 ----
 infix fun List<Molecule>.reactsTo(that: List<Molecule>) =
     Equation(this, that, false)
+
 infix fun Molecule.reactsTo(that: List<Molecule>) =
     Equation(listOf(this), that, false)
+
 infix fun List<Molecule>.reactsTo(that: Molecule) =
     Equation(this, listOf(that), false)
+
 infix fun Molecule.reactsTo(that: Molecule) =
     Equation(listOf(this), listOf(that), false)
+
 infix fun Part.reactsTo(that: List<Molecule>) =
     Equation(listOf(Molecule(1,listOf(this))), that, false)
+
 infix fun List<Molecule>.reactsTo(that: Part) =
     Equation(this, listOf(Molecule(1, listOf(that))), false)
+
 infix fun Part.reactsTo(that: Part) =
     Equation(listOf(Molecule(1,listOf(this))), listOf(Molecule(1,listOf(that))), false)
+
 infix fun Part.reactsTo(that: Molecule) =
     Equation(listOf(Molecule(1,listOf(this))), listOf(that), false)
+
 infix fun Molecule.reactsTo(that: Part) =
     Equation(listOf(this), listOf(Molecule(1,listOf(that))), false)
 
-// same functions for reversibleTo,
-// just with an Equation having reversible == true
+// same functions for reversibleTo, just with
+// an equation having reversible == true
 ----
 
 Unfortunately, we have to resort to infix functions, as there seems to be no suitable operator available. A common trick is to use the backtick syntax(((Backtick Notation))) to mimic an operator, but `{backtick}-{zwsp}>{backtick}` and `{backtick}<{zwsp}-{zwsp}>{backtick}` won't work: `<` and `>` are two of the very few characters that are not allowed in backtick syntax on the JVM.
@@ -232,11 +212,15 @@ val makingWater =
 //3Ba(HO)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2
 val makingBariumPhosphate =
     3*(Ba-(O..H)[2]) + 2*(H[3]-P-O[4]) reactsTo
-        6*(H[2]-O) + (Ba[3]-(P..O[4])[2])
+        6*(H[2]-O) + Ba[3]-(P..O[4])[2]
 
 //H2SO4 + 8HI <-> H2S + 4I2 + 4H2O
 val sulfuricAcidAndHydrogenIodide =
-    (H[2]-S-O[4]) + 8*(H-I) reversibleTo (H[2]-S) + 4*I[2] + 4*(H[2]-O)
+    H[2]-S-O[4] + 8*(H-I) reversibleTo (H[2]-S) + 4*I[2] + 4*(H[2]-O)
+
+//CuSO4 + 4H2O -> [Cu(H2O)4]SO4
+val copperSulfateComplex =
+    Cu-S-O[4] + 4*(H[2]-O) reactsTo (Cu..(H[2]..O)[4])-S-O[4]
 ----
 
 There is one optional improvement, which is more a matter of taste: We could add some extension properties for low subscripts of elements and groups, which would allow to write e.g. `N._2` instead of `N[2]`:
@@ -260,11 +244,13 @@ val eq = 3*(Ba-(O..H)._2) + 2*(H._3-P-O._4) reactsTo
             6*(H._2-O) + (Ba._3-(P..O._4)._2)
 ----
 
-Please decide for yourself which version you prefer. Personally, I find the first syntax more readable.
+Please decide for yourself which version you prefer. Personally, I find the syntax with the index operator `[]` more readable.
 
-Simulating the dense chemical notation is hard, and while using operator overloading and infix notation made our example substantially shorter, it still contains a lot of clutter. Of course, after some time one would get used to the DSL, but there is clearly a learning curve involved. In the next chapter, we will have another look at the problem, and attack it from a totally different angle.
+Simulating the dense chemical notation is hard, and while using operator overloading and infix notation made our example substantially shorter, it still contains a lot of clutter. Of course, after some time one would get used to the DSL, but there is clearly a learning curve involved. You have already seen how the same problem can be tackled with a string-based DSL, which seems to be the more elegant approach in this specific case.
 
 === Case Study: Pattern Matching
+
+//TODO revamp
 
 Kotlin's `when` is certainly more versatile than Java's `switch`, but languages like Scala or Haskell go one step further and allow pattern matching. This means that you can not only compare or test a value, you can also decompose it, check its parts individually or use the values in the result expression. But it is possible to get similar functionality in Kotlin, although not as elegant. The following code is based on the https://github.com/DanielGronau/kopama[kopama] library written by the author.
 

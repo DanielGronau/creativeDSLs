@@ -26,7 +26,7 @@ data class Person(
     val age: Int)
 ----
 
-As you can see, we have to consider three cases:
+We have to consider three cases:
 
 1. the source and target parameters have the same name and type, like `firstName`
 2. the source and target parameters have the same type, but different names, like  `familyName` and `lastName`
@@ -117,8 +117,9 @@ Implementing such a DSL wouldn't give much new insights, however, Spring Data JP
 
 [source,kotlin]
 ----
-@Repository interface UserRepository : JpaRepository<UserEntity, Long> {
-    @Query("FROM UserEntity WHERE last_name = :lastName")
+@Repository
+interface UserRepository : JpaRepository<UserEntity, Long> {
+    @Query("SELECT u FROM UserEntity u WHERE u.last_name = :lastName")
     fun findAllByLastName(@Param("lastName") lastName: String):
        List<UserEntity>
 }

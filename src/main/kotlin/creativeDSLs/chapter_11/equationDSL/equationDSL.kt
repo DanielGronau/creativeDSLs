@@ -87,10 +87,12 @@ fun main() {
 
     val equation3 = 2*H[2] + O[2] reversibleTo 2*(H[2]-O)
 
-    val equation4 = H[2] reactsTo 2 * H[2]
+    val equation4 = Cu-S-O[4] + 4*(H[2]-O) reactsTo (Cu..(H[2]..O)[4]) - S - O[4]
+    println(equation4)
 
-    val equation5 = 3 * (Ba - (O..H)._2) + 2 * (H._3 - P - O._4) reactsTo
-            6 * (H._2 - O) + (Ba._3 - (P..O._4)._2)
+
+    val equation5 = 3 * (Ba - (O .. H)._2) + 2 * (H._3 - P - O._4) reactsTo
+            6 * (H._2 - O) + (Ba._3 - (P .. O._4)._2)
 }
 
 val H = Element("H",1)
