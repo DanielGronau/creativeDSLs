@@ -1,6 +1,6 @@
 == Modeling State Transitions in DSLs
 
-DSLs often need to model complex state transitions that occur during the execution of the program, or are needed when objects must be constructed in stages. In this chapter, we will explore three different techniques for modeling such use cases, how to choose the right one, and how to use these techniques in conjunction with other patterns such as the Builder and Loan pattern. The three approaches are:
+DSLs often need to model complex state transitions that occur during the execution of the program, to model workflows, or are needed when objects must be constructed in stages. In this chapter, we will explore three different techniques for modeling such use cases, how to choose the right one, and how to use these techniques in conjunction with other patterns such as the Builder and Loan pattern. The three approaches are:
 
 * *Separate Classes*: The most intuitive implementation. Every State is represented by an independent class.
 * *Chameleon Class*: The different states are represented by interfaces with their respective methods. A single class implements all interfaces, but its methods return always one of the interfaces, never the class itself.
@@ -476,7 +476,7 @@ data class QueryDTO(
 )
 ----
 
-Now we need a starting point, in form of a `SELECT` function. It executes the given body (where the columns can be added) and hands the results over to the `SelectClause` class, which in turn has a method for going to the `FromClause`:
+Now we need a starting point, in form of a `SELECT` function. It executes the given body (where the columns can be added) and hands the results over to the `SelectClause` class, which in turn has a method for proceeding to the `FromClause`:
 
 [source,kotlin]
 ----

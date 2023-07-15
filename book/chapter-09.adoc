@@ -145,10 +145,10 @@ private fun getCastling(castlingStr: String) = castlingStr
 
 The `readFEN()` function calls some helper functions for the different parts, and assembles the `Position` class. Most of the sanity checks were omitted for better readability. In easy cases like this, it is probably overkill to write a parser or to use a parser library. The hardest part was to read the piece positions correctly, and this took just a few lines.
 
-[#chemicalEquations]
+[#chemicalEquationsAsString]
 === Case Study: Chemical Equations as Strings
 
-Writing a DSL for chemical equations is challenging using Kotlin syntax, because the concise notation doesn't naturally lend itself to be easily expressed using language features. That's why using the string parsing approach seems like a good fit. If you are curious how a hybrid DSL for chemicals could look like, you can skip ahead to <<chapter_11.adok#chemicalEquations,Chapter 11 - Hybrid DSLs>>.
+Writing a DSL for chemical equations is challenging using Kotlin syntax, because the concise notation doesn't naturally lend itself to be easily expressed using language features. That's why using the string parsing approach seems like a good fit. If you are curious how a hybrid DSL for chemicals could look like, you can skip ahead to <<chapter_11.adok#chemicalEquationsAsHybrid,Chapter 11 - Hybrid DSLs>>.
 
 For our case study, we won't cover the full notation, e.g. we won't support writing ions or bonds. An example of a simple chemical equation in standard notation would be `3Ba(OH)~2~ + 2H~3~PO~4~ -> 6H~2~O + Ba~3~(PO~4~)~2~`. Of course, in scope of a DSL subscripts and special symbols are not very practical, so the target syntax would look more like `3Ba(OH)2 + 2H3PO4 -{zwsp}> 6H2O + Ba3(PO4)2`. To express such an equation, we use the following code:
 
@@ -192,7 +192,7 @@ The code and overwrites the `toString()` methods in order to give the output in 
 
 This chart summarizes the structure of our model classes:
 
-[ditaa,"chemicalEquation"]
+[ditaa,"chemicalEquationAsString"]
 .Model for Chemical Equations
 ....
 
@@ -332,6 +332,8 @@ private val elements = setOf(
     "H", "He", "Li", "Be", "B", "C", "N", "O", // etc.
 )
 ----
+
+//TODO fix this
 
 All the parser functions will have a similar return type, so this alias is used for convenience:
 

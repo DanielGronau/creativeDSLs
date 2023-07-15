@@ -15,7 +15,7 @@ every { car.door(DoorType.FRONT_LEFT).windowState() } returns WindowState.UP
 
 Technically, writing a quasi-lingual DSL is not very different from other Hybrid DSLs, although it might be harder to model grammatical structures correctly. Also, name clashes with keywords like `is`, `as` etc. are more of a problem. As good advice is to keep the DSL grammar simple and well-structured, and to compromise when it helps to reduce complexity. E.g. instead of trying to model words like `should` `be` separated, it is okay to use `shouldBe` instead when it helps to keep the grammar simple.
 
-[#chemicalEquations]
+[#chemicalEquationsAsHybrid]
 === Case Study: Chemical Equations
 
 Writing a DSL for chemical equations is no easy task, because the notation is very concise and can't be imitated easily using Kotlin syntax. For our case study, we won't cover the full notation, e.g. we won't support writing ions or bonds.
@@ -60,9 +60,9 @@ A `Molecule` is a collection of elements or groups, and can also have a coeffici
 
 The code and overwrites the `toString()` methods in order to give the output in chemical notation. Note that lists were used instead of varargs, because data classes don't allow varargs in their primary constructor.
 
-This chart summarizes the structure of our model classes:
+We will use the same chart as in chapter 9 as base for our model classes:
 
-[ditaa,"chemicalEquation"]
+[ditaa,"chemicalEquationAsHybrid"]
 .Model for Chemical Equations
 ....
 
