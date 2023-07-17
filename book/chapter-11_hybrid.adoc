@@ -113,7 +113,7 @@ operator fun Group.get(subscript: Int) =
 
 The code for both functions contains a sanity check, which won't allow nonsensical calls like `H[-5]` or `H[2][7]`.
 
-The next task is to assemble molecules from either elements or groups. We can use the minus operator `-` to represent a chemical bond, e.g. a water molecule could be written as `H[2]-O`. We also need to assemble groups, and we have to distinguish them from molecules, so we need to use a different operator. From the few remaining choices the range operator `..` seems like a good fit, so we can write e.g. a carboxyl group as `(C..O..O..H)`:
+The next task is to assemble molecules from either elements or groups. We can use the minus operator `-` to represent a chemical bond, e.g. a water molecule could be written as `H[2]-O`. We also need to assemble groups, and we have to distinguish them from molecules, so we need to use a different operator for the bonds inside groups. From the few remaining choices the range operator `..` seems like a good fit, so we can write e.g. a carboxyl group as `(C..O..O..H)`:
 
 [source,kotlin]
 ----
@@ -145,7 +145,7 @@ operator fun Int.times(that: Part) =
         .apply { require(coefficient > 1) }
 ----
 
-Next, we need a way to group the left and right side of an equation to a list of molecules, and the obvious choice for an operator is `+`. Again, we "promote" molecule parts to full molecules when necessary. This time the precedence rules for `*` and `+` play nicely along with the intended use, so we won't need parentheses on this level.
+Next, we need a way to group the left and right side of an equation to a list of molecules, and the obvious choice for an operator is `+`. As before, we "promote" molecule parts to full molecules when necessary. This time the precedence rules for `*` and `+` play nicely along with the intended use, so we won't need parentheses on this level.
 
 [source,kotlin]
 ----
@@ -248,11 +248,15 @@ Please decide for yourself which version you prefer. Personally, I find the synt
 
 Simulating the dense chemical notation is hard, and while using operator overloading and infix notation made our example substantially shorter, it still contains a lot of clutter. Of course, after some time one would get used to the DSL, but there is clearly a learning curve involved. You have already seen how the same problem can be tackled with a string-based DSL, which seems to be the more elegant approach in this specific case.
 
-=== Case Study: Pattern Matching
+=== Case Study: Pattern Matching (((Pattern Matching)))
 
 //TODO revamp
 
-Kotlin's `when` is certainly more versatile than Java's `switch`, but languages like Scala or Haskell go one step further and allow pattern matching. This means that you can not only compare or test a value, you can also decompose it, check its parts individually or use the values in the result expression. But it is possible to get similar functionality in Kotlin, although not as elegant. The following code is based on the https://github.com/DanielGronau/kopama[kopama] library written by the author.
+Kotlin's `when` is certainly more versatile than Java's `switch`, but languages like Scala or Haskell go one step further and allow pattern matching. This feature allows you to destructure and match values against specific patterns. It provides a concise and powerful way to perform conditional branching and data extraction based on the structure and contents of the input.
+
+In pattern matching, you define a set of patterns that describe the possible shapes or values that an input can take. These patterns can include literals, variables, data constructors, or even more complex patterns like lists or tuples. The language then matches the input against these patterns and executes the corresponding code block or expression associated with the first matching pattern.
+
+In this case study, we want to provide similar functionality in Kotlin, although it won't be as elegant as its built-in counterparts in other languages.
 
 An ideal syntax could look like this:
 
@@ -263,38 +267,41 @@ val p = Person("Andy", "Smith", 43)
 
 val result = match(p) {
     Person("Andy", "Miller", _) ->
-        "Andy Miller has called!"
+        "It's Andy Miller!"
     Person("Andy", lastName != "Miller", age) ->
-        "Some other Andy of age $age has called"
-    else -> "Some unknown caller"
+        "Some other Andy of age $age."
+    else -> "Some unknown person."
 }
 ----
 
-We have to allow for some compromises to make it work in Kotlin:
+However, we have to allow for some compromises to make it work in Kotlin:
 
-* We can't use `Person` in the match cases, but `Person::class` would be okay. We will assume that `Person` is a `data class`.
+* We can't use `Person` in the match cases, but we need to write a helper function.
+* It is difficult to support a mix of literal values and patterns, so for our small example we need to wrap all values like `"Andy"` in a pattern, e.g. `eq("Andy")`
 * The arrow notation is not possible, we will use `then` instead
 * Comparisons as well as `and` and `or` can be only infix functions
-* The right sides should be only evaluated if needed, so we need braces for a "lazy" lambda.
-* Capturing variables on the left and using them on the right needs to use a separate variable.
+* The right sides should be only evaluated if needed, so we need braces for lazy evaluation.
+* Capturing variables on the left and using them on the right requires a dedicated "capture" pattern.
 * `else` is a keyword, so `otherwise` is used instead. As it is not possible to determine at compile time whether the given conditions are exhaustive, the `otherwise` branch is mandatory
-* The whole construct has only limited type safety, as we can't know which member types a data class has.
+* In some cases, we need to provide generic type information.
 
 That's a rather long list, let's see how our example looks now:
 
 [source,kotlin]
 ----
 val result = match(p) {
-    Person::class("Andy", "Miller", any) then
-        { "Andy Miller has called!" }
+    person(eq("Andy"), eq("Miller"), any()) then
+        { "It's Andy Miller!" }
     val ageCapture = capture<Int>()
-    Person::class("Andy", !eq("Miller"), ageCapture) then
-        { "Some other Andy of age ${ageCapture.value} has called" }
-    otherwise { "Some unknown caller" }
+    person(eq("Andy"), !eq("Miller"), ageCapture) then
+        { "Some other Andy of age ${ageCapture.value}." }
+    otherwise { "Some unknown person." }
 }
 ----
 
 That doesn't look too bad. The core of the DSL is quite small:
+
+// TODO
 
 [source,kotlin]
 ----
