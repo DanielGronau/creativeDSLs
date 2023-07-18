@@ -3,11 +3,13 @@ package creativeDSLs.chapter_11
 import java.io.Serializable
 import kotlin.reflect.KClass
 
-fun interface Pattern<in P> : (P) -> Boolean
+typealias Pattern<P> = (P) -> Boolean
 
-data class MatchResult<T>(val value: T)
+interface MatchResult<T : Any> {
+    val value: T
+}
 
-class Matcher<P, T>(private val obj: P) {
+class Matcher<P, T : Any>(private val obj: P) {
 
     private var result: T? = null
 
@@ -17,8 +19,13 @@ class Matcher<P, T>(private val obj: P) {
         }
     }
 
-    fun otherwise(default: () -> T) = MatchResult(result ?: default())
+    fun otherwise(default: () -> T) = object : MatchResult<T> {
+        override val value = result ?: default()
+    }
 }
+
+fun <P, T : Any> match(obj: P, body: Matcher<P, T>.() -> MatchResult<T>): T =
+    Matcher<P, T>(obj).run(body).value
 
 class Capture<P : Any> : Pattern<P> {
 
@@ -30,36 +37,37 @@ class Capture<P : Any> : Pattern<P> {
 
 inline fun <reified P : Any> capture() = Capture<P>()
 
-fun <P, T> match(obj: P, body: Matcher<P, T>.() -> MatchResult<T>): T =
-    Matcher<P, T>(obj).run(body).value
+fun <P> any(): Pattern<P> = { true }
 
-fun <P> any() = Pattern<P> { true }
+fun <P> none(): Pattern<P> = { false }
 
-fun <P> none() = Pattern<P> { false }
+fun <P> isNull(): Pattern<P> = { it == null }
 
-fun <P> isNull() = Pattern<P> { it == null }
+operator fun <P> Pattern<P>.not(): Pattern<P> = { !this@not(it) }
 
-operator fun <P> Pattern<P>.not() = Pattern<P> { !this@not(it) }
+infix fun <P> Pattern<P>.and(that: Pattern<P>): Pattern<P> = { this@and(it) && that(it) }
 
-infix fun <P> Pattern<P>.and(that: Pattern<P>) = Pattern<P> { this@and(it) && that(it) }
+infix fun <P> Pattern<P>.or(that: Pattern<P>): Pattern<P> = { this@or(it) || that(it) }
 
-infix fun <P> Pattern<P>.or(that: Pattern<P>) = Pattern<P> { this@or(it) || that(it) }
+fun <P> eq(value: P): Pattern<P> = { it == value }
 
-fun <P> eq(value: P) = Pattern<P> { it == value }
+fun <P> oneOf(vararg values: P): Pattern<P> = { it in values }
 
-fun <P> oneOf(vararg values: P) = Pattern<P> { it in values }
+fun <P> isA(kClass: KClass<*>): Pattern<P> = { kClass.isInstance(it) }
 
-fun <P> isA(kClass: KClass<*>) = Pattern<P> { kClass.isInstance(it) }
+fun <P> isSame(value: P): Pattern<P> = { it === value }
 
-fun <P> isSame(value: P) = Pattern<P> { it === value }
+inline fun <reified C : Comparable<C>> gt(value: C): Pattern<C> = { it > value }
 
-inline fun <reified C : Comparable<C>> gt(value: C) = Pattern<C> { it > value }
+inline fun <reified C : Comparable<C>> ge(value: C): Pattern<C> = { it >= value }
 
-inline fun <reified C : Comparable<C>> ge(value: C) = Pattern<C> { it >= value }
+inline fun <reified C : Comparable<C>> lt(value: C): Pattern<C> = { it < value }
 
-inline fun <reified C : Comparable<C>> lt(value: C) = Pattern<C> { it < value }
+inline fun <reified C : Comparable<C>> le(value: C): Pattern<C> = { it <= value }
 
-inline fun <reified C : Comparable<C>> le(value: C) = Pattern<C> { it <= value }
+fun <P> all(p: Pattern<P>) : Pattern<Iterable<P>> = { it.all(p) }
+fun <P> any(p: Pattern<P>) : Pattern<Iterable<P>> = { it.any(p) }
+fun <P> none(p: Pattern<P>) : Pattern<Iterable<P>> = { it.none(p) }
 
 data class Person(val firstName: String, val lastName: String, val age: Int)
 
@@ -67,7 +75,7 @@ fun person(
     firstNamePattern: Pattern<String>,
     lastNamePattern: Pattern<String>,
     agePattern: Pattern<Int>
-) = Pattern<Person?> {
+): Pattern<Person?> = {
     when (it) {
         null -> false
         else -> firstNamePattern(it.firstName) &&
@@ -97,4 +105,11 @@ fun main() {
     }
 
     println(result)
+
+    val r = match(listOf(1,2,4, 42)) {
+        all(lt(10) or eq(42)) then { "Only small elements" }
+        otherwise { "no match" }
+    }
+
+    println(r)
 }

@@ -6,14 +6,14 @@ When most of a DSL can be written in a certain style, it is usually a good idea 
 
 === Quasi-lingual DSLs (((Quasi-lingual DSLs)))
 
-A common reason for mixing features from different DSL categories is to imitate - to a degree - natural language. I call this important subgroup of Hybrid DSLs "quasi-lingual". Even though the syntax is usually rigid and contains artifacts like braces, parenthesis or commas, it is still "readable" in a very literal sense. This snippet from the mocking library https://mockk.io/#dsl-examples[MockK] should give you a good impression:
+A common reason for mixing features from different DSL categories is to imitate - to a degree - natural language. I would call this important subgroup of Hybrid DSLs "quasi-lingual". Even though the syntax is usually rigid and contains artifacts like braces, parenthesis or commas, it is still "readable" in a very literal sense. This snippet from the mocking library https://mockk.io/#dsl-examples[MockK] should give you a good impression:
 
 [source,kotlin]
 ----
 every { car.door(DoorType.FRONT_LEFT).windowState() } returns WindowState.UP
 ----
 
-Technically, writing a quasi-lingual DSL is not very different from other Hybrid DSLs, although it might be harder to model grammatical structures correctly. Also, name clashes with keywords like `is`, `as` etc. are more of a problem. As good advice is to keep the DSL grammar simple and well-structured, and to compromise when it helps to reduce complexity. E.g. instead of trying to model words like `should` `be` separated, it is okay to use `shouldBe` instead when it helps to keep the grammar simple.
+Technically, writing a quasi-lingual DSL is not very different from other Hybrid DSLs, although it might be harder to model grammatical structures correctly. Also, name clashes with keywords like `is`, `as` etc. are more of a problem. A good rule of thumb is to keep the DSL grammar simple and well-structured, and to compromise when it helps to reduce complexity. E.g. instead of trying to model words like `should` `be` separated, it might be advisable to use `shouldBe` instead, when it helps to keep the grammar simple.
 
 [#chemicalEquationsAsHybrid]
 === Case Study: Chemical Equations
@@ -299,60 +299,80 @@ val result = match(p) {
 }
 ----
 
-That doesn't look too bad. The core of the DSL is quite small:
-
-// TODO
+That doesn't look too bad. The core of the DSL is quite small. It consists of a matcher providing a context for keeping track of the result and defining the `then` and `otherwise` methods. Then we have the pattern, which is just a test function, so we can use a type alias instead of introducing a new interface. The `MatchResult` is just an interface wrapping a given value. And finally, the `match()` function ties everything together and acts as an entry point for the DSL:
 
 [source,kotlin]
 ----
-fun interface Pattern : (Any?) -> Boolean
+typealias Pattern<P> = (P) -> Boolean
 
-data class MatchResult<T>(val value: T)
+interface MatchResult<T : Any> {
+    val value: T
+}
 
-class Matcher<T>(private val obj: Any?) {
+class Matcher<P, T : Any>(private val obj: P) {
+
     private var result: T? = null
 
-    fun otherwise(default: () -> T) = MatchResult(result ?: default())
-
-    infix fun Pattern.then(value: () -> T) {
+    infix fun Pattern<P>.then(value: () -> T) {
         if (result == null && this(obj)) {
             result = value()
         }
     }
+
+    fun otherwise(default: () -> T) = object : MatchResult<T> {
+        override val value = result ?: default()
+    }
 }
 
-fun <T> match(obj: Any, body: Matcher<T>.() -> MatchResult<T>): T =
-    Matcher<T>(obj).run(body).value
+fun <P, T : Any> match(obj: P, body: Matcher<P, T>.() -> MatchResult<T>): T =
+    Matcher<P, T>(obj).run(body).value
 ----
 
-As a reminder, the `fun interface` syntax defines a <<chapter-04_features.adoc#functionalInterfaces, functional interface>>. Note that the `body` parameter of the `match()` method requires a `MatchResult` as return value. This is a trick to force users to call the `otherwise()` method at the end of the block.
+Note that the `body` parameter of the `match()` method requires a `MatchResult` as return value, and immediately extracts its content. So why doesn't the block simply return a `T` value directly? This is a trick to remind users to call the `otherwise()` method at the end of the block, because this is the obvious way to construct such a instance.
 
-Of course, there are still patterns missing for the left-hand sides of the `then` expressions. For implementing them, we can take advantage of the simplified syntax for functional interfaces (a.k.a. SAM conversion). Most of them are quite easy to write:
+Of course, there are still patterns missing for the left-hand sides of the `then` infix functions. For implementing them, we can take advantage of the simplified syntax for functional interfaces (a.k.a. SAM conversion). Most of them are quite easy to write:
 
 [source,kotlin]
 ----
 // matches everything
-val any = Pattern { true }
+fun <P> any(): Pattern<P> =
+    { true }
+
 // matches nothing
-val none = Pattern { false }
+fun <P> none(): Pattern<P> =
+    { false }
+
 // matches null values
-val isNull = Pattern { it == null }
+fun <P> isNull(): Pattern<P> =
+    { it == null }
+
 // negates a pattern
-operator fun Pattern.not() = Pattern { !this@not(it) }
+operator fun <P> Pattern<P>.not(): Pattern<P> =
+    { !this@not(it) }
+
 // conjunction of patterns
-infix fun Pattern.and(that: Pattern) =
-    Pattern { this@and(it) && that(it) }
+infix fun <P> Pattern<P>.and(that: Pattern<P>): Pattern<P> =
+    { this@and(it) && that(it) }
+
 // disjunction of patterns
-infix fun Pattern.or(that: Pattern) =
-    Pattern { this@or(it) || that(it) }
+infix fun <P> Pattern<P>.or(that: Pattern<P>): Pattern<P> =
+    { this@or(it) || that(it) }
+
 // equality to a value
-fun eq(value: Any?) = Pattern { it == value }
+fun <P> eq(value: P): Pattern<P> =
+    { it == value }
+
 // equality to one of the values
-fun oneOf(vararg values: Any?) = Pattern { values.contains(it) }
+fun <P> oneOf(vararg values: P): Pattern<P> =
+    { it in values }
+
 // type check
-fun isA(kClass: KClass<*>) = Pattern { kClass.isInstance(it) }
+fun <P> isA(kClass: KClass<*>): Pattern<P> =
+    { kClass.isInstance(it) }
+
 // instance equality
-fun isSame(value: Any) = Pattern { it === value }
+fun <P> isSame(value: P): Pattern<P> =
+    { it === value }
 ----
 
 For comparing values, some type checks are needed in order to ensure that the value is comparable. That's why we need <<chapter-04_features.adoc#reifiedGenerics, reified generics>> in this case:
@@ -360,102 +380,94 @@ For comparing values, some type checks are needed in order to ensure that the va
 [source,kotlin]
 ----
 // greater than
-inline fun <reified C : Comparable<C>> gt(value: C) = Pattern {
-    when (it) {
-        is C -> it > value
-        else -> false
-    }
-}
+inline fun <reified C : Comparable<C>> gt(value: C): Pattern<C> =
+    { it > value }
+
 // greater or equal
-inline fun <reified C : Comparable<C>> ge(value: C) = Pattern {
-    when (it) {
-        is C -> it >= value
-        else -> false
-    }
-}
+inline fun <reified C : Comparable<C>> ge(value: C): Pattern<C> =
+    { it >= value }
+
 // less than
-inline fun <reified C : Comparable<C>> lt(value: C) = Pattern {
-    when (it) {
-        is C -> it < value
-        else -> false
-    }
-}
+inline fun <reified C : Comparable<C>> lt(value: C): Pattern<C> =
+    { it < value }
+
 // less or equal
-inline fun <reified C : Comparable<C>> le(value: C) = Pattern {
-    when (it) {
-        is C -> it <= value
-        else -> false
-    }
-}
+inline fun <reified C : Comparable<C>> le(value: C): Pattern<C> =
+    { it <= value }
 ----
 
-For capturing values we need a subclass of `Pattern` which can also hold a value:
+Similarly to the existing `all()`, `any()` and `none()` predicates on `Iterable`{nbsp}s, we can define those as patterns:
+
+[source, kotlin]
+----
+// checks that all elements match the given pattern
+fun <P> all(p: Pattern<P>) : Pattern<Iterable<P>> =
+    { it.all(p) }
+
+// checks that at least one element matches the given pattern
+fun <P> any(p: Pattern<P>) : Pattern<Iterable<P>> =
+    { it.any(p) }
+
+// checks that no element matches the given pattern
+fun <P> none(p: Pattern<P>) : Pattern<Iterable<P>> =
+    { it.none(p) }
+----
+
+For capturing values we need a class implementing `Pattern<T>`, which can also hold a value:
 
 [source,kotlin]
 ----
-class Capture<T : Any>(val kclass: KClass<T>) : Pattern {
-    lateinit var value: T
+class Capture<P : Any> : Pattern<P> {
+
+    lateinit var value: P
         private set
 
-    override fun invoke(obj: Any?) = when {
-        kclass.isInstance(obj) -> true.also { value = kclass.cast(obj) }
-        else -> false
-    }
+    override fun invoke(obj: P) = true.also { value = obj }
 }
 
-inline fun <reified T : Any> capture() = Capture(T::class)
+inline fun <reified P : Any> capture() = Capture<P>()
 ----
 
-For capturing values, you first define a variable using the `capture<T>()` method. Then you can use this variable on the left-hand side of `then` as a pattern, which checks that the value has the same type `T` as specified, and stores it. On the right-hand side the value can be read from the variable.
-
-Now the only missing pattern is the one for decomposing a data class, which is more involved, as it relies heavily on reflection:
+For capturing values, you first define a val using the `capture<T>()` method. Then you can use it on the left-hand side of `then` as a pattern, which always succeeds, but also stores the value. On the right-hand side the value can be read from the val. The initial example for the syntax demonstrates the usage
 
 [source,kotlin]
 ----
-operator fun KClass<*>.invoke(vararg patterns: Any?) = Pattern {
-    fun asPattern(p: Any?) = when (p) {
-        is Pattern -> p
-        else -> eq(p)
-    }
-    when {
-        it == null -> false
-        !this@invoke.isInstance(it) -> false
-        patterns.size != maxComponent(it) -> false
-        else -> patterns.foldIndexed(true) { i, b, p ->
-            b && asPattern(p).testComponentN(it, i + 1)
-        }
-    }
+val result = match(p) {
+    ...
+    val ageCapture = capture<Int>()
+    person(eq("Andy"), !eq("Miller"), ageCapture) then
+        { "Some other Andy of age ${ageCapture.value}." }
+    ...
 }
-
-private fun Pattern.testComponentN(obj: Any?, index: Int) =
-    if (index < 0 || obj == null) false
-    else obj::class.memberFunctions.find { f ->
-        f.name == "component$index" &&
-        f.parameters.size == 1 &&
-        f.parameters[0].kind == KParameter.Kind.INSTANCE
-    }
-        ?.call(obj)
-        ?.let { this@testComponentN(it) }
-        ?: false
-
-private fun maxComponent(obj: Any?) = obj?.let {
-    generateSequence(1) { index ->
-        if (obj::class.memberFunctions.any { f ->
-                f.name == "component$index" &&
-                        f.parameters.size == 1 &&
-                        f.parameters[0].kind == KParameter.Kind.INSTANCE
-            }) index + 1 else null
-    }.last() - 1
-} ?: 0
 ----
 
-The `invoke()` method checks first that the value is not null and that it has the right type and number of fields. Then the patterns given for the fields are applied. If no pattern is given, but another value, it is assumed that you want to compare the field with this value, so when you write `Person::class("Andy", "Miller", any)`, it is interpreted as `Person::class(eq("Andy"), eq("Miller"), any)`. I won't get into the details of the reflection code, but would refer to TODO.
+Now the only missing pattern is the one for decomposing a data class, but unfortunately it is not possible to write code to handle all data classes at once in a typesafe manner. So we are forced to write a pattern for every data class we want to use in a pattern, but it is straightforward to do so:
 
-Of course, you can write many more patterns, but the DSL is already functional as it is. Unfortunately, there is no way to make the code more type-safe, as we can't know which types the fields of a data class have. So I would advise to be careful when using it, and double-check if the patterns make sense. Despite that, I still think this is a cool example which demonstrate the expressiveness of Kotlin.
+[source,kotlin]
+----
+fun person(
+    firstNamePattern: Pattern<String>,
+    lastNamePattern: Pattern<String>,
+    agePattern: Pattern<Int>
+): Pattern<Person?> = {
+    when (it) {
+        null -> false
+        else -> firstNamePattern(it.firstName) &&
+                lastNamePattern(it.lastName) &&
+                agePattern(it.age)
+    }
+}
+----
+
+The next chapter discusses how to generate such boilerplate code.
+
+Of course, you can write many more patterns, but the DSL is already functional as it is. Regardless of the complexity of the topic, it wasn't that difficult to come up with a quite usable DSL, which demonstrates the power and expressiveness of Kotlin.
 
 === Conclusion
 
-Writing good hybrid DSLs is challenging. In most cases it is the better choice to stick with a certain style, when it is possible. On the other hand, a well-designed hybrid DSL can combine the most fitting techniques in a way that feels intuitive and organic.
+Writing high-quality hybrid DSLs can be a complex task, as it requires careful consideration and integration of different language features. It's important to recognize that not all language features may work seamlessly together, and in such cases, it is often better to stick with a consistent style throughout the DSL.
+
+However, when done well, a well-designed hybrid DSL can effectively combine various techniques in a way that feels intuitive and organic. By leveraging the strengths of different language features and carefully designing their integration, you can create very powerful and expressive DSLs.
 
 ==== Preferable Use Cases
 
@@ -489,4 +501,5 @@ Writing good hybrid DSLs is challenging. In most cases it is the better choice t
 * high perceptual complexity -> steeper learning curve
 * difficult to control and predict the outcome
 * higher maintenance effort needed
+* Java interoperability can be very challenging
 |===
