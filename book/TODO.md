@@ -14,24 +14,23 @@ Chapters
 5. Algebraic DSLs
 6. Builder Pattern DSLs 
 7. Loan Pattern DSLs (with AutoDSL)
-8. Token Chain DSLs
+8. State Transitions in DSLs
 9. String-Parsing DSLs (chemical formula with and without parser generator)
 10. Annotation based DSL (data class mapper)
 11. Hybrid DSLs (chemical formula, pattern matcher)
 ---
-12. Code Generation with KotlinPoet (physical quantities)
+12. Code Generation with KotlinPoet (physical quantities, pattern matcher)
 13. Java Interoperability
 14. Dissecting common DSLs (kotest, gradle .kts, Kotlin Poet, better-parse)
 
 TODO:
-- chapter 8, 13 and 14
+- chapter 13 and 14
 - make the index
 - other kinds of DSLs / techniques? 
   - Constructors in kotest?
   - Token based, e.g. turtle graphics
 - find a good Kotlin reflection book to refer to -> 8.3. TODO
 - Are the conclusion sections okay?
-- chapter 14 "Bits and Pieces"?
 
 ## Research
 

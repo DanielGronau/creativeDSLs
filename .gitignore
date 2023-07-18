@@ -43,7 +43,6 @@ build/
 ### Mac OS ###
 .DS_Store
 
-/book/book.pdf
 /book/book.epub
 
 /.gradle/5.4.1/fileHashes/fileHashes.lock
