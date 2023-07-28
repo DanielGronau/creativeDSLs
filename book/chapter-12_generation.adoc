@@ -251,7 +251,7 @@ public operator fun Joule.div(that: Newton) =
     Meter(this.amount / that.amount)
 ----
 
-In order to finish the DSL, we need to write the generated code in a file. For simplicity, I decided to write it directly next to the generating file, but it is common to have separate directories for generated code. For convenience, I added two extension functions for `FileSpec`, which allow to add multiple properties or functions at once:
+In order to finish the DSL, we need to write the generated code in a file. For simplicity, will write it directly next to the generating file, but it is common to have separate directories for generated code. For convenience, I added two extension functions for `FileSpec`, which allow to add multiple properties or functions at once:
 
 [source,kotlin]
 ----
@@ -288,7 +288,7 @@ val energy = force * 5.0.m
 println("${energy.kJ} kiloJoule")
 ----
 
-The example code is written in a way where you generate the code manually via the `main()` method when the DSL has changed. This is a simple approach when you know that code changes don't happen very often. In the next section, we will discuss the use of an annotation processor instead.
+The example code is written in a way where you generate the code manually via the `main()` method when the DSL has changed. This is a simple approach when you know that code changes don't happen very often, but it can become cumbersome quickly when changes become more frequent. In the next section, we will discuss the use of an annotation processor instead.
 
 === Writing an annotation processor using KSP
 
@@ -364,6 +364,8 @@ annotation class Multiply(
 [#annotationProcessor]
 ==== Case Study: Writing the Annotation Processor
 
+This book can give just a very high-level overview of KSP. Please consult the https://kotlinlang.org/docs/ksp-quickstart.html[KSP Documentation] for a more comprehensive discussion.
+
 KSP uses Java's https://docs.oracle.com/javase/tutorial/sound/SPI-intro.html[Service Provider Interface] mechanism to discover new processors. That's why we need to write a provider first:
 
 [source,kotlin]
@@ -372,7 +374,7 @@ import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
 
-class PhysicalQuantitesProcessorProvider : SymbolProcessorProvider {
+class PhysicalQuantitiesProcessorProvider : SymbolProcessorProvider {
 
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor =
         PhysicalQuantitesProcessor(
@@ -413,10 +415,15 @@ val multiplications = resolver
     .filterIsInstance<KSClassDeclaration>()
 ----
 
+//TODO
+
+=== Case Study: Generating Data Class Patterns ===
 
 === Conclusion
 
 Using code generation means bringing out the big guns, it certainly requires some planning and setup. However, this technique allows you to implement DSLs that would be just too much overhead without. And with libraries like https://square.github.io/kotlinpoet[KotlinPoet], it is quite intuitive to generate the code you want. Kotlin-Poet is itself a nice example for a real-world DSL, and will be explored as such in the next chapter.
+
+Using code generation in conjunction with annotation processors like KSP can produce flexible, powerful and well-integrated DSLs that wouldn't be possible otherwise.
 
 ==== Preferable Use Cases
 
