@@ -16,7 +16,7 @@ sealed class Val<T : Any>
 class Without<T : Any> : Val<T>()
 class With<T : Any>(val value: T) : Val<T>()
 
-data class ProductBuilder<ID : Val<UUID>, NAME : Val<String>, PRICE : Val<BigDecimal>> private constructor(
+data class ProductBuilder<ID : Val<UUID>, NAME : Val<String>, PRICE : Val<BigDecimal>> (
     val id: ID, val name: NAME, val price: PRICE, val description: String?, val images: List<URI>
 ) {
     companion object {

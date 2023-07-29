@@ -250,9 +250,7 @@ Simulating the dense chemical notation is hard, and while using operator overloa
 
 === Case Study: Pattern Matching (((Pattern Matching)))
 
-//TODO revamp
-
-Kotlin's `when` is certainly more versatile than Java's `switch`, but languages like Scala or Haskell go one step further and allow pattern matching. This feature allows you to destructure and match values against specific patterns. It provides a concise and powerful way to perform conditional branching and data extraction based on the structure and contents of the input.
+Kotlin's `when` is certainly more versatile than Java's `switch`, but languages like Scala or Haskell go one step further and allow pattern matching. This feature allows you to deconstruct and match values against specific patterns. It provides a concise and powerful way to perform conditional branching and data extraction based on the structure and contents of the input.
 
 In pattern matching, you define a set of patterns that describe the possible shapes or values that an input can take. These patterns can include literals, variables, data constructors, or even more complex patterns like lists or tuples. The language then matches the input against these patterns and executes the corresponding code block or expression associated with the first matching pattern.
 
@@ -262,44 +260,59 @@ An ideal syntax could look like this:
 
 [source,text]
 ----
-//not (yet?) Kotlin
+data class Person(
+    val firstName: String,
+    val lastName: String,
+    val age
+)
+
 val p = Person("Andy", "Smith", 43)
 
+// this is not Kotlin, but the ideal syntax
 val result = match(p) {
+
     Person("Andy", "Miller", _) ->
         "It's Andy Miller!"
+
     Person("Andy", lastName != "Miller", age) ->
         "Some other Andy of age $age."
+
     else -> "Some unknown person."
 }
 ----
 
 However, we have to allow for some compromises to make it work in Kotlin:
 
-* We can't use `Person` in the match cases, but we need to write a helper function.
-* It is difficult to support a mix of literal values and patterns, so for our small example we need to wrap all values like `"Andy"` in a pattern, e.g. `eq("Andy")`
+* We can't use `Person` in the match cases, but we need to write a helper function (which we will call `person`).
+* It is difficult to support a mix of literal values and patterns, so we need to wrap values like `"Andy"` in a pattern, e.g. using the unary plus, like `+"Andy"`
+* for numbers, unary plus can't be used, so we fall back to a syntax like `eq(42)`
 * The arrow notation is not possible, we will use `then` instead
-* Comparisons as well as `and` and `or` can be only infix functions
-* The right sides should be only evaluated if needed, so we need braces for lazy evaluation.
-* Capturing variables on the left and using them on the right requires a dedicated "capture" pattern.
+* Comparisons as well as `and` and `or` can be only infix functions, not operators
+* The right sides should be only evaluated if needed, so we need lambda braces for lazy evaluation.
+* Capturing variables on the left and using them on the right requires using a `val` for defining a "capture" pattern.
 * `else` is a keyword, so `otherwise` is used instead. As it is not possible to determine at compile time whether the given conditions are exhaustive, the `otherwise` branch is mandatory
-* In some cases, we need to provide generic type information.
+* In some cases, we need to provide generic type information
 
-That's a rather long list, let's see how our example looks now:
+That's a rather long list, let's see how our example looks now using an attainable syntax:
 
 [source,kotlin]
 ----
 val result = match(p) {
-    person(eq("Andy"), eq("Miller"), any()) then
+
+    person(+"Andy", +"Miller", any()) then
         { "It's Andy Miller!" }
+
     val ageCapture = capture<Int>()
-    person(eq("Andy"), !eq("Miller"), ageCapture) then
+    person(+"Andy", !+"Miller", ageCapture) then
         { "Some other Andy of age ${ageCapture.value}." }
+
     otherwise { "Some unknown person." }
 }
 ----
 
-That doesn't look too bad. The core of the DSL is quite small. It consists of a matcher providing a context for keeping track of the result and defining the `then` and `otherwise` methods. Then we have the pattern, which is just a test function, so we can use a type alias instead of introducing a new interface. The `MatchResult` is just an interface wrapping a given value. And finally, the `match()` function ties everything together and acts as an entry point for the DSL:
+That doesn't look too bad, even if the `+` prefixes take some getting used to. The problem is that the choices for overridable operators in Kotlin are quite limited. That's why the unary plus became something like a standard for such use cases, and is used this way in the https://kotlinlang.org/docs/type-safe-builders.html[Kotlin documentation] as well.
+
+The core of the DSL is quite small. It consists of a matcher providing a context for keeping track of the result and defining the `then` and `otherwise` methods. Then we have the pattern type, which is just a test function, so we can use a type alias instead of introducing a new interface. The `MatchResult` is just an interface wrapping a given value. And finally, the `match()` function ties everything together and acts as an entry point for the DSL:
 
 [source,kotlin]
 ----
@@ -312,6 +325,8 @@ interface MatchResult<T : Any> {
 class Matcher<P, T : Any>(private val obj: P) {
 
     private var result: T? = null
+
+    operator fun Any.unaryPlus() = eq(this)
 
     infix fun Pattern<P>.then(value: () -> T) {
         if (result == null && this(obj)) {
@@ -328,9 +343,11 @@ fun <P, T : Any> match(obj: P, body: Matcher<P, T>.() -> MatchResult<T>): T =
     Matcher<P, T>(obj).run(body).value
 ----
 
-Note that the `body` parameter of the `match()` method requires a `MatchResult` as return value, and immediately extracts its content. So why doesn't the block simply return a `T` value directly? This is a trick to remind users to call the `otherwise()` method at the end of the block, because this is the obvious way to construct such a instance.
+Note that the `body` parameter of the `match()` method requires a `MatchResult` as return value, and immediately extracts its content. So why doesn't the block simply return a `T` value directly? Requiring a special type is a trick to "convince" users to call the `otherwise()` method at the end of the block, because this is the only obvious way to construct such a instance.
 
-Of course, there are still patterns missing for the left-hand sides of the `then` infix functions. For implementing them, we can take advantage of the simplified syntax for functional interfaces (a.k.a. SAM conversion). Most of them are quite easy to write:
+The unary plus as synonym for the `eq` pattern is defined directly in `Matcher`, in order to avoid name clashes and unexpected behavior outside of `match` blocks. It's  good practice to keep the scope of potentially dangerous or confusing DSL elements as small as possible.
+
+Of course, there are still patterns missing for the left-hand sides of the `then` infix functions. Most of them are quite easy to write:
 
 [source,kotlin]
 ----
@@ -396,7 +413,7 @@ inline fun <reified C : Comparable<C>> le(value: C): Pattern<C> =
     { it <= value }
 ----
 
-Similarly to the existing `all()`, `any()` and `none()` predicates on `Iterable`{nbsp}s, we can define those as patterns:
+For the `all()`, `any()` and `none()` predicates on `Iterable`{nbsp}s, we can define corresponding patterns:
 
 [source, kotlin]
 ----
@@ -435,7 +452,7 @@ For capturing values, you first define a val using the `capture<T>()` method. Th
 val result = match(p) {
     ...
     val ageCapture = capture<Int>()
-    person(eq("Andy"), !eq("Miller"), ageCapture) then
+    person(+"Andy", !+"Miller", ageCapture) then
         { "Some other Andy of age ${ageCapture.value}." }
     ...
 }
@@ -446,20 +463,22 @@ Now the only missing pattern is the one for decomposing a data class, but unfort
 [source,kotlin]
 ----
 fun person(
-    firstNamePattern: Pattern<String>,
-    lastNamePattern: Pattern<String>,
-    agePattern: Pattern<Int>
+    firstName: Pattern<String> = any(),
+    lastName: Pattern<String> = any(),
+    age: Pattern<Int> = any()
 ): Pattern<Person?> = {
     when (it) {
         null -> false
-        else -> firstNamePattern(it.firstName) &&
-                lastNamePattern(it.lastName) &&
-                agePattern(it.age)
+        else -> firstName(it.firstName) &&
+                lastName(it.lastName) &&
+                age(it.age)
     }
 }
 ----
 
-The next chapter discusses how to generate such boilerplate code.
+Especially for data classes with many arguments, defining `any()` as default pattern for all arguments is very useful, as it allows to call the pattern for the data class using named arguments, and to ignore the arguments you don't care about.
+
+Even though writing such pattern classes is not hard, it becomes quickly annoying. The next chapter discusses how to generate such boilerplate code.
 
 Of course, you can write many more patterns, but the DSL is already functional as it is. Regardless of the complexity of the topic, it wasn't that difficult to come up with a quite usable DSL, which demonstrates the power and expressiveness of Kotlin.
 

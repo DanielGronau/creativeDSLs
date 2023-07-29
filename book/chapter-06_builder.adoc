@@ -285,7 +285,7 @@ data class ProductBuilder<
 }
 ----
 
-That's a scary looking generic signature, but the basic idea is simple: Every mandatory field gets a separate generic type parameter, which keeps track whether it is already set or not. The constructor was made private, because we want to ensure to start with an empty builder. The construction of the builder class can be delegated to its companion object, where we can "simulate" a constructor using the `invoke` operator:
+ The generic signature looks complicated, but the underlying idea is simple: Each mandatory field has its own generic type parameter that tracks whether it is already set or not. The constructor is private in order to prevent that the builder is . Now we can implement a companion object that simulates a constructor using the `invoke` operator:
 
 [source,kotlin]
 ----
