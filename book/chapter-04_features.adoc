@@ -3,7 +3,7 @@
 
 Kotlin is a modern and beautiful programming language that offers several key features not found in Java.Here are some of the most notable features that set Kotlin apart:
 
-* *Null-Safe Type System:* Kotlin's null-safety feature is a major improvement over Java, where null values can cause null pointer exceptions.This feature ensures that a variable cannot be null unless explicitly declared as such, reducing the risk of runtime errors.
+* *Null-Safe Type System:* Kotlin's null-safety feature is a major improvement over Java, where null values can cause null pointer exceptions. This feature ensures that a variable cannot be null unless explicitly declared as such, reducing the risk of runtime errors.
 * *Concise Syntax:* Kotlin's syntax is designed to be as concise as possible, reducing the amount of boilerplate code that developers need to write. Optional semicolons, operator overloading and expression-body functions are just a few examples of the syntactical sugar that makes Kotlin code not only more readable and easier to maintain, it also helps to write expressive DSLs.
 * *Object-Oriented Design:* Kotlin takes a more object-oriented approach than Java, replacing static members with object declarations that can be used in a more flexible and modular way.
 * *Functional Programming Features:* Kotlin also supports functional programming, including top-level and local functions, as well as trailing lambda syntax.
@@ -20,9 +20,9 @@ This chapter gives a short overview of language features that might be relevant 
 
 Kotlin allows almost arbitrary identifiers, as long as they are enclosed in backticks. The main reason for introducing this feature was to allow the usage of identifiers that are keywords in Kotlin but not in Java, like `fun` or `when`. For DSLs, we can use them when we need descriptive identifiers which don't follow the usual syntactic rules.
 
-Backtick identifiers start and end with a backtick `{backtick}` - these are not part of the identifier, but just delimiters - and can contain almost all characters. E.g. for Kotlin on the JVM, all characters except `\r\n,.;:\|/[]<>{backtick}` are allowed.
+Backtick identifiers start and end with a backtick `{backtick}` - these are not part of the identifier, but just delimiters - and can contain almost all characters. E.g. for Kotlin on the JVM, all characters except `\r` `\n` `,` `.` `;` `:` `\` `|` `/` `[` `?` `]` `<` `>` `{backtick}` are allowed.
 
-A typical use case for backticks are DSLs for test libraries. While Java limits you to underscores and camelCase, Kotlin allows very descriptive names for test functions by using the backtick syntax:
+A typical use case for backticks are DSLs for test libraries. While Java limits you to underscores and camel case, Kotlin allows very descriptive names for test functions by using the backtick syntax:
 
 [source,kotlin]
 ----
@@ -149,9 +149,9 @@ html {
 
 Varargs (from "variable arguments") are a useful feature in both Java and Kotlin, allowing methods to accept a variable number of arguments. However, Kotlin has made several improvements to varargs, making them safer and more convenient to use.
 
-One of the main improvements in Kotlin is that the syntax for varargs is now unambiguous. In Java, it was sometimes difficult to tell whether an array was intended to be a single argument for a vararg, or if its elements should be used as individual arguments. Kotlin addressed this problem by introducing the unary "spread operator" `*`, which indicates that the elements of an array (and not the array itself) should be used as arguments for a vararg.
+One of the main improvements in Kotlin is that the syntax for varargs is now unambiguous. In Java, it was sometimes difficult to tell whether an array was intended to be a single argument for a vararg, or if its elements should be used as individual arguments. Kotlin addressed this problem by introducing the unary "spread operator" `*`(((Spread Operator))), which indicates that the elements of an array (and not the array itself) should be used as arguments for a vararg.
 
-Furthermore, Kotlin allows for a more flexible use of varargs. You can freely combine single-value arguments with elements from spread arrays, which looks like this:
+Furthermore, Kotlin allows for a more flexible use of varargs. You can freely combine single-value arguments with elements from spread arrays:
 
 [source,kotlin]
 ----
@@ -202,7 +202,9 @@ Kotlin allows to control how properties are read and written. This makes it easy
 class TemperatureSensor {
     var celsius: Double = 0.0
         set(value) {
-            require(value >= -273.15) { "Temperature is under absolute zero." }
+            require(value >= -273.15) {
+                "Temperature is under absolute zero."
+            }
             field = value
         }
 }
@@ -235,7 +237,10 @@ One of the most important Kotlin features for DSL design are extension functions
 fun Int.digits(base: Int = 10): List<Int> =
     generateSequence(this.absoluteValue) {
         (it / base).takeIf { it > 0 }
-    }.map { it % base }.toList().reversed()
+    }
+    .map { it % base }
+    .toList()
+    .reversed()
 
 val zero = 0.digits() // [0]
 val taxiCab = 1729.digits() // [1, 7, 2, 9]
@@ -243,7 +248,7 @@ val taxiBin = 1729.digits(2) // [1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1]
 val taxiHex = 1729.digits(16) //[6, 12, 1]
 ----
 
-From the user's point of view, the call with receiver looks exactly how a normal method call (or property access) on a receiver instance would look like. This makes extension functions a great tool for adding DSL features to classes that you have no control over. A great example are the `apply()`, `run()`, `let()` and `also()` functions in the Kotlin API, which make it easier to use e.g. expression body syntax for functions, or succinct variable assignments.
+From the user's point of view, the call with receiver looks exactly how a normal method call (or property access) on a receiver instance would look like. This makes extension functions a great tool for adding DSL features to classes that you have no control over. A great example are the so-called "scope functions" `apply()`, `run()`, `let()` and `also()` in the Kotlin API, which make it easier to use e.g. expression body syntax for functions, or succinct variable assignments.
 
 .Extension Method History
 ****
@@ -287,7 +292,7 @@ val theUsualWay: String = StringBuilder()
     .append('!')
     .toString()
 
-// the extension method
+// the extension function
 fun sb(block: StringBuilder.() -> Unit): String =
     StringBuilder()
         .apply { block(this) }
@@ -535,7 +540,7 @@ interface StringCheck {
     fun check(s: String): Boolean
 }
 
-val shortStringCheck = object : StringCheck {
+val stringCheck = object : StringCheck {
     override fun check(s: String) = s.length < 10
 }
 ----
@@ -588,7 +593,7 @@ Adding amounts of different currencies together isn't possible, because the defi
 [#typeLevelProgramming]
 .Type-level Programming (((Type Level Programming))) and Phantom Types (((Phantom Types)))
 ****
-*Type-level programming* is a programming paradigm where types themselves are used as values that can be manipulated and computed upon at compile-time, rather than just being used to check the correctness of program syntax and logic. In other words, type-level programming involves using types to encode complex computations and algorithms, which are evaluated by the compiler at compile-time instead of runtime. Type-level programming can be used to achieve a wide range of goals, such as improving program performance, reducing runtime errors, and enforcing stronger type constraints.
+*Type-level programming* is a programming paradigm where types themselves are used as values that can be manipulated and computed upon at compile-time, rather than just being used to check the correctness of program syntax and logic. In other words, type-level programming involves using types to encode complex computations and algorithms, which are evaluated by the compiler at compile-time instead of runtime. Type-level programming can be used to achieve a wide range of goals, such as improving program performance and enforcing stronger type constraints.
 
 *Phantom types* are a type-level programming technique where a type is used to encode additional information about the data that it represents, without actually storing any data at runtime. Phantom types are types that have no values, but are used purely for their type-level information. They can be used to enforce stronger type constraints, such as ensuring that only certain operations are performed on certain types of data. This can help to reduce runtime errors and improve the safety of the program.
 ****
@@ -602,7 +607,7 @@ Kotlin offers a interesting feature called "reified generics", which helps to ov
 ----
 inline fun <reified T> List<T>.combine(): Unit = when(T::class) {
     Int::class -> (this as List<Int>).sum()
-    String::class -> (this as List<String>).fold("", String::plus)
+    String::class -> (this as List<String>).joinToString()
     else -> this.toString()
 }.let { println(it) }
 
@@ -620,9 +625,9 @@ Note the expression `T::class`, which shouldn't work considering that type erasu
 
 Value classes are a feature introduced in Kotlin 1.5 that allow developers to create lightweight, efficient classes that represent simple values. Value classes are designed to be used for values that are frequently used and require little to no additional functionality beyond what is already provided by the underlying data type.
 
-In Kotlin, a value class is defined using the "value" modifier, and must have a single primary constructor with exactly one parameter. The parameter must be a non-nullable type, such as Int, Long, or String. Value classes cannot extend other classes, and they cannot be extended by other classes.
+In Kotlin, a value class is defined using the "value" modifier, and must have a single primary constructor with exactly one parameter. The parameter must be a non-nullable type, such as `Int`, `Long`, or `String`. Value classes cannot extend other classes, and they cannot be extended by other classes.
 
-Value classes are optimized for performance, as they are designed to avoid the overhead of creating a full object instance whenever possible. Instead, the value of a value class is typically represented directly in memory or as a primitive type, depending on the underlying data type.
+Value classes are optimized for performance, as they are designed to avoid the overhead of creating a full object instance whenever possible. Like generics which exist only at compile time, but get "erased" in the byte code, value classes get replaced by their values in the byte code wherever possible.
 
 One of the main benefits of value classes is that they can be used to create more expressive and type-safe APIs. For example, a value class representing a specific measurement unit can help to ensure that only valid unit conversions are performed, and can help to catch errors at compile-time rather than runtime.
 
@@ -649,10 +654,12 @@ While anonymous objects have no name, they still have their own - also unnamed -
 
 [source,kotlin]
 ----
-val greeting = object { fun sayHi() = "Hello!" }.sayHi()
+val greeting = object {
+    fun sayHi() = "Hello!"
+}.sayHi()
 ----
 
-The anonymous object hasn't the type `Any`, else we couldn't call `sayHi()` on it. It defines its own type, which exposes variables and functions defined inside it. For this reason anonymous objects can be used in DSLs as a setup-stage or environment for later calculations.
+The anonymous object hasn't the type `Any`, else we couldn't call `sayHi()` on it. It defines its own (unnamed) type, which exposes variables and functions defined inside it. For this reason anonymous objects can be used in DSLs as a setup-stage or environment for later calculations.
 
 A DSL with a method that measures the durations of several calls and returns the average time taken could be written as follows:
 
@@ -671,7 +678,7 @@ val nsSomeCall = env.measureTime { someCall(x) }
 val nsOtherCall = env.measureTime { otherCall(x) }
 ----
 
-The required setup for the measuring runs is stored inside an anonymous object in the `env` variable.
+The required setup information for the measuring phase is stored inside an anonymous object in the `env` variable.
 
 [#annotations]
 === Annotations (((Annotations)))

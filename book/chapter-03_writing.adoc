@@ -95,7 +95,7 @@ When writing a DSL for creating classes that are also under your control, you mi
 
 * DSL code gets entangled with business logic
 * the DSL becomes part of the business API, making it bloated and inflexible
-* In many cases it is important that the result classes can work on its own. This can be the case when code generation (((Code Generation))) or analysis tools are involved, when working with big data, or for testing
+* In many cases it is important that the result classes can work on its own. This can be the case when code generation (((Code Generation))) or analysis tools are involved, when working with big data(((Big Data))), or for testing
 * at some point in time, the DSL may get obsolete
 
 In Java, this kind of tight coupling might be excusable because there is often no other way to write a convenient DSL. But Kotlin is much more expressive, e.g. due to features like extension methods, so this excuse doesn't count.
@@ -115,7 +115,7 @@ It's generally a good practice to follow code conventions, as this can make your
 
 ==== Testing (((Testing)))
 
-For some DSL categories, testing can be more difficult than for normal code, as the code might be less rigid than usual, or - to use a mechanical analogy - it can have more moving parts and degrees of freedom. This makes it more likely to overlook edge-cases or unwanted behavior. A particular challenge are compile-time guarantees: There is no convenient way to test that certain unwanted code structures don't compile. Overall, depending on the type of DSL, testing can be more challenging than for ordinary code, and might require more attention and effort.
+For some DSL categories, testing can be more difficult than for normal code, as the code might be less rigid than usual, or - to use a mechanical analogy - it can have more moving parts and degrees of freedom. This makes it more likely to overlook edge cases or unwanted behavior. A particular challenge are compile-time guarantees: There is no convenient way to test that certain unwanted code structures don't compile. Overall, depending on the type of DSL, testing can be more challenging than for ordinary code, and might require more attention and effort.
 
 Some common challenges in testing DSLs include:
 

@@ -29,6 +29,7 @@ While it is difficult to clearly distinguish between the various types of use ca
 
 * *Implementation Support*
 - *Code Generation:* DSLs can be used to generate code in a specific programming language or format, allowing to automate repetitive tasks and to build complex systems.
+- *Library Adaptation:* DSLs can help to integrate external code by adapting it in a way that follows the paradigms, conventions and patterns of the internal code base. A great example is Kotlin's adaption of the Java core libraries.
 - *Testing:* DSLs can be used to define and execute tests in a domain-specific way, helping to validate the behavior of a system.
 
 * *System Management*

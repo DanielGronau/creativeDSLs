@@ -2,7 +2,7 @@ package creativeDSLs.chapter_04
 
 inline fun <reified T> List<T>.combine(): Unit = when(T::class) {
     Int::class -> (this as List<Int>).sum()
-    String::class -> (this as List<String>).fold("", String::plus)
+    String::class -> (this as List<String>).joinToString()
     else -> this.toString()
 }.let { println(it) }
 

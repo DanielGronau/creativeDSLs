@@ -60,11 +60,13 @@ Another type of extensibility that is often overlooked is customization by users
 
 === Maintainability (((Maintainability)))
 
-The DSL has to be not only implemented, but must be maintained as well. It should be estimated how many resources are necessary to keep the code running and to update it. Knowing these expectations can help to decide e.g. which dependencies are acceptable, or if code generation (((Code Generation))) is required.
+The DSL not only requires initial implementation but ongoing maintenance as well. It is essential to estimate the resources needed to sustain and update the code, guiding decisions e.g. on acceptable external dependencies or the potential need for code generation(((Code Generation))).
+
+An often underestimated aspect of maintenance is establishing effective feedback channels for DSL users. While a basic bug tracker is essential, larger projects may benefit from additional features such as discussion forums or dedicated user support. Prioritizing good communication with users proves beneficial, making it an integral part of the overall DSL strategy rather than an afterthought.
 
 === Performance (((Performance))) and Memory (((Memory))) Requirements
 
-Often performance considerations don't get much attention. However, in most cases DSLs invoke additional operations, instantiate extra classes and may trigger garbage collections. When working with big data, or having a wasteful DSL design, you might run in performance and memory problems. That's why it is necessary to estimate performance requirements upfront, and to employ load tests and metrics accordingly.
+Often performance considerations don't get much attention. However, in most cases DSLs invoke additional operations, instantiate extra classes and may trigger garbage collections. When working with big data(((Big Data))), or having a wasteful DSL design, you might run in performance and memory problems. That's why it is necessary to estimate performance requirements upfront, and to employ load tests and metrics accordingly.
 
 === Java Interoperability (((Java Interoperability)))
 
