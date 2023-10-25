@@ -642,6 +642,37 @@ fun Kilometers.toMiles() : Miles =
 val marathonInMiles = Kilometers(42.195).toMiles() // Miles(value=26.219973)
 ----
 
+[#anonymous_objects]
+=== Anonymous Objects (((Anonymous Objects)))
+
+While anonymous objects have no name, they still have their own - also unnamed - type. Here is a somewhat silly example to illustrate this point:
+
+[source,kotlin]
+----
+val greeting = object { fun sayHi() = "Hello!" }.sayHi()
+----
+
+The anonymous object hasn't the type `Any`, else we couldn't call `sayHi()` on it. It defines its own type, which exposes variables and functions defined inside it. For this reason anonymous objects can be used in DSLs as a setup-stage or environment for later calculations.
+
+A DSL with a method that measures the durations of several calls and returns the average time taken could be written as follows:
+
+[source,kotlin]
+----
+fun <T:Any> T.measureTime(block: T.() -> Unit): Double {
+   val start = System.nanoTime()
+   repeat(1000) { block() }
+   val end = System.nanoTime()
+   return (end - start) / 1000.0
+}
+
+val env = object { val x = complicatedStuff() }
+
+val nsSomeCall = env.measureTime { someCall(x) }
+val nsOtherCall = env.measureTime { otherCall(x) }
+----
+
+The required setup for the measuring runs is stored inside an anonymous object in the `env` variable.
+
 [#annotations]
 === Annotations (((Annotations)))
 
