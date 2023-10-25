@@ -9,7 +9,7 @@ Kotlin is a modern and beautiful programming language that offers several key fe
 * *Functional Programming Features:* Kotlin also supports functional programming, including top-level and local functions, as well as trailing lambda syntax.
 * *Multiplatform Support:* Kotlin can be compiled to run on multiple platforms, notably the JVM, JavaScript, and as a native application
 
-In addition, Kotlin has excellent interoperability with Java,(((Java Interoperability))) making it easy to call Java code from Kotlin and vice versa. Kotlin also includes several annotations that make it easier to call Kotlin code from Java, ensuring that the two languages can work together seamlessly.
+In addition, Kotlin has excellent interoperability with Java,(((Java InterFoperability))) making it easy to call Java code from Kotlin and vice versa. Kotlin also includes several annotations that make it easier to call Kotlin code from Java, ensuring that the two languages can work together seamlessly.
 
 As mentioned in the preface, this book assumes that the reader has basic Kotlin knowledge. However, DSLs often use little-known language features, or they use some features in other ways than common code. Sometimes, even the users of the DSL might not be aware of the kind of "machinery" used to make it work.
 
