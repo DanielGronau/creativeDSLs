@@ -362,7 +362,7 @@ With an extension function, the best syntax we could achieve is `22.46.USD()`, b
 
 ==== Context Receivers (((Context Receivers)))
 
-https://github.com/Kotlin/KEEP/blob/master/proposals/context-receivers.md[Context receivers] are still an experimental feature in Kotlin, so some details could change in the future. We won't use them in this book, but they are an interesting concept, and might turn out very useful for writing DSLs. The basic idea is to get a class providing a certain service into scope:
+https://github.com/Kotlin/KEEP/blob/master/proposals/context-receivers.md[Context receivers] are still an experimental feature in Kotlin, so some details could change in the future. The basic idea is to get a class providing a certain service into scope:
 
 [source,kotlin]
 ----
@@ -377,9 +377,9 @@ fun methodWithContext() {
 }
 ----
 
-Here, `methodWithContext()` can access members of the given `EnvironmentContext` class, similar as in an extension function. The difference is that you don't call the method on an instance of the context, it is just available. This also allows to have multiple contexts in scope.
+In this scenario, `methodWithContext()` gains access to members of the specified `EnvironmentContext` class, akin to an extension function. However, there is not only a syntactic, but also a semantic difference: The function is not extending a receiver class, but it is executed in the scope of an unrelated class, which just provides additional functionality. This design also allows to have multiple contexts in scope, or to supply a context for an extension function.
 
-To call `methodWithContext()`, an `EnvironmentContext` implementation must be provided:
+For invoking `methodWithContext()`, you need to supply an implementation of `EnvironmentContext`. If the calling function isn't already in the same context, you can introduce it using the `with()` function.
 
 [source,kotlin]
 ----
@@ -391,7 +391,7 @@ fun test() {
 }
 ----
 
-Context receivers in Kotlin share similarities with extension functions but lean more towards the concept of dependency injection. They come into play when there's a need to incorporate global information within a specific scope while maintaining flexibility to accommodate different versions. By using a context receiver to offer DSL functionality, you gain control over the scope, can influence the general behavior of the DSL and can prevent potential name conflicts.
+Context receivers come into play when there's a need to incorporate global information within a specific scope while maintaining flexibility to accommodate different versions. By using a context receiver to offer DSL functionality, you gain control over the scope, you can influence the general behavior of the DSL and prevent potential name conflicts.
 
 === Operator Overloading (((Operator Overloading)))
 
