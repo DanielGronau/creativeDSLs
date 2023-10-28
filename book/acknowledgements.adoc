@@ -2,7 +2,6 @@
 
 == Acknowledgements
 
-Writing a book isn't a walk in the park, but is being passionate about it makes it much easier. That's why I am grateful to all the people that helped me to develop and grow this passion: the excellent teachers throughout my life, both formal instructors at university and informal mentors among my colleagues and friends. They nurtured my curiosity, helped me to understand new concepts, and encouraged me to develop new skills. Without their guidance and support, this book would not have been possible.
-...
+Writing a book is no walk in the park, but it's a lot easier when you're passionate about it. That's why I'm grateful to all the people who helped me develop and nurture that passion: the excellent teachers throughout my life, both formal instructors at university and informal mentors among my colleagues and friends. They fostered my curiosity, helped me understand new concepts, and encouraged me to develop new skills. Without their guidance and support, this book would not have been possible.
 
-And last but not least, I want to thank all the heroes who provide free knowledge and awesome open source tools - like the Kotlin language itself - who make the world a better place.
+One of the benefits of being part of the IT community is experiencing firsthand the curiosity, ingenuity, inclusiveness, and enthusiasm of like-minded people. Perhaps the greatest achievement of this community, and the most exemplary expression of its spirit, is the rise of open source technology. So I'd like to thank all the heroes who share their knowledge for free and contribute outstanding open source tools - like the Kotlin language itself - that make the world a better place.

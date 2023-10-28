@@ -4,56 +4,56 @@
 
 === Why another book about DSLs in Kotlin?
 
-Kotlin is a powerful language that is well-suited for writing Domain Specific Languages. There is already a lot of literature available on this topic, but I find that many of these books fall short in a few key areas:
+Kotlin is a powerful language that is well suited for writing Domain Specific Languages. There is already a lot of literature on the subject, but I find that many of these books fall short in a few key areas:
 
 * They often focus on oversimplified examples that do not provide a clear understanding of how to write DSLs in practice
-* They present solutions in a vacuum, without explaining the design process, the requirements and constraints that apply, or the trade-offs that were made
-* They do not attempt a categorization of the different types of DSLs, or a comparison of their relative strengths and weaknesses
-* They don't take into account that Kotlin and Java code often coexists, and ignore the resulting interoperability issues occurring when a Kotlin DSL must be called from Java
+* They present solutions in a vacuum, without explaining the design process, the requirements and constraints that apply, or the tradeoffs that were made
+* They do not attempt to categorize the different types of DSLs or compare their relative strengths and weaknesses.
+* They don't take into account that Kotlin and Java code often coexist, and ignore the resulting interoperability issues that arise when a Kotlin DSL needs to be called from Java
 
-This book aims to fill these gaps by providing a comprehensive guide to writing DSLs in Kotlin, with a focus on practical examples and real-world considerations. One of the main goals of this book is to go beyond toy examples and provide real-world insights into the process of writing DSLs in practice. This includes discussing the design process, the requirements and constraints that apply, the trade-offs that must be made, and the challenges that arise.
+This book aims to fill these gaps by providing a comprehensive guide to writing DSLs in Kotlin, with a focus on practical examples and real-world considerations. One of the main goals of this book is to go beyond toy examples and provide real-world insights into the process of writing DSLs in practice. This includes discussion of the design process, the requirements and constraints that apply, the tradeoffs that must be made, and the challenges that arise.
 
-To achieve this, the book progresses from common examples to more challenging and complex cases, and finishing with a discussion of real-world DSLs that have been successful in practice. In addition to providing practical guidance, it is attempted to find a comprehensive terminology for classifying DSLs, similar to the way the design patterns movement established a common language for coding solutions.
+To achieve this, the book progresses from common examples to more challenging and complex cases, ending with a discussion of real-world DSLs that have been successful in practice. In addition to providing practical guidance, it attempts to establish a comprehensive terminology for classifying DSLs, similar to the way the design pattern movement has established a common language for coding solutions.
 
-Overall, the goal of the book is to provide a comprehensive and practical guide to designing and implementing DSLs using Kotlin.
+Overall, the book aims to provide a comprehensive and practical guide to designing and implementing DSLs using Kotlin.
 
 === Who is this book not (yet) intended for?
 
-This book is not very suitable for those who are new to Kotlin or Java. While this book does contain a chapter discussing Kotlin language features and their potential use in DSLs, it is not meant to be a comprehensive guide to learning the Kotlin language. If you are not yet familiar with Kotlin or Java, it is recommended to take the time to learn these languages before diving into DSLs. Writing DSLs can be challenging, and it is important to have a solid foundation in the host language before attempting to create a full-scale DSL. This book will still be here when you are ready to take on the challenge of DSL development.
+This book is not intended for those who are new to Kotlin or Java. While this book includes a chapter discussing Kotlin language features and their potential use in DSLs, it is not meant to be a comprehensive guide to learning the Kotlin language. If you are not already familiar with Kotlin or Java, it is recommended that you take the time to learn these languages before diving into DSLs. Writing DSLs can be challenging, and it is important to have a solid foundation in the host language before attempting to create a full-fledged DSL. This book will still be here when you are ready to take on the challenge of DSL development.
 
 === What's in this Book
 
-_Chapter 1, Introduction_, defines what a DSL is, discusses the differences between internal and external DSLs, and gives a general overview about the usage of DSL and underlying design principles.
+_Chapter 1, Introduction_, defines what a DSL is, discusses the differences between internal and external DSLs, and provides a general overview of DSL usage and underlying design principles.
 
-_Chapter 2, Requirements Analysis_, helps to define requirements and expectations of a DSL design before implementing it. Jumping into action without defining your goals may end in a nasty surprise, as there are more things to consider than you may think.
+_Chapter 2, Requirements Analysis_, helps you define the requirements and expectations for a DSL design before implementing it. Jumping in without defining your goals can lead to a nasty surprise, as there are more things to consider than you might think.
 
-_Chapter 3, Writing a DSL_, suggests a simple methodology for implementing a DSL. The given steps help to avoid tunnel vision, to get unstuck when hitting a wall, and to iterate your way to success.
+_Chapter 3, Writing a DSL_, suggests a simple methodology for implementing a DSL. Its steps help you avoid tunnel vision, get out when you hit a wall, and iterate your way to success.
 
-_Chapter 4, Relevant Language Features_, takes a closer look at the Kotlin language from the perspective of a DSL designer. Even if you are very familiar with Kotlin, you might have never used one of the more obscure language features, like extension properties.
+_Chapter 4, Relevant Language Features_, takes a closer look at the Kotlin language from the perspective of a DSL designer. Even if you are very familiar with Kotlin, you may have never used some of the more obscure language features, such as extension properties.
 
-_Chapter 5, Algebraic DSLs_, introduces the first category of DSLs, which supports number-like behavior by employing operator overloading and infix functions. This is a quite straightforward DSL type, but mastering it will come handy in many other contexts.
+_Chapter 5, Algebraic DSLs_, introduces the first category of DSLs, which support number-like behavior using operator overloading and infix functions. This is a fairly straightforward type of DSL, but mastering it will be useful in many other contexts.
 
-_Chapter 6, Builder Pattern DSLs_, covers the well known Builder Pattern you probably already know from Java, and shows some variations attempting to make builders safer to use.
+_Chapter 6, Builder Pattern DSLs_, covers the well-known builder pattern that you probably already know from Java, and shows some variations that attempt to make builders safer to use.
 
-_Chapter 7, Loan Pattern DSLs_, is about employing extension functions and the Loan Pattern in order to solve similar problems like the Builder Pattern DSL, but in a more idiomatic and convenient way.
+_Chapter 7, Loan Pattern DSLs_, is about using extension functions and the Loan Pattern to solve similar problems as the Builder Pattern DSL, but in a more idiomatic and convenient way.
 
-_Chapter 8, Modeling State Transitions in DSLs_, explores different strategies to model states or stages of elements in your DSL, e.g. when you want to construct an object in stages, or model a finite state machine. There are interesting alternatives to the naive "one state, one class" approach.
+_Chapter 8, Modeling State Transitions in DSLs_, presents various methods for modeling the stages or states of elements in your DSL. This is particularly useful when constructing objects in stages or modeling a finite state machine. The chapter explores alternatives to the simplistic "one state, one class" approach.
 
-_Chapter 9, String-Parsing DSLs_, gives you an overview about DSLs embedded in strings, which can be seen as an edge case between internal and external DSLs. The chapter contains - for educational purposes - a manually written parser, but also shows how the same parser can be written using a parser-combinator library.
+_Chapter 9, String-Parsing DSLs_, gives an overview of DSLs embedded in strings, which can be considered an intermediate case between internal and external DSLs. The chapter, for educational purposes, presents a manually written parser as well as demonstrating how the same parser can be written using a parser-combinator library.
 
-_Chapter 10, Annotation-based DSLs_, discusses the use of annotations for a DSL, which allows to add new meaning or additional behavior to existing code. The example code shows also how to use reflection behind the scenes in order to bring the annotations to life.
+_Chapter 10, Annotation-based DSLs_, explores the application of annotations for a DSL, which adds new meaning or behavior to existing code. The provided example code also illustrates how to use reflection to bring annotations to life.
 
-_Chapter 11, Hybrid DSLs_, shows how to deal with situations where one of the already covered DSL categories alone just doesn't cut it, and you have to combine them. Mixing language features comes with its own set of challenges, and this chapter will prepare you to overcome them.
+_Chapter 11, Hybrid DSLs_, explains how to address scenarios where one of the previously discussed DSL categories is insufficient on its own and must be combined. Combining language features presents its own set of obstacles, and this chapter will equip you to overcome them.
 
-_Chapter 12, Code Generation for DSLs_, discusses how code generation can help you when writing the DSL manually is just too much boilerplate. At first, this task may sound complicated, but the example shows that it isn't really something to be afraid of.
+_Chapter 12, Code Generation for DSLs_, discusses the benefits of code generation when manual DSL writing involves excessive boilerplate. At first, this task may seem daunting, but the example demonstrates that it is not something to be afraid of.
 
-_Chapter 13, Java interoperability_, gives an overview of the issues that may arise when Kotlin DSLs are used from Java code, and gives some advice on how to solve these issues.
+_Chapter 13, Java interoperability_, provides an overview of potential issues when utilizing Kotlin DSLs within Java code, and offers practical solutions.
 
-_Chapter 14, Real-World DSL Examples_, discusses some well-known and battle-tested DSLs, in order to learn from it. In my opinion, toy-examples are not enough to learn good DSL design. It is important to see how DSLs deal with real-world issues, how they have to compromise and still manage to deliver a great user experience.
+_Chapter 14, Real-World DSL Examples_, explores established and tested DSLs for valuable insight. In my view, small-scale examples do not provide sufficient guidance for quality DSL design. It is crucial to observe how DSLs tackle real-world problems, make compromises, and still provide a superior user experience.
 
 === Prerequisites
 
-To try out the code samples in this book or from the associated project at https://github.com/creativeDsls[github.com/creativeDsls], you will need an integrated development environment (IDE) that can run Kotlin. I recommend using JetBrains' IntelliJ IDEA, which has a free community edition that is sufficient for this purpose. Alternatively, you can also use the online Kotlin sandbox   https://play.kotlinlang.org/[play.kotlinlang.org] for smaller examples. This book uses Kotlin version 1.8 and assumes Java language level 11 unless otherwise specified.
+To try out the code examples in this book or in the accompanying project at https://github.com/creativeDsls[github.com/creativeDsls], you will need an integrated development environment (IDE) that can run Kotlin. I recommend using JetBrains' IntelliJ IDEA, which has a free community edition that is sufficient for this purpose. Alternatively, you can also use the online Kotlin sandbox   https://play.kotlinlang.org/[play.kotlinlang.org] for smaller examples. This book uses Kotlin version 1.8 and assumes Java language level 11 unless otherwise noted.
 
 It is also recommended that you familiarize yourself with the https://kotlinlang.org/docs/home.html[Kotlin Documentation], which is a valuable resource for learning about the language and its features. This book will refer to the Kotlin documentation for specific or non-DSL-related topics, rather than repeating information that can already be found there.
 
@@ -88,17 +88,17 @@ Definitions or additional information may be presented as follows:
 
 .The name "Kotlin"
 ****
-"Kotlin" is a small Russian island in the Baltic Sea. Naming languages or projects after islands has been a long-standing tradition in the Java ecosystem. Beside Java itself, there are projects like Lombok, the Komodo-IDE and the Ceylon language. The Jakarta project is named after the capital of Indonesia, which is located on the island of Java.
+"Kotlin" is a small Russian island in the Baltic Sea. Naming languages or projects after islands has been a long tradition in the Java ecosystem. Besides Java itself, there are projects like Lombok, the Komodo IDE and the Ceylon language. The Jakarta project is named after the capital of Indonesia, which is located on the island of Java.
 ****
 
 === Tools used for writing this book
 
 The book is written in the https://asciidoc.org/[AsciiDoc] format. For PDF and eBook generation, I used the https://asciidocfx.com/[AsciidocFX] editor. The main writing and programming tool was https://www.jetbrains.com/idea/[IntelliJ IDEA] by JetBrains, using the https://plugins.jetbrains.com/plugin/7391-asciidoc[Asciidoctor plugin]. The diagrams were made using the https://ditaa.sourceforge.net/[ditaa] library.
 
-I used https://www.deepl.com/write[DeepL Write] and https://openai.com/blog/chatgpt/[ChatGPT] by OpenAI as a writing assistants. As a non-native speaker, it is difficult to avoid grammar mistakes and to find to a natural writing style, and I'm thankful to DeepL and OpenAI for granting public access to their incredible technologies.
+I used https://www.deepl.com/write[DeepL Write] by DeepL SE and https://openai.com/blog/chatgpt/[ChatGPT] by OpenAI as a writing assistants. As a non-native speaker, it can be challenging to avoid grammatical errors and achieve a natural writing style. Therefore, I'm thankful to DeepL and OpenAI for providing public access to their remarkable language processing technologies.
 
 === Feedback
 
-Please do not hesitate to contact me if you find any errors or have suggestions for improvement. Your feedback is very valuable to me and will help to improve this book for future readers. Thank you in advance for taking the time to let me know your thoughts.
+Please do not hesitate to contact me if you find any errors or have any suggestions for improvement. Your feedback is very valuable to me and will help me improve this book for future readers. Thank you in advance for taking the time to share your thoughts with me.
 
 To give feedback, e-mail me at creativeDsls@protonmail.com.
