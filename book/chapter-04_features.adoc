@@ -360,9 +360,10 @@ val eurAmount: Amount = 17.11.EUR
 
 With an extension function, the best syntax we could achieve is `22.46.USD()`, but the parentheses are no longer needed when using extension properties.
 
+[#contextReceivers]
 ==== Context Receivers (((Context Receivers)))
 
-https://github.com/Kotlin/KEEP/blob/master/proposals/context-receivers.md[Context receivers] are still an experimental feature in Kotlin, so some details could change in the future. The basic idea is to get a class providing a certain service into scope:
+https://github.com/Kotlin/KEEP/blob/master/proposals/context-receivers.md[Context receivers] are a still experimental feature in Kotlin, so some details could change in the future. The basic idea is to get a class providing a certain service into scope:
 
 [source,kotlin]
 ----
@@ -377,7 +378,7 @@ fun methodWithContext() {
 }
 ----
 
-In this scenario, `methodWithContext()` gains access to members of the specified `EnvironmentContext` class, akin to an extension function. However, there is not only a syntactic, but also a semantic difference: The function is not extending a receiver class, but it is executed in the scope of an unrelated class, which just provides additional functionality. This design also allows to have multiple contexts in scope, or to supply a context for an extension function.
+In this scenario, `methodWithContext()` gains access to members of the specified `EnvironmentContext` class, akin to an extension function. However, there is not only a syntactic, but also a semantic difference: The function is not extending a receiver class, but it is executed in the scope of an unrelated class, which provides additional functionality. This design also allows to have multiple contexts in scope, or to supply a context for an extension function.
 
 For invoking `methodWithContext()`, you need to supply an implementation of `EnvironmentContext`. If the calling function isn't already in the same context, you can introduce it using the `with()` function.
 
@@ -390,6 +391,24 @@ fun test() {
     }
 }
 ----
+
+[TIP]
+====
+Using multiple context receivers is a great way to decouple unrelated aspects of the environment while maintaining a high degree of flexibility. Unfortunately, with multiple receivers, the `with()` calls must be nested, although this may change in the future. For now, if you find this impractical, you can use this function presented in the Kotlin Discussions forum:
+
+[source,kotlin]
+.https://discuss.kotlinlang.org/t/using-with-function-with-multiple-receivers/2062/6
+----
+@OptIn(ExperimentalContracts::class)
+@Suppress("SUBTYPING_BETWEEN_CONTEXT_RECEIVERS")
+inline fun <A, B, R> with(a: A, b: B, block: context(A, B) () -> R): R {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    return block(a, b)
+}
+----
+====
 
 Context receivers come into play when there's a need to incorporate global information within a specific scope while maintaining flexibility to accommodate different versions. By using a context receiver to offer DSL functionality, you gain control over the scope, you can influence the general behavior of the DSL and prevent potential name conflicts.
 

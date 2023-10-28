@@ -95,7 +95,7 @@ Definitions or additional information may be presented as follows:
 
 The book is written in the https://asciidoc.org/[AsciiDoc] format. For PDF and eBook generation, I used the https://asciidocfx.com/[AsciidocFX] editor. The main writing and programming tool was https://www.jetbrains.com/idea/[IntelliJ IDEA] by JetBrains, using the https://plugins.jetbrains.com/plugin/7391-asciidoc[Asciidoctor plugin]. The diagrams were made using the https://ditaa.sourceforge.net/[ditaa] library.
 
-I used https://openai.com/blog/chatgpt/[ChatGPT] by OpenAI as a writing assistant. As a non-native speaker, it is difficult to avoid grammar mistakes and to find to a natural writing style, and I'm thankful that OpenAI granted public access for testing this incredible technology.
+I used https://www.deepl.com/write[DeepL Write] and https://openai.com/blog/chatgpt/[ChatGPT] by OpenAI as a writing assistants. As a non-native speaker, it is difficult to avoid grammar mistakes and to find to a natural writing style, and I'm thankful to DeepL and OpenAI for granting public access to their incredible technologies.
 
 === Feedback
 

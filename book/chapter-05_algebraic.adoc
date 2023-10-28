@@ -104,6 +104,176 @@ val e = a pow b
 
 Using complex numbers feels now as intuitive as using one of the built-in numeric types.
 
+=== Case Study: Modular Arithmetic - Dealing with a Context
+
+Imagine you're faced with large modular arithmetic calculations. Often, simply calculating the modulo after an operation isn't enough. Certain operations, such as division, differ significantly from standard arithmetic. In addition, neglecting to optimize operations such as multiplication and exponentiation can result not only in slower performance, but also in arithmetic overflows.
+
+To address this problem, you decide to create a DSL tailored to modular arithmetic. However, a problem arises: where do you specify the modulus for these calculations? A global variable would be a precarious and unsafe solution. Embedding the modulus in each operand proves tedious and raises the question of how to handle operands with different moduli in one operation.
+
+A common solution would be to define a class that holds the modulus, and make the parts of the DSL members of that class, so that they all have access to the modulus information:
+
+[source,kotlin]
+----
+data class Modulus(val modulus: Long) {
+    init {
+        require(modulus > 1)
+    }
+
+    @JvmInline
+    value class Modular(val n: Long)
+
+    val Long.m
+        get() = Modular(remainder(this))
+
+    val Int.m
+        get() = Modular(remainder(this.toLong()))
+
+    operator fun Modular.plus(that: Modular) =
+        Modular(remainder(this.n + that.n))
+
+    operator fun Modular.minus(that: Modular) =
+        Modular(remainder(this.n - that.n))
+
+    operator fun Modular.times(that: Modular) =
+        Modular(remainder(this.n * that.n))
+
+    operator fun Modular.div(that: Modular) =
+        Modular(remainder(this.n * inverse(that.n)))
+
+    private fun remainder(n: Long) = when {
+        n < 0 -> (n % modulus) + modulus
+        else -> n % modulus
+    }
+
+    private data class GcdResult(val gcd: Long, val x: Long, val y: Long)
+
+    private fun inverse(a: Long): Long =
+        extendedGCD(a, modulus)
+            .run {
+                when (gcd) {
+                    1L -> remainder(x)
+                    else -> throw ArithmeticException(
+                        "Can't divide by $a (mod $modulus)"
+                    )
+                }
+            }
+
+    private fun extendedGCD(a: Long, b: Long): GcdResult =
+        when (b) {
+            0L -> GcdResult(a, 1, 0)
+            else -> {
+                val result = extendedGCD(b, a % b)
+                val x = result.y
+                val y = result.x - (a / b) * result.y
+                GcdResult(result.gcd, x, y)
+            }
+        }
+}
+----
+
+As mentioned above, the division operation requires some arithmetic effort, but otherwise the example is straightforward. One way to use this DSL is to bring the `Modulus` class into scope using the `with()` function:
+
+[source,kotlin]
+----
+with(Modulus(7)) {
+    println(3.m + 5.m) // Modular(n=1)
+    println(3.m - 5.m) // Modular(n=5)
+    println(3.m * 5.m) // Modular(n=1)
+    println(3.m / 5.m) // Modular(n=2)
+}
+with(Modulus(10)) {
+    println(3.m + 5.m) // Modular(n=8)
+    println(3.m - 5.m) // Modular(n=8)
+    println(3.m * 5.m) // Modular(n=5)
+    println(3.m / 5.m) // throws exception "Can't divide by 5 (mod 10)"
+    println(3.m / 7.m) // Modular(n=9)
+}
+----
+
+While this solution functions, its scalability is limited since the entire DSL is confined within a class. Although you could alleviate this by transforming some functions into extension functions to streamline the class, the operators must remain within the class. This constraint is due to the fact that the operators are already extension functions and can only have one receiver, namely their first operand. Another challenge emerges when the DSL requires multiple unrelated information sources, compelling them to be conflated into a single class. In essence, these issues stem from the DSL becoming strongly coupled with its enclosing class.
+
+For those daring enough to delve into an experimental language feature, <<chapter-04_features.adoc#contextReceivers, Context Receivers>>(((Context Receivers))) were specifically designed to address scenarios like these by enabling a more flexible separation between the context scope and its consumers. Here is a rewritten version of the DSL above:
+
+[source,kotlin]
+----
+data class Modulus(val modulus: Long) {
+    init {
+        require(modulus > 1)
+    }
+}
+
+@JvmInline
+value class Modular(val n: Long)
+
+context(Modulus)
+val Long.m
+    get() = Modular(remainder(this))
+
+context(Modulus)
+val Int.m
+    get() = Modular(remainder(this.toLong()))
+
+context(Modulus)
+operator fun Modular.plus(that: Modular) = Modular(remainder(this.n + that.n))
+
+context(Modulus)
+operator fun Modular.minus(that: Modular) = Modular(remainder(this.n - that.n))
+
+context(Modulus)
+operator fun Modular.times(that: Modular) = Modular(remainder(this.n * that.n))
+
+context(Modulus)
+operator fun Modular.div(that: Modular) = Modular(remainder(this.n * inverse(that.n)))
+
+context (Modulus)
+private fun remainder(n: Long) = when {
+    n < 0 -> (n % modulus) + modulus
+    else -> n % modulus
+}
+
+private data class GcdResult(val gcd: Long, val x: Long, val y: Long)
+
+context(Modulus)
+private fun inverse(a: Long): Long =
+    extendedGCD(a, modulus)
+        .run {
+            when (gcd) {
+                1L -> remainder(x)
+                else -> throw ArithmeticException(
+                    "Can't divide by $a (mod $modulus)"
+                )
+            }
+        }
+
+private fun extendedGCD(a: Long, b: Long): GcdResult =
+    when (b) {
+        0L -> GcdResult(a, 1, 0)
+        else -> {
+            val result = extendedGCD(b, a % b)
+            val x = result.y
+            val y = result.x - (a / b) * result.y
+            GcdResult(result.gcd, x, y)
+        }
+    }
+----
+
+The usage pattern hasn't changed, you can use `with()` in exactly the same way to provide the `Modulus` instance. Furthermore, you can easily write new functions that "inherit" an existing scope:
+
+[source,kotlin]
+----
+context(Modulus)
+fun square(n: Modular) = n * n
+
+...
+
+with(Modulus(7)) {
+    val x = square(3.m + 5.m) + square(3.m - 5.m)
+    println(x) // Modular(n=2)
+}
+----
+
+In my opinion, context receivers provide an elegant solution in situations where algebraic DSLs need additional information from the environment.
+
 === Java Interoperability
 
 Java doesn't allow operator overloading, and extension methods become just normal static methods with the receiver as the first argument. That means that our DSL definitely looks no longer elegant in Java. Given that in our case the underlying Apache Commons Numbers library itself is written in Java, we are probably better off using their methods.
@@ -112,7 +282,7 @@ However, our DSL is still working, and is quite straightforward to use, when you
 
 === Conclusion
 
-The case study presented in this chapter serves to illustrate that creating algebraic DSLs is usually not that difficult. However, it is important to consider certain factors when deciding whether to employ an algebraic DSL. While algebraic notation can be powerful and expressive, it may not always be suitable for every use case. For instance, using algebraic notation for sum and product types, such as `Either` and tuples like `Pair` and `Triple`, might be unconventional and potentially confusing to some users, despite the underlying algebraic structure. Additionally, certain behaviors, like non-commutative multiplication found in quaternions and matrices, can introduce unexpected complexities and increase the likelihood of usage errors. Therefore, it is crucial to exercise good judgment and adhere to the _Principle of Least Surprise_ (((Principle of Least Surprise))) when designing algebraic DSLs, rather than simply adopting them because of their ease of implementation.
+The case studies presented in this chapter serve to illustrate that creating algebraic DSLs is usually not that difficult. However, it is important to consider certain factors when deciding whether to employ an algebraic DSL. While algebraic notation can be powerful and expressive, it may not always be suitable for every use case. For instance, using algebraic notation for sum and product types, such as `Either` and tuples like `Pair` and `Triple`, might be unconventional and potentially confusing to some users, despite the underlying algebraic structure. Additionally, certain behaviors, like non-commutative multiplication found in quaternions and matrices, can introduce unexpected complexities and increase the likelihood of usage errors. Therefore, it is crucial to exercise good judgment and adhere to the _Principle of Least Surprise_ (((Principle of Least Surprise))) when designing algebraic DSLs, rather than simply adopting them because of their ease of implementation.
 
 ==== Preferable Use Cases
 
