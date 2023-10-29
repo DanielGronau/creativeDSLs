@@ -28,13 +28,13 @@ There are also libraries that create DSLs for you. If you need a well-known styl
 While it is difficult to clearly distinguish between the different types of use cases, a general classification is still helpful. In particular, each DSL category has use cases that it can model better than others. Some common types of use cases for DSLs include:
 
 * *Implementation Support*
-- *Code Generation:* DSLs can be used to generate code in a specific programming language or format, allowing repetitive tasks to be automated and complex systems to be built.
-- *Library Customization:* DSLs can help integrate external code by customizing it to follow the paradigms, conventions, and patterns of the internal code base. A good example is Kotlin's adaptation of the core Java libraries.
-- *Testing:* DSLs can be used to define and execute tests in a domain-specific manner, helping to validate the behavior of a system.
+- *Code Generation:*(((Code Generation))) DSLs can be used to generate code in a specific programming language or format, allowing repetitive tasks to be automated and complex systems to be built.
+- *Library Customization:*(((Library Customization))) DSLs can help integrate external code by customizing it to follow the paradigms, conventions, and patterns of the internal code base. A good example is Kotlin's adaptation of the core Java libraries.
+- *Testing:*(((Testing))) DSLs can be used to define and execute tests in a domain-specific manner, helping to validate the behavior of a system.
 
 * *System Management*
-- *Configuration Management:* DSLs can be used to configure and manage systems, applications, or infrastructure in a declarative manner.
-- *Workflow Orchestration:* DSLs can be used to define and manage complex workflows or business processes.
+- *Configuration Management:*(((Configuration Management))) DSLs can be used to configure and manage systems, applications, or infrastructure in a declarative manner.
+- *Workflow Orchestration:*(((Workflow Orchestration))) DSLs can be used to define and manage complex workflows or business processes.
 
 * *Runtime Behavior*
 - *Data Creation and Initialization:* DSLs can be used to define and construct data structures in a domain-specific manner, helping to represent and manipulate complex data.
@@ -44,13 +44,13 @@ While it is difficult to clearly distinguish between the different types of use 
 - *Execute Actions:* DSLs can provide a natural way to specify and execute actions, such as triggering events or initiating processes.
 
 * *Peripheral Systems*
-- *Logging:* DSLs can provide a specialized language for logging messages and events, giving the log messages more structure and making them easier to process.
-- *Monitoring:* DSLs can be used to monitor the system status and to measure parameters such as system performance or memory usage.
-- *Reporting and Analytics:* DSLs can be used to define queries, aggregations, and transformations for reporting and analysis purposes.
+- *Logging:*(((Logging))) DSLs can provide a specialized language for logging messages and events, giving the log messages more structure and making them easier to process.
+- *Monitoring:*(((Monitoring))) DSLs can be used to monitor the system status and to measure parameters such as system performance or memory usage.
+- *Reporting and Analytics:*(((Reporting)))(((Analytics))) DSLs can be used to define queries, aggregations, and transformations for reporting and analysis purposes.
 
 * *Specific Applications*
-- *Natural Language Processing:* DSLs can be used to create language models, define linguistic rules, or implement specific language processing tasks.
-- *Simulation and Modeling:* DSLs can be used to build simulation models or mathematical models for various fields such as physics, engineering, finance, or biology.
+- *Natural Language Processing:*(((Natural Language Processing))) DSLs can be used to create language models, define linguistic rules, or implement specific language processing tasks.
+- *Simulation and Modeling:*(((Simulation))) DSLs can be used to build simulation models or mathematical models for various fields such as physics, engineering, finance, or biology.
 
 Each of these use cases has its own unique challenges and requirements, and different categories of DSLs may be better suited to modeling certain types of use cases than others.
 
@@ -58,14 +58,14 @@ Each of these use cases has its own unique challenges and requirements, and diff
 
 There are a few general principles an internal DSL should follow:
 
-* *Conciseness:* The DSL syntax should be succinct and expressive.
-* *Consistency:* The DSL syntax should adhere to a certain style, similar tasks should require a similar syntax. The behavior of the DSL should be logical and predictable.
-* *Coverage:* The DSL must cover the problem domain, there should be no gaps, but also no overreach into other areas.
-* *Usability:* The DSL should be easy, safe and intuitive to use. It's not enough to make a DSL concise, it should also take user expectations into account, and follow the _Principle of Least Surprise_(((Principle of Least Surprise))). Error handling should be comprehensive, providing clear and informative error messages that help users identify and resolve problems quickly.
-* *Modularity:* If it makes sense to use a part of the DSL on its own, it should be easy to do so.
-* *Extensibility:* A DSL should be designed to be easily extended and customized. Users should be able to add new functionality or modify existing behavior without significant effort or disruption to the overall design.
-* *Interoperability:*  DSLs often need to interact with existing systems or integrate with other DSLs. Designing a DSL with interoperability in mind allows seamless integration with external components, and simplifies data exchange. Sometimes it may even be necessary to provide a way to _bypass_ DSL functionality, in order to allow access from other languages such as Java, or for automated tools.
-* *Maintainability:* The DSL code should be easy to read and to maintain.
+* *Conciseness:*(((Conciseness))) The DSL syntax should be succinct and expressive.
+* *Consistency:*(((Consistency))) The DSL syntax should adhere to a certain style, similar tasks should require a similar syntax. The behavior of the DSL should be logical and predictable.
+* *Coverage:*(((Domain Coverage))) The DSL must cover the problem domain, there should be no gaps, but also no overreach into other areas.
+* *Usability:*(((Usability))) The DSL should be easy, safe and intuitive to use. It's not enough to make a DSL concise, it should also take user expectations into account, and follow the _Principle of Least Surprise_(((Principle of Least Surprise))). Error handling should be comprehensive, providing clear and informative error messages that help users identify and resolve problems quickly.
+* *Modularity:*(((Modularity))) If it makes sense to use a part of the DSL on its own, it should be easy to do so.
+* *Extensibility:*(((Extensibility))) A DSL should be designed to be easily extended and customized. Users should be able to add new functionality or modify existing behavior without significant effort or disruption to the overall design.
+* *Interoperability:*(((Interoperability)))  DSLs often need to interact with existing systems or integrate with other DSLs. Designing a DSL with interoperability in mind allows seamless integration with external components, and simplifies data exchange. Sometimes it may even be necessary to provide a way to _bypass_ DSL functionality, in order to allow access from other languages such as Java, or for automated tools.
+* *Maintainability:*(((Maintainability))) The DSL code should be easy to read and to maintain.
 
 In many DSL tutorials and related literature, there is a tendency to focus only on the "sexy" principles of DSL design, such as conciseness and usability. In practice, however, a DSL project can fail if the other principles are overlooked, or if a good compromise between conflicting requirements can't be found. Ultimately, successful DSL design requires a holistic approach that considers all relevant factors and strikes a balance that meets the needs of the domain and the users.
 

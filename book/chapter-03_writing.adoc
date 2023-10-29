@@ -4,10 +4,10 @@ Now that you've defined the requirements for your DSL and are ready to move into
 
 The following four-step workflow can be a helpful guide as you begin to design and implement your DSL:
 
-* Imagine the ideal syntax:* Begin by considering the concepts and ideas you want to express in your DSL, and brainstorm possible syntaxes that could be used to represent them. Consider readability, expressiveness, and usability as you explore different options.
-* Prototype:* Once you have a rough idea of the syntax you want to use, create a prototype of your DSL using Kotlin's language features. This will allow you to experiment with different approaches and see how they work in practice.
-* Formalize:* Once you are satisfied with the prototype of your DSL, formalize the syntax and semantics of your DSL.
-* Implementation:* With the syntax and semantics of your DSL formally defined, you can begin implementing your DSL in Kotlin. Use the features and techniques you have learned to create a complete and functional DSL that is ready for use.
+* *Imagine the ideal syntax:* Begin by considering the concepts and ideas you want to express in your DSL, and brainstorm possible syntaxes that could be used to represent them. Consider readability, expressiveness, and usability as you explore different options.
+* *Prototype:* Once you have a rough idea of the syntax you want to use, create a prototype of your DSL using Kotlin's language features. This will allow you to experiment with different approaches and see how they work in practice.
+* *Formalize:* Once you are satisfied with the prototype of your DSL, formalize the syntax and semantics of your DSL.
+* *Implementation:* With the syntax and semantics of your DSL formally defined, you can begin implementing your DSL in Kotlin. Use the features and techniques you have learned to create a complete and functional DSL that is ready for use.
 
 [ditaa,"writing-a-dsl"]
 .DSL-Development Workflow
@@ -39,11 +39,11 @@ In this step, it's generally not necessary to specify a formal grammar. Instead,
 
 If possible, it can also be helpful to get feedback from domain experts or potential users of your DSL. This can help you identify important details that you may have overlooked, and can help you create a DSL that meets the needs and expectations of your target audience. Few things are more frustrating than presenting a new implementation only to discover that you have forgotten a crucial detail, so it pays to be thorough and to seek feedback whenever possible.
 
-=== Prototyping (((Prototyping)))
+=== Prototyping (((Prototype)))
 
 Now that you have defined an ideal syntax, it's time to start coding. Because it's often necessary to experiment and iterate to get the syntax and structure of your DSL just right, it can be very helpful to start with a prototype.
 
-A prototype is a simplified version of your DSL that allows you to try different approaches and see how they work in practice. You can choose to implement only selected features of your DSL (also known as "spike implementations"), or you can create an empty shell that simply verifies that your chosen syntax is viable. With a prototype, you can quickly test different ideas and identify potential problems, save time and effort by avoiding extensive testing and sanity checks, and focus on experimenting with different approaches to see what works best. Prototyping can also help minimize the risk of spending time on solutions that ultimately prove to be unworkable.
+A prototype is a simplified version of your DSL that allows you to try different approaches and see how they work in practice. You can choose to implement only selected features of your DSL (also known as "spike implementations"(((Spike Implementation)))), or you can create an empty shell that simply verifies that your chosen syntax is viable. With a prototype, you can quickly test different ideas and identify potential problems, save time and effort by avoiding extensive testing and sanity checks, and focus on experimenting with different approaches to see what works best. Prototyping can also help minimize the risk of spending time on solutions that ultimately prove to be unworkable.
 
 As you work on prototyping your DSL, it's important to periodically check that the syntax you've chosen is acceptable and meets your goals and requirements. Feedback from domain experts or potential users of your DSL can be invaluable in this regard, helping you to identify any problems or areas for improvement. An advantage of the prototyping approach is that it allows you to easily present different versions of your DSL and gather feedback on each one. This can help you refine your syntax and structure until you have a design that is both effective and intuitive.
 
@@ -89,7 +89,7 @@ Implementing a DSL is often different from the usual programming tasks, and ther
 
 ==== Name Clashes (((Name Clashes)))
 
-A good DSL can be used extensively in a codebase, but this can increase the risk of naming conflicts, especially if the DSL adds extension methods to classes like `Int' or `String' that are used frequently. One way to mitigate this risk is to try to limit the scope of your DSL functions by putting them into DSL-specific objects or classes whenever possible. It's also a good idea to consider the potential for collisions when naming your functions, operators, etc., so that they are less likely to cause conflicts.
+A good DSL can be used extensively in a codebase, but this can increase the risk of naming conflicts, especially if the DSL adds extension methods to classes like `Int` or `String` that are used frequently. One way to mitigate this risk is to try to limit the scope of your DSL functions by putting them into DSL-specific objects or classes whenever possible. It's also a good idea to consider the potential for collisions when naming your functions, operators, etc., so that they are less likely to cause conflicts.
 
 ==== Coupling (((Coupling)))
 
@@ -124,9 +124,9 @@ For some DSL categories, testing can be more difficult than for normal code beca
 Some common challenges in testing DSLs include:
 
 * *Complex code structures:* DSLs can have more complex code structures than ordinary code, such as classes that act as wrappers or intermediate builder classes.
-* *Combinatorial explosion(((Combinatorial Explosion))):* DSLs may allow their elements to be combined as building blocks. This can make it difficult to test all possible combinations and edge cases, and to ensure that the DSL behaves as expected.
+* *Combinatorial explosion:*(((Combinatorial Explosion))) DSLs may allow their elements to be combined as building blocks. This can make it difficult to test all possible combinations and edge cases, and to ensure that the DSL behaves as expected.
 * *Compile-time guaranties:* Some DSLs use type-level programming to introduce compile-time guarantees, but unfortunately there is no convenient way to test that certain unwanted code structures don't compile.
-* *Unusual testing scenarios:* Depending on the type of DSL, special testing scenarios may be required. For example, if your DSL is used to generate code, you may need to test the generated code in addition to the DSL itself.
+* *Unusual testing scenarios:*(((Testing))) Depending on the type of DSL, special testing scenarios may be required. For example, if your DSL is used to generate code, you may need to test the generated code in addition to the DSL itself.
 
 Overall, it's important to be aware of the unique challenges of testing DSLs, and the extra effort and attention that may be required to ensure that your DSL is reliable and bug-free.
 
@@ -134,7 +134,7 @@ Overall, it's important to be aware of the unique challenges of testing DSLs, an
 
 Many software developers don't like to write documentation, but it's important. When writing documentation for a DSL, keep in mind that it is essentially its own language, and users may not be familiar with all of its features and concepts. Therefore, it's important to provide clear, concise explanations of how the DSL works and how it should be used, as well as plenty of examples to illustrate key concepts. It's also a good idea to include visualizations or diagrams to help users understand complex concepts or interactions between different parts of the DSL.
 
-Creating a sample project can be a very effective way to help users understand and learn how to use the DSL. By providing a complete, working example that shows how the different elements of the DSL can be used and combined in a real-world context, you can give users a much better understanding of how to apply the DSL to their own problem domain. There are a few key things to keep in mind when creating an example project for a DSL:
+Creating a sample project(((Sample Project))) can be a very effective way to help users understand and learn how to use the DSL. By providing a complete, working example that shows how the different elements of the DSL can be used and combined in a real-world context, you can give users a much better understanding of how to apply the DSL to their own problem domain. There are a few key things to keep in mind when creating an example project for a DSL:
 
 * *Make it clear and concise:* Keep the example project focused and to the point, and avoid unnecessary detail, complexity, and external dependencies.
 * *Use meaningful examples:* Select examples that are relevant to the problem domain and that demonstrate the key features and capabilities of the DSL.

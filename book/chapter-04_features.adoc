@@ -4,25 +4,25 @@
 Kotlin is a modern and beautiful programming language that offers several key features not found in Java.Here are some of the most notable features that set Kotlin apart:
 
 * *Null-Safe Type System:* Kotlin's null-safety feature is a major improvement over Java, where null values can cause null pointer exceptions. This feature ensures that a variable cannot be null unless explicitly declared as such, reducing the risk of runtime errors.
-* *Concise Syntax:* Kotlin's syntax is designed to be as concise as possible, reducing the amount of boilerplate code that developers need to write. Optional semicolons, operator overloading and expression-body functions are just a few examples of the syntactic sugar that makes Kotlin code not only more readable and easier to maintain, it also helps to write expressive DSLs.
+* *Concise Syntax:* Kotlin's syntax is designed to be as concise as possible, reducing the amount of boilerplate code that developers need to write. Optional semicolons, operator overloading, and expression body functions are just a few examples of the syntactic sugar that not only makes Kotlin code easier to read and maintain, but also helps you write expressive DSLs.
 * *Object-Oriented Design:* Kotlin takes a more object-oriented approach than Java, replacing static members with object declarations that can be used in a more flexible and modular way.
 * *Functional Programming Features:* Kotlin also supports functional programming, including top-level and local functions, as well as trailing lambda syntax.
-* *Multiplatform Support:* Kotlin can be compiled to run on multiple platforms, notably the JVM, JavaScript, and as a native application
+* *Multiplatform Support:* Kotlin can be compiled to run on multiple platforms, including the JVM, JavaScript, and as a native application
 
-In addition, Kotlin has excellent interoperability with Java,(((Java InterFoperability))) making it easy to call Java code from Kotlin and vice versa. Kotlin also includes several annotations that make it easier to call Kotlin code from Java, ensuring that the two languages can work together seamlessly.
+In addition, Kotlin has excellent interoperability with Java,(((Java Interoperability)))(((Interoperability))), making it easy to call Java code from Kotlin and vice versa. Kotlin also includes several annotations that make it easier to call Kotlin code from Java, ensuring that the two languages can work together seamlessly.
 
-As mentioned in the preface, this book assumes that the reader has basic Kotlin knowledge. However, DSLs often use little-known language features, or they use some features in other ways than common code. Sometimes, even the users of the DSL might not be aware of the kind of "machinery" used to make it work.
+As mentioned in the preface, this book assumes that the reader has a basic knowledge of Kotlin. However, DSLs often use little-known language features, or they use some features in a different way than ordinary code. Sometimes even the users of the DSL may not be aware of the kind of "machinery" that makes it work.
 
-This chapter gives a short overview of language features that might be relevant for writing DSLs. After reading this chapter, you should have a better understanding of how some common DSL "tricks" work.
+This chapter gives a brief overview of language features that may be relevant to writing DSLs. After reading this chapter, you should have a better understanding of how some common DSL "tricks" work.
 
 [#backtickIdentifiers]
 === Backtick Identifiers (((Backtick Notation)))
 
-Kotlin allows almost arbitrary identifiers, as long as they are enclosed in backticks. The main reason for introducing this feature was to allow the usage of identifiers that are keywords in Kotlin but not in Java, like `fun` or `when`. For DSLs, we can use them when we need descriptive identifiers which don't follow the usual syntactic rules.
+Kotlin allows almost arbitrary identifiers as long as they are enclosed in backticks. The main reason for introducing this feature was to allow the use of identifiers that are keywords in Kotlin but not in Java, such as `fun` or `when`. For DSLs, we can use them when we need descriptive identifiers that don't follow the usual syntactic rules.
 
 Backtick identifiers start and end with a backtick `{backtick}` - these are not part of the identifier, but just delimiters - and can contain almost all characters. E.g. for Kotlin on the JVM, all characters except `\r` `\n` `,` `.` `;` `:` `\` `|` `/` `[` `?` `]` `<` `>` `{backtick}` are allowed.
 
-A typical use case for backticks are DSLs for test libraries. While Java limits you to underscores and camel case, Kotlin allows very descriptive names for test functions by using the backtick syntax:
+A typical use case for backticks is DSLs for test libraries. While Java limits you to underscores and camel case, Kotlin allows very descriptive names for test functions by using the backtick syntax:
 
 [source,kotlin]
 ----
@@ -31,11 +31,11 @@ fun `check that the slithy toves gyre and gimble in the wabe`() {
 }
 ----
 
-Another common use case is to simulate an operator with an infix function, e.g. you could define an exponentiation operation using a syntax like `5.0 {backtick}^{backtick} 3` (see section <<infix_notation, Infix Notation for Functions>>).
+Another common use case is to simulate an operator with an infix function, e.g. you could define an exponentiation operation with a syntax like `5.0 {backtick}^{backtick} 3` (see section <<infix_notation, Infix Notation for Functions>>).
 
 === Named Arguments (((Named Arguments))) and Default Values (((Default Values)))
 
-Java relies on the order of the parameters when calling a method or constructor, which can get confusing very quickly. In contrast, Kotlin allows you to address arguments by name, which is much more readable, and doesn't require you to remember the order of parameters:
+Java relies on the order of the parameters when calling a method or constructor, which can quickly become confusing. In contrast, Kotlin allows you to refer to arguments by name, which is much more readable and doesn't require you to remember the order of the parameters:
 
 [source,kotlin]
 ----
@@ -56,9 +56,9 @@ val color2 =
     )
 ----
 
-In Java, a similar naming behavior can be imitated by using the builder pattern, but in many cases Kotlin's built-in solution is more convenient.
+In Java, a similar naming behavior can be mimicked using the builder pattern, but in many cases Kotlin's built-in solution is more convenient.
 
-In Kotlin, you can also assign default values to function and constructor arguments, which greatly simplifies the code compared to Java, where you need to write multiple methods or constructors with different combinations of default values to achieve the same effect. Therefore, Kotlin's default-value approach reduces boilerplate code and enhances readability. In the example above, it would be sensible to set the alpha value to 255, as it is more common to define an opaque color than a translucent one:
+In Kotlin, you can also assign default values to function and constructor arguments, which greatly simplifies the code compared to Java, where you have to write multiple methods or constructors with different combinations of default values to achieve the same effect. Therefore, Kotlin's default value approach reduces boilerplate code and improves readability. In the example above, it would make sense to set the alpha value to 255, since it is more common to define an opaque color than a translucent one:
 
 [source,kotlin]
 ----
@@ -102,19 +102,19 @@ In the `copy()` method, the values of the current object are set as default valu
 ====
 While the `copy()` method is convenient when working with immutable data classes, it doesn't scale well for nested data classes: Imagine you need a copy of a company, with the email of the address of the CEO changed. That means you need nested `copy()` calls as well, going down level by level. This is lengthy, hard to read and error-prone.
 
-In functional programming, this problem is often solved with an "optics" package, containing "lenses" and similar abstractions, which allow to easily compose copy operations for different nesting levels. If you want to learn more about this topic, I would suggest to check out https://arrow-kt.io/learn/immutable-data/intro[Arrow Optics].
+In functional programming, this problem is often solved with an "optics" package, containing "lenses" and similar abstractions, which allow to easily compose copy operations for different nesting levels. If you want to learn more about this topic, I would suggest to check out https://arrow-kt.io/learn/immutable-data/intro[Arrow Optics](((Arrow-KT))).
 ====
 
 === Trailing Lambda Arguments (((Trailing Lambda)))
 
-If a method expects an argument of a function type, you can use the usual lambda syntax with curly braces when you call it. E.g. you can merge a list of strings using the `fold()` method as follows:
+If a method expects an argument of a function type, you can use the usual curly bracketed lambda syntax when calling it. For example, you can merge a list of strings using the `fold()` method like this:
 
 [source,kotlin]
 ----
 listOf("one", "two", "three").fold("", { s, t -> s + t })
 ----
 
-However, if such an argument comes last, you can "pull it out" of the argument list, and append it inside its curly braces:
+However, if such an argument comes last, you can pull it out of the argument list, and append it after the closing parenthesis:
 
 [source,kotlin]
 ----
@@ -147,11 +147,11 @@ html {
 
 === Varargs (((Varargs)))
 
-Varargs (from "variable arguments") are a useful feature in both Java and Kotlin, allowing methods to accept a variable number of arguments. However, Kotlin has made several improvements to varargs, making them safer and more convenient to use.
+Varargs (from "variable arguments") are a useful feature in both Java and Kotlin, allowing methods to take a variable number of arguments. However, Kotlin has made several improvements to varargs that make them safer and more convenient to use.
 
-One of the main improvements in Kotlin is that the syntax for varargs is now unambiguous. In Java, it was sometimes difficult to tell whether an array was intended to be a single argument for a vararg, or if its elements should be used as individual arguments. Kotlin addressed this problem by introducing the unary "spread operator" `*`(((Spread Operator))), which indicates that the elements of an array (and not the array itself) should be used as arguments for a vararg.
+One of the most important improvements in Kotlin is that the syntax for varargs is now unambiguous. In Java, it was sometimes difficult to tell whether an array was intended to be a single argument to a vararg, or whether its elements should be used as individual arguments. Kotlin addresses this problem by introducing the unary "spread operator" `*`(((Spread Operator))), which indicates that the elements of an array (rather than not the array itself) should be used as arguments to a vararg.
 
-Furthermore, Kotlin allows for a more flexible use of varargs. You can freely combine single-value arguments with elements from spread arrays:
+In addition, Kotlin allows more flexible use of varargs. You can freely combine single-value arguments with elements of spread arrays:
 
 [source,kotlin]
 ----

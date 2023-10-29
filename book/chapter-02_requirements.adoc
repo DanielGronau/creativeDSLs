@@ -18,7 +18,7 @@ After you have identified the problem domain, you should look at existing DSLs. 
 
 TIP: There is an ongoing debate about how much software should depend on libraries, and you should be aware of related issues such as the dreaded "dependency hell". On the other hand, don't fall into the "Not Invented Here" (((Not Invented Here))) trap, where an organization tries to build everything from scratch. As in most cases, it is important to find a good balance. The decision to use or avoid a library should always be a conscious one, and the decision process should be documented.
 
-If there is no existing DSL for your problem, you might also consider using a DSL generator. Using such libraries can make designing a DSL a breeze. This book discusses https://github.com/F43nd1r/autodsl[AutoDSL for Kotlin] to give you an idea of this approach.
+If there is no existing DSL for your problem, you might also consider using a DSL generator. Using such libraries can make designing a DSL a breeze. This book discusses https://github.com/F43nd1r/autodsl[AutoDSL for Kotlin](((AutoDSL))) to give you an idea of this approach.
 
 === Specifying the Output of the DSL (((DSL Output)))
 
@@ -26,7 +26,7 @@ In most cases, it is fairly obvious what kind of output is expected. Sometimes y
 
 Another potential question is whether to create the target entities of an external API directly, or to follow the Adapter Pattern or similar approaches. In this case, the decision depends on the intended architecture of your application (such as Hexagonal or Onion Architecture), but in general you should try to use non-essential external APIs only at the boundaries of the application, and DSLs should follow this guideline as well.
 
-Most systems produce not only direct output, but also secondary data such as logs, metrics, reports, and so on. Users should have easy and flexible access to this type of data produced by a DSL. For logging, this may mean not forcing a specific logging framework on the user, but rather using a logging facade such as https://www.slf4j.org/[SLF4J] in your DSL. Of course, you should also specify the expected secondary output of your DSL.
+Most systems produce not only direct output, but also secondary data such as logs, metrics, reports, and so on. Users should have easy and flexible access to this type of data produced by a DSL. For logging(((Logging))), this may mean not forcing a specific logging framework on the user, but rather using a logging facade such as https://www.slf4j.org/[SLF4J](((SLF4J))) in your DSL. Of course, you should also specify the expected secondary output of your DSL.
 
 === Syntactic Gap (((Syntactic Gap)))
 
