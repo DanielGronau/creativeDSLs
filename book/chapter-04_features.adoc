@@ -4,7 +4,7 @@
 Kotlin is a modern and beautiful programming language that offers several key features not found in Java.Here are some of the most notable features that set Kotlin apart:
 
 * *Null-Safe Type System:* Kotlin's null-safety feature is a major improvement over Java, where null values can cause null pointer exceptions. This feature ensures that a variable cannot be null unless explicitly declared as such, reducing the risk of runtime errors.
-* *Concise Syntax:* Kotlin's syntax is designed to be as concise as possible, reducing the amount of boilerplate code that developers need to write. Optional semicolons, operator overloading and expression-body functions are just a few examples of the syntactical sugar that makes Kotlin code not only more readable and easier to maintain, it also helps to write expressive DSLs.
+* *Concise Syntax:* Kotlin's syntax is designed to be as concise as possible, reducing the amount of boilerplate code that developers need to write. Optional semicolons, operator overloading and expression-body functions are just a few examples of the syntactic sugar that makes Kotlin code not only more readable and easier to maintain, it also helps to write expressive DSLs.
 * *Object-Oriented Design:* Kotlin takes a more object-oriented approach than Java, replacing static members with object declarations that can be used in a more flexible and modular way.
 * *Functional Programming Features:* Kotlin also supports functional programming, including top-level and local functions, as well as trailing lambda syntax.
 * *Multiplatform Support:* Kotlin can be compiled to run on multiple platforms, notably the JVM, JavaScript, and as a native application

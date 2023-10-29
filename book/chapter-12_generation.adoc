@@ -313,7 +313,7 @@ Before deciding to write an annotation processor, it is important to understand 
 ....
 
 
-WARNING: At the time KSP is invoked, the client code is not yet built, which means **you can't use regular reflection** for client classes. The KSP API provides you with syntactical information about the code, but working with this API isn't as convenient as using reflection.
+WARNING: At the time KSP is invoked, the client code is not yet built, which means **you can't use regular reflection** for client classes. The KSP API provides you with syntactic information about the code, but working with this API isn't as convenient as using reflection.
 
 The missing reflection support means that KSP might be not the right tool if you need to rely heavily on code inspection, and that you should think about making the process of information gathering as easy as possible for the processor, e.g. by using annotations.
 
