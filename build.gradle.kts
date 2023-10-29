@@ -34,6 +34,12 @@ tasks.test {
     useJUnitPlatform()
 }
 
+configure<SourceSetContainer> {
+    named("main") {
+        java.srcDir("src/main/kotlin")
+    }
+}
+
 kotlin {
     jvmToolchain(11)
 }

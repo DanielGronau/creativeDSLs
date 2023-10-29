@@ -708,8 +708,10 @@ Another useful application for annotations is code generation(((Code Generation)
 
 .Annotation Processors (((Annotation Processors))) (((KSP))) (((kapt))) (((Kotlin Symbol Processing API)))
 ****
-Annotation processors allow to execute custom processor code during the build process, according to the annotations present in the application code. Kotlin features two annotation processors, the older https://kotlinlang.org/docs/kapt.html[kapt], which won't be developed further, and the recommended https://kotlinlang.org/docs/ksp-overview.html[Kotlin Symbol Processing API] (KSP), which will be covered in <<chapter-12_generation.adoc#annotationProcessor,chapter 12>>.
+Annotation processors allow to execute custom processor code during the build process, according to the annotations present in the application code. Kotlin features two annotation processors, the older https://kotlinlang.org/docs/kapt.html[kapt], which won't be developed further, and the recommended https://kotlinlang.org/docs/ksp-overview.html[Kotlin Symbol Processing API] (KSP), which will be covered in <<chapter-12_generation.adoc#annotationProcessor,Chapter 12>>.
 ****
+
+Last but not least, Kotlin contains annotations for supporting Java access. DSL code is often more challenging to call from Java, that's why we discuss this topic in <<chapter-13_java.adoc#javaInteroperability,Chapter 13>>.
 
 [#reflection]
 === Reflection (((Reflection))) (((Kotlin-Reflect)))

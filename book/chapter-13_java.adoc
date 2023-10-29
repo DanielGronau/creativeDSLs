@@ -1,11 +1,44 @@
 [#javaInteroperability]
 == Java Interoperability (((Java Interoperability)))
 
-Using a Kotlin DSL from Java can be challenging. While some Kotlin features like operator overloading simply can't be used, there are means to make other features more accessible from Java, and to create a DSL which is useful and convenient in both languages. Fortunately, Kotlin has some built-in features to improve Java interoperability, which can be found in the https://kotlinlang.org/docs/java-to-kotlin-interop.html[Kotlin Documentation: Calling Kotlin from Java]. In this chapter, Java interoperability will be discussed purely from a DSL design perspective, by presenting the relevant built-in features and useful techniques for solving DSL-specific issues.
+Using a Kotlin DSL from Java can be challenging. While some Kotlin features, such as operator overloading, simply aren't available, there are ways to make other features more accessible from Java, and to create a DSL that is useful and convenient in both languages. Fortunately, Kotlin has some built-in features to improve Java interoperability, which can be found at https://kotlinlang.org/docs/java-to-kotlin-interop.html[Kotlin Documentation: Calling Kotlin from Java]. This chapter discusses Java interoperability from a purely DSL design perspective, presenting the relevant built-in features and useful techniques for solving DSL-specific problems.
 
-=== Top level Functions and Variable Definitions
+Retrofitting an existing DSL for Java interoperability is always more expensive than planning for it from the beginning. By following some simple best practices, such as avoiding Java keywords when naming things, many problems won't arise in the first place.
 
-Java doesn't allow to define functions and variables outside of classes, so Kotlin puts them as static functions and variables in an artificial class. The default name of this class is derived from the file name, including the `kt` ending, and following the upper-camel-case naming convention for classes. Consider the following example:
+=== Renaming Identifiers
+
+When writing DSLs, it is common to use unusual names that may not be allowed in Java, either because they use forbidden characters or because they match a Java keyword. In this case, the `@JvmName` annotation can help. Of course, sometimes additional annotations may be needed, such as `@JvmStatic` to expose object members as static class members in Java:
+
+[source,kotlin]
+----
+object NamingTest {
+    @JvmStatic
+    @JvmName("checkThisOut")
+    fun `check this out`() = println("backtick notation")
+
+    @JvmStatic
+    @JvmName("instanceofFun")
+    fun instanceof() = println("instanceof")
+}
+----
+
+Calling these members is now trivial:
+
+[source,java]
+.Java code
+----
+public class CallStrangeNames {
+
+    public static void main(String[] args) {
+        NamingTest.checkThisOut();
+        NamingTest.instanceofFun();
+    }
+}
+----
+
+=== Package Level Definitions of Functions and Variables
+
+Java does not allow you to define functions and variables outside of classes, so Kotlin puts them as static functions and variables in an artificial class. The default name of this class is derived from the filename, including the `kt' ending, and follows the upper-camel-case naming convention for classes. Consider the following example:
 
 [source,kotlin]
 .utils.kt
@@ -17,9 +50,7 @@ fun someFunction() {
 }
 ----
 
-The function could be called from Java as `com.acme.UtilsKt.someFunction()`. Often, you would prefer to use another class name for your DSL, e.g. `Utils` instead of `UtilsKt`.
-
-This can be easily achieved by including a `JvmName` annotation:
+The function could be called from Java as `com.acme.UtilsKt.someFunction()`. Often, you would prefer to use another class name for your DSL, e.g. `Utils` instead of `UtilsKt`. This can be easily achieved by including a `JvmName` annotation:
 
 [source,kotlin]
 .utils.kt
@@ -37,11 +68,11 @@ It is even possible to map the contents of multiple Kotlin files to the same Jav
 
 === Value Classes (((Value Classes))) and Mangling (((Mangling)))
 
-In Kotlin, value classes are represented by their underlying type in the JVM bytecode. However, this approach can lead to naming conflicts, e.g. when there are multiple methods with the same name, and value class parameters with the same underlying type. To avoid this issue, Kotlin uses a technique called "name mangling".
+In Kotlin, value classes are represented by their underlying type in JVM bytecode. However, this approach can lead to naming conflicts, such as when there are multiple methods with the same name and value class parameters with the same underlying type. To avoid this problem, Kotlin uses a technique called "name mangling".
 
 During compilation, the compiler renames the affected methods using a hashing algorithm that takes into account the package name, class name, and method name. This creates a unique name for each method, which prevents naming conflicts in the bytecode.
 
-Kotlin users don't need to be aware of this behavior, as calls to the mangled methods are automatically translated correctly. However, if Java users want to call a mangled method, they would have to use the strange mangled name. To avoid this problem, you can name the method explicitly on the JVM, using the `@JvmName` annotation:
+Kotlin users don't need to be aware of this behavior, as calls to the mangled methods are automatically translated correctly. However, if Java users want to call a mangled method, they would have to use the strange mangled name. To avoid this problem, you can explicitly name the method on the JVM using the `@JvmName` annotation:
 
 [source,kotlin]
 ----
