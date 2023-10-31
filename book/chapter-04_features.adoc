@@ -161,7 +161,7 @@ val list = listOf(2, 0, *someArray, 5) // contains 2, 0, 4, 6, 8, 5
 
 ==== Vararg Position and Trailing Lambda Syntax
 
-In contrast to Java, where a vararg must always occur as last argument, Kotlin allows to put the vararg anywhere, even though you might need to use named arguments in order to avoid ambiguity:
+Unlike Java, where a vararg must always be the last argument, Kotlin allows you to put the vararg anywhere, although you may need to use named arguments to avoid ambiguity:
 
 [source,kotlin]
 ----
@@ -170,7 +170,7 @@ fun varargMethod(vararg numbers: Int, someString: String) { ... }
 varargMethod(1, 2, 3, someString = "Hi!")
 ----
 
-Note that varargs can't be assigned one by one when referred by a named arguments, but have to be bundled up in an array instead:
+Note that vararg elements can't be assigned individually when referenced by a named argument, but must be bundled into an array instead:
 
 [source,kotlin]
 ----
@@ -180,7 +180,7 @@ varargMethod(
 )
 ----
 
-At first glance, having the choice to put varargs wherever you want doesn't seem to be terribly useful. But there is one particular use case which is very interesting from a DSL design perspective: You can put a vararg as second to last argument before a trailing lambda argument.
+At first glance, having the ability to put varargs wherever you want doesn't seem very useful. But there is one particular use case that is very interesting from a DSL design perspective: You can put a vararg as the second-to-last argument before a trailing lambda argument.
 
 [source,kotlin]
 ----
@@ -191,11 +191,11 @@ varargAndLambda("Hi!", 1, 2, 3) {
 }
 ----
 
-As the code snippet shows, in this case there are no named arguments required.
+As the code snippet shows, no named arguments are required in this case.
 
 === Property-Syntax (((Properties)))
 
-Kotlin allows to control how properties are read and written. This makes it easy to hide DSL functionality in plain sight. A straightforward example is checking preconditions before setting a value:
+Kotlin allows you to control how properties are read and written. This makes it easy to hide DSL functionality. An easy example is checking preconditions before setting a value:
 
 [source,kotlin]
 ----
@@ -210,7 +210,7 @@ class TemperatureSensor {
 }
 ----
 
-Similarly, you can perform additional actions when reading a value (or even change the return value itself):
+In the same way, you can perform additional actions when you read a value, or even change the return value itself:
 
 [source,kotlin]
 ----
@@ -225,12 +225,12 @@ class SensitiveData {
 }
 ----
 
-There are many more things you can do with properties, like caching, lazy evaluation, delegation to other properties or input sanitation. Later in the <<extensions_and_receivers, Extensions and Receivers>> section we'll discuss another use of the property syntax.
+There are many other things you can do with properties, such as caching, lazy evaluation, delegation to other properties, or input sanitization. Later in the <<extensions_and_receivers, Extensions and Receivers>> section, we'll discuss another use of the property syntax.
 
 [#extensions_and_receivers]
 === Extensions (((Extensions))) and Receivers (((Receivers)))
 
-One of the most important Kotlin features for DSL design are extension functions, lambdas and properties, which allow to add functionality to existing classes - even final ones - without touching them. These extensions are stand-alone constructs operating on a so-called receiver, which is the target class they are extending. The function body is put in the scope of the receiver, so you can access its public fields, methods etc., and you can also refer to the receiver itself using `this`. Here is how an extension function looks like:
+One of Kotlin's most important features for DSL design are extension functions, lambdas, and properties, which allow you to add functionality to existing classes - even final ones - without touching them. These extensions are standalone constructs that operate on a _receiver_, which is the target class they are extending. The function body is placed in the scope of the receiver, so you can access its public fields, methods, etc., and you can also refer to the receiver itself with `this`. Here is what an extension function looks like:
 
 [source,kotlin]
 ----
@@ -248,17 +248,27 @@ val taxiBin = 1729.digits(2) // [1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1]
 val taxiHex = 1729.digits(16) //[6, 12, 1]
 ----
 
-From the user's point of view, the call with receiver looks exactly how a normal method call (or property access) on a receiver instance would look like. This makes extension functions a great tool for adding DSL features to classes that you have no control over. A great example are the so-called "scope functions" `apply()`, `run()`, `let()` and `also()` in the Kotlin API, which make it easier to use e.g. expression body syntax for functions, or succinct variable assignments.
+From the user's point of view, the call with receiver looks exactly like a normal method call (or property access) on a receiver instance. This makes extension functions a great tool for adding DSL functionality to classes over which you have no control. A great example is the so-called "scope functions" `apply()`, `run()`, `let()`, and `also()` in the Kotlin API, which make it easier to use e.g. expression body syntax for functions or concise variable assignment.
 
-.Extension Method History
+On the JVM where Kotlin is typically compiled, extension functions are implemented using static methods with the receiver instance as the first argument. This means that extension methods can also be called from Java, although it looks less elegant:
+
+[source,java]
+.Java
+----
+List<Integer> digits = IntUtilsKt.digits(1729, 10); // [1, 7, 2, 9]
+----
+
+Given the usefulness of extension methods, it is not surprising that there are libraries that provide them in Java as well, such as http://manifold.systems/docs.html#the-extension-manifold[Manifold], https://projectlombok.org/features/experimental/ExtensionMethod[Project Lombok], or https://github.com/rogerkeays/fluent[Fluent].
+
+.History of Extension Functions
 ****
-Extension methods, initially introduced in C#, found their way into Kotlin as "extension functions", especially with the seamless integration of Java classes into the Kotlin ecosystem in mind. This approach was chosen over Scala's implicit conversion approach, which, although more powerful, was deemed more complex to comprehend and manage. The advantages of extension methods became so evident that they were incorporated in Scala 3 as well. It is safe to say that extension methods are an important and successful advancement in contemporary object-oriented programming.
+Extension methods, originally introduced in C#, found their way into Kotlin as "extension functions", specifically with the goal of seamlessly integrating Java classes into the Kotlin ecosystem. This approach was chosen over Scala's _implicit conversion_ approach, which, while more powerful, was considered more complex to understand and manage. The benefits of extension methods became so apparent that they were also introduced in Scala 3. It is safe to say that extension methods are an important and successful advancement in modern object-oriented programming.
 ****
 
 [#typeNarrowing]
 ==== Type Narrowing (((Type Narrowing)))
 
-Interestingly, generic extension functions have a capability that normal instance methods don't have: They can fixate generic parameters on a certain type, narrowing down the range of possible receivers. Here is an example for calculating the product of numbers as an extension function for a list:
+Interestingly, generic extension functions have a feature that normal instance methods don't have: They can bind generic parameters to a particular type, thus limiting the range of possible recipients. Here is an example for calculating the product of numbers as an extension function for a list:
 
 [source,kotlin]
 ----
@@ -267,22 +277,22 @@ fun List<Double>.product() = fold(1.0, Double::times)
 val p = listOf(1.0, 2.0, 3.0).product()  // p == 6.0
 ----
 
-The call to `Double::times` is only possible because the receiver is not just any list, but specifically a `List<Double>`, and this additional type information is also carried over to the function body. This feature of extension methods can be used in DSLs for performing compile-time checks.
+The call to `Double::times` is only possible because the receiver is not just any list, but specifically a `List<Double>`, and this additional type information is also passed to the function body. This feature of extension methods can be used in DSLs to perform compile-time checks.
 
 ==== Loan Pattern (((Loan Pattern)))
 
 .What is the Loan Pattern?
 ****
-The Loan Pattern is a design pattern in object-oriented programming that involves encapsulating the usage of a resource (such as a database connection or file handle) within a limited scope or block of code. The pattern is designed to ensure that the resource is properly acquired, used, and released, without the risk of resource leaks or conflicts with other code that may be accessing the same resource.
+The Loan Pattern is a design pattern in object-oriented programming that involves encapsulating the use of a resource (such as a database connection or file handle) within a limited scope or block of code. The pattern is designed to ensure that the resource is properly acquired, used, and released without the risk of resource leakage or conflicts with other code that may be accessing the same resource.
 
-In essence, the Loan Pattern involves creating a resource object or acquiring a resource handle at the beginning of a block of code, using the resource as needed within the block, and then releasing or disposing of the resource at the end of the block. This ensures that the resource is only used for the duration of the block, and that it is properly cleaned up when the block completes, even if an error or exception occurs during the block.
+In essence, the Loan Pattern involves creating a resource object or acquiring a resource handle at the beginning of a block of code, using the resource as needed within the block, and then releasing or disposing of the resource at the end of the block. This ensures that the resource is only used for the duration of the block, and that it is properly cleaned up when the block is finished, even if an error or exception occurs during the block.
 
-The Loan Pattern is particularly useful when resources are limited or expensive to acquire. It can also help to improve the maintainability and robustness of code, by making it easier to reason about the usage of resources and ensuring that they are properly managed throughout the program.
+The Loan Pattern is particularly useful when resources are limited or expensive to acquire. It can also help improve the maintainability and robustness of code by making it easier to reason about the use of resources and to ensure that they are properly managed throughout the program.
 ****
 
-Lambdas can have receivers too, which is practical when applying the Loan Pattern. Using this pattern can be beneficial in DSLs, as it helps to control the life-cycle of the receiver class, and to hide the steps necessary for initializing and finalizing the instance creation or operation.
+Lambdas can also have receivers, which is useful when using the Loan pattern. Using this pattern can be beneficial in DSLs, as it helps to control the lifecycle of the receiver class and hide the steps necessary to initialize and finalize the instance creation or operation.
 
-Take for instance the well known `java.util.StringBuilder` class. It allows to do perform complex String operations, but in order to use it, you need to construct it, and to call its `toString()` method at the end. When applying the Loan Pattern, these steps can be hidden, and the code looks cleaner:
+For example, consider the well-known `java.util.StringBuilder` class. It allows you to perform complex string operations, but to use it, you need to construct it and call its `toString()` method at the end. When using the Loan pattern, these steps can be hidden and the code looks cleaner:
 
 [source,kotlin]
 ----
@@ -305,12 +315,12 @@ val usingTheLoanPattern: String = sb {
 }
 ----
 
-Building DSLs based on this pattern is very common, as it has several advantages over the classic builder pattern.
+Building DSLs using this pattern is very common, as it has several advantages over the classic builder pattern.
 
 [#dslMarker]
 ==== The @DslMarker annotation (((@DslMarker)))
 
-When you nest several extension functions, the overlapping scopes can pose a problem: Things visible in the outer code blocks are also visible in the inner ones. E.g. in a DSL for HTML generation, one could write:
+When you nest multiple extension functions, overlapping scopes can be a problem: things visible in the outer code blocks are also visible in the inner ones. For example, in a DSL for HTML generation, you might write:
 
 [source,kotlin]
 ----
@@ -322,14 +332,14 @@ html {
 }
 ----
 
-To avoid this problem, Kotlin provides a mechanism for scope control:
+To avoid this problem, Kotlin provides a scope control mechanism:
 
 * Define a custom annotation
-* Annotate this annotation with `@DslMarker`
-* Mark all involved receiver classes (or a common super class) with your annotation
-* Now, you can't directly access elements from the outer scope. You still can refer them indirectly, e.g. using the syntax `this@html.head{...}`
+* Annotate that annotation with `@DslMarker`
+* Mark all involved receiver classes (or a common superclass) with your annotation
+* Now you can't access outer scope elements directly. You can still reference them indirectly, e.g. using the syntax `this@html.head{...}`
 
-In our example, such an annotation could look like this:
+In our example, such an annotation might look like this
 
 [source,kotlin]
 ----
@@ -337,7 +347,7 @@ In our example, such an annotation could look like this:
 annotation class HtmlMarker
 ----
 
-When the receiver classes of the lambda arguments of the `head()` and `body()` functions are annotated with `@HtmlMarker`, the example above wouldn't compile any longer.
+If the receiver classes of the lambda arguments of the `head()` and `body()` functions are annotated with `@HtmlMarker`, the above example would no longer compile.
 
 ==== Extension properties (((Extension Property)))
 
@@ -360,63 +370,11 @@ val eurAmount: Amount = 17.11.EUR
 
 With an extension function, the best syntax we could achieve is `22.46.USD()`, but the parentheses are no longer needed when using extension properties.
 
-[#contextReceivers]
-==== Context Receivers (((Context Receivers)))
-
-https://github.com/Kotlin/KEEP/blob/master/proposals/context-receivers.md[Context receivers] are a still experimental feature in Kotlin, so some details could change in the future. The basic idea is to get a class providing a certain service into scope:
-
-[source,kotlin]
-----
-interface EnvironmentContext {
-    fun getProperty(name: String): String
-}
-
-context(EnvironmentContext)
-fun methodWithContext() {
-    val userName = getProperty("userName")
-    ...
-}
-----
-
-In this scenario, `methodWithContext()` gains access to members of the specified `EnvironmentContext` class, akin to an extension function. However, there is not only a syntactic, but also a semantic difference: The function is not extending a receiver class, but it is executed in the scope of an unrelated class, which provides additional functionality. This design also allows to have multiple contexts in scope, or to supply a context for an extension function.
-
-For invoking `methodWithContext()`, you need to supply an implementation of `EnvironmentContext`. If the calling function isn't already in the same context, you can introduce it using the `with()` function.
-
-[source,kotlin]
-----
-fun test() {
-    val environmentContext = EnvironmentContextImpl()
-    with(environmentContext) {
-        methodWithContext()
-    }
-}
-----
-
-[TIP]
-====
-Using multiple context receivers is a great way to decouple unrelated aspects of the environment while maintaining a high degree of flexibility. Unfortunately, with multiple receivers, the `with()` calls must be nested, although this may change in the future. For now, if you find this impractical, you can use this function presented in the Kotlin Discussions forum:
-
-[source,kotlin]
-.https://discuss.kotlinlang.org/t/using-with-function-with-multiple-receivers/2062/6
-----
-@OptIn(ExperimentalContracts::class)
-@Suppress("SUBTYPING_BETWEEN_CONTEXT_RECEIVERS")
-inline fun <A, B, R> with(a: A, b: B, block: context(A, B) () -> R): R {
-    contract {
-        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
-    }
-    return block(a, b)
-}
-----
-====
-
-Context receivers come into play when there's a need to incorporate global information within a specific scope while maintaining flexibility to accommodate different versions. By using a context receiver to offer DSL functionality, you gain control over the scope, you can influence the general behavior of the DSL and prevent potential name conflicts.
-
 === Operator Overloading (((Operator Overloading)))
 
-Kotlin allows operator overloading, but is conservative in the sense that it permits only a fixed set of operators.
+Kotlin allows operator overloading, but is conservative in the sense that it only allows a fixed set of operators.
 
-NOTE: The boolean operators `&&` and `||`, the access operators `.`, `?.` and `!!`, the (unary) spread operator `*` and the Elvis operator `?:` cannot be overloaded.
+NOTE: The boolean operators `&&` and `||`, the access operators `.`, `?.` and `!!`, the unary spread operator `*` and the Elvis operator `?:` cannot be overloaded.
 
 Some overloading functions require specific return types. The type `R` is used in the following tables to indicate that there are no such restrictions.
 
@@ -448,9 +406,9 @@ Some overloading functions require specific return types. The type `R` is used i
 | `a % b` | `fun A.rem(b: B): R`| Until Kotlin 1.1, `mod` was used, but is now deprecated.
 |===
 
-When these operators are defined, `a` is mutable, and left hand side and right hand side have matching types (`B` is a subtype of `A`), they can be also used in the assignments  `+=`, `-=`, `*=`, `/=` and `%=`.
+If these operators are defined, `a` is mutable, and the left and right sides have matching types (`B` is a subtype of `A`), they can also be used in the assignments `+=`, `-=`, `*=`, `/=`, and `%=`.
 
-When you don't want the normal binary form, but only the assignment, you can define it explicitly:
+If you don't want the normal binary form, but only the assignment, you can define it explicitly:
 
 [cols="1a,2a,3a"]
 |===
@@ -463,7 +421,7 @@ When you don't want the normal binary form, but only the assignment, you can def
 | `a %= b` | `fun A.remAssign(b: B): Unit`|
 |===
 
-Again, `a` must be mutable, `B` must be a subtype of `A`. Also, the return type for the function must be `Unit`. Having both the binary and the assignment version of an operator in scope leads to an ambiguity error.
+Again, `a` must be mutable, `B` must be a subtype of `A`. Also, the return type of the function must be `Unit'. Having both the binary and assignment versions of an operator in scope results in an ambiguity error.
 
 ==== Range (((Range Operator))) and In Operators (((In Operator)))
 
@@ -476,7 +434,7 @@ Again, `a` must be mutable, `B` must be a subtype of `A`. Also, the return type 
 | `a in b` | `fun B.contains(a: A): R` | Defines also `!in`.
 |===
 
-The `..<` operator is new, and is thought as a replacement for the `until` infix function.
+The `..<` operator is new and is intended as a replacement for the `until` infix function.
 
 ==== Index Access (((Index Access Operator))) and Invoke Operators (((Invoke Operator)))
 
@@ -510,20 +468,20 @@ Note that the index access operator `[]` requires at least one element, while th
 
 ==== Overload Responsibly
 
-While overloaded operators can be a powerful tool in designing DSLs, it is important to use them judiciously and with care. While there are many potential applications for overloaded operators, it is important to ensure that there is some clear association or analogy between the operation being performed and the chosen operator.
+While overloaded operators can be a powerful tool in DSL design, it is important to use them judiciously and with care. While there are many potential applications for overloaded operators, it is important to ensure that there is a clear association or analogy between the operation being performed and the operator chosen.
 
-For example, using the `/` operator to concatenate file paths makes sense, as it is a common path separator. Similarly, using the unary `+` operator to "add" a single value inside a trailing lambda block has become a standard convention. And using `..` instead of `:` may be acceptable due to its visual similarity.
+For example, using the `/` operator to concatenate file paths makes sense because it is a common path separator. Similarly, using the unary `+' operator to "add" a single value within a trailing lambda block has become a standard convention. And using `..` instead of `:` may be acceptable because of its visual similarity.
 
-However, at some point overloading operators can become confusing or even counterproductive. For example, using the `!` operator to invert a matrix may be a stretch, as it does not have a clear association with matrix inversion. In general, it is important to avoid being too clever when designing a DSL, as users may not have the same associations or understandings of certain symbols or operators.
+At some point, however, overloading operators can become confusing or even counterproductive. For example, using the `!` operator to invert a matrix may be a stretch since it has no clear association with matrix inversion. In general, it is important to avoid being too clever when designing a DSL, as users may not have the same associations or understanding of certain symbols or operators.
 
-One solution is to use meaningful infix functions (((Infix Notation))) with expressive names instead of relying solely on overloaded operators. While this may be less concise, it can make code easier to understand and less prone to confusion. Ultimately, the goal should be to create a DSL that is intuitive and easy to use, without sacrificing clarity or consistency.
+One solution is to use meaningful infix functions (((Infix Notation))) with expressive names, rather than relying solely on overloaded operators. While this may be less concise, it can make code easier to understand and less prone to confusion. Ultimately, the goal should be to create a DSL that is intuitive and easy to use without sacrificing clarity or consistency.
 
 [#infix_notation]
 === Infix Notation for Functions (((Infix Notation)))
 
-The infix notation allows names of functions to be used like binary operators. Well-known examples in the Kotlin API include `to` for creating pairs, and `until` and `downTo` for creating ranges.
+Infix notation allows function names to be used like binary operators. Well-known examples in the Kotlin API include `to` for creating pairs, and `until` and `downTo` for creating ranges.
 
-The respective function must be an extension function with one argument.The receiver becomes the left-hand side and the argument becomes the right-hand side of the operator.Note that you can still use the normal function call syntax. Here is an example for checking preconditions:
+The corresponding function must be an extension function with one argument, the receiver becomes the left side and the argument becomes the right side of the operator. Note that you can still use the normal function call syntax. Here is an example of checking preconditions:
 
 [source,kotlin]
 ----
@@ -537,9 +495,9 @@ fun testIfExpected(s: String) {
 }
 ----
 
-A weakness of the infix notation is that you can't explicitly specify generics. In this case, you can fall back to the normal function call syntax - but users of the DSL might not know this.
+One weakness of infix notation is that you can't explicitly specify generics. In this case, you can fall back on the normal function call syntax - but users of the DSL may not know this.
 
-As already mentioned, combining infix and backtick notation allows to define at least visually new "operators":
+As mentioned above, the combination of infix and backtick notation allows you to define new "operators", at least visually:
 
 [source,kotlin]
 ----
@@ -564,7 +522,7 @@ val stringCheck = object : StringCheck {
 }
 ----
 
-Such code is quite ugly, and way too verbose to expect a DSL user to implement your interface this way. But as the interface has only a single abstract method (abbreviated as "SAM"), it can be written as a functional interface, which allows to use a simplified syntax to implement it anonymously:
+Such code is pretty ugly, and far too verbose to expect a DSL user to implement your interface that way. But since the interface has only a single abstract method (abbreviated as "SAM"), it can be written as a functional interface, which allows a simplified syntax to implement it anonymously:
 
 [source,kotlin]
 ----
@@ -576,11 +534,11 @@ fun interface StringCheck {
 val shortStringCheck = StringCheck { s -> s.length < 10 }
 ----
 
-The lambda will be automatically translated back to an implementation as shown above (this process is called a "SAM conversion"). I think you agree that this syntax looks much better, making it useful for DSLs.
+The lambda is automatically translated back into an implementation as shown in the first example (this process is called "SAM conversion"). I think you will agree that this syntax looks much better, making it useful for DSLs.
 
 === Generics (((Generics)))
 
-Generics are a useful abstraction over concrete types in all kinds of contexts, including DLS design. A specific use case is the implementation of compile time checks. Here is a simple example modelling currencies (similar to the code shown for extension properties):
+Generics are a useful abstraction over concrete types in all sorts of contexts, including DLS design. A specific use case is the implementation of compile-time checks. Here is a simple example that models currencies (similar to the code shown for extension properties):
 
 [source,kotlin]
 ----
@@ -607,20 +565,20 @@ val worksToo = 2.1.GBP + 4.2.GBP // 6.3 £
 //val oops = 3.1.EUR + 4.5.GBP
 ----
 
-Adding amounts of different currencies together isn't possible, because the definition of `+` ensures that both amounts belong to the same currency. The generic type parameter `T` is called a "phantom type", and this code is a very simple example for type-level programming.
+You can't add amounts of different currencies together, because the definition of `+` ensures that both amounts belong to the same currency. The generic type parameter `T` is called a "phantom type", and this code is a very simple example of type-level programming.
 
 [#typeLevelProgramming]
 .Type-level Programming (((Type Level Programming))) and Phantom Types (((Phantom Types)))
 ****
-*Type-level programming* is a programming paradigm where types themselves are used as values that can be manipulated and computed upon at compile-time, rather than just being used to check the correctness of program syntax and logic. In other words, type-level programming involves using types to encode complex computations and algorithms, which are evaluated by the compiler at compile-time instead of runtime. Type-level programming can be used to achieve a wide range of goals, such as improving program performance and enforcing stronger type constraints.
+*Type-level programming* is a programming paradigm in which types themselves are used as values that can be manipulated and computed at compile time, rather than being used only to check the correctness of program syntax and logic. In other words, type-level programming involves using types to encode complex computations and algorithms that are evaluated by the compiler at compile time rather than at runtime. Type-level programming can be used to achieve a variety of goals, such as improving program performance and enforcing stronger type constraints.
 
-*Phantom types* are a type-level programming technique where a type is used to encode additional information about the data that it represents, without actually storing any data at runtime. Phantom types are types that have no values, but are used purely for their type-level information. They can be used to enforce stronger type constraints, such as ensuring that only certain operations are performed on certain types of data. This can help to reduce runtime errors and improve the safety of the program.
+*Phantom types* are a type-level programming technique in which a type is used to encode additional information about the data it represents without actually storing any data at runtime. Phantom types are types that have no values, but are used only for their type-level information. They can be used to enforce stronger type constraints, such as ensuring that only certain operations are performed on certain types of data. This can help reduce runtime errors and improve the safety of the program.
 ****
 
 [#reifiedGenerics]
 ==== Reified Generics (((Generics))) (((Reified Generics)))
 
-Kotlin offers a interesting feature called "reified generics", which helps to overcome Java's type erasure for generics on the JVM in some situations. Type erasure is a JVM technique that allows Java to check generics at compile time, while discarding type information at runtime. In contrast, reified generics in Kotlin make it possible to retain type information at runtime. This means that developers can perform type-safe operations at runtime without having to resort to workarounds or unsafe casts.
+Kotlin offers an interesting feature called "reified generics" that helps to overcome Java's type erasure for generics on the JVM in some situations. Type erasure is a JVM technique that allows Java to check generics at compile time, while discarding type information at runtime. In contrast, reified generics in Kotlin allow type information to be preserved at runtime. This means that developers can perform type-safe operations at runtime without having to resort to workarounds or unsafe casts.
 
 [source,kotlin]
 ----
@@ -638,19 +596,19 @@ fun main() {
 }
 ----
 
-Note the expression `T::class`, which shouldn't work considering that type erasure eliminates any generic type information at runtime. However, the function is defined as an `inline` function, and the generic parameter `T` is marked as "reified". The details are beyond the scope of this book, but basically the inlining allows the compiler to obtain the generic type information from the place where the inlining is happening, and make it look like as there were no type erasure. It should be noted that inline functions are subjected to some restrictions and vary slightly from normal functions, e.g. regarding their return behavior.
+Note the expression `T::class`, which shouldn't work, considering that type erasure removes all generic type information at runtime. However, the function is defined as an `inline` function, and the generic parameter `T` is marked as "reified". The details are beyond the scope of this book, but basically the inlining allows the compiler to get the generic type information from where the inlining occurs, and make it look like there was no type erasure. It should be noted that inline functions are subject to some restrictions and behave slightly differently than normal functions, e.g. in handling returns.
 
 === Value Classes (((Value Classes)))
 
-Value classes are a feature introduced in Kotlin 1.5 that allow developers to create lightweight, efficient classes that represent simple values. Value classes are designed to be used for values that are frequently used and require little to no additional functionality beyond what is already provided by the underlying data type.
+Value classes are a feature introduced in Kotlin 1.5 that allows developers to create lightweight, efficient classes that represent simple values. Value classes are designed to be used for values that are commonly used and require little to no additional functionality beyond what is already provided by the underlying data type.
 
-In Kotlin, a value class is defined using the "value" modifier, and must have a single primary constructor with exactly one parameter. The parameter must be a non-nullable type, such as `Int`, `Long`, or `String`. Value classes cannot extend other classes, and they cannot be extended by other classes.
+In Kotlin, a value class is defined using the "value" modifier and must have a single primary constructor with exactly one parameter. The parameter must be of a non-nullable type, such as `Int`, `Long`, or `String`. Value classes cannot extend other classes, and they cannot be extended by other classes.
 
-Value classes are optimized for performance, as they are designed to avoid the overhead of creating a full object instance whenever possible. Like generics which exist only at compile time, but get "erased" in the byte code, value classes get replaced by their values in the byte code wherever possible.
+Value classes are optimized for performance, as they are designed to avoid the overhead of creating a full object instance whenever possible. Like generics, which exist only at compile time but are "erased" in byte code, value classes are replaced by their values in byte code whenever possible.
 
-One of the main benefits of value classes is that they can be used to create more expressive and type-safe APIs. For example, a value class representing a specific measurement unit can help to ensure that only valid unit conversions are performed, and can help to catch errors at compile-time rather than runtime.
+One of the main advantages of value classes is that they can be used to create more expressive and type-safe APIs. For example, a value class representing a particular unit of measurement can help ensure that only valid unit conversions are performed, and can help catch errors at compile time rather than at runtime.
 
-NOTE: For the JVM backend, a `@JvmInline` annotation is required, which may be no longer needed in the future. Further, the single constructor argument restriction might be dropped as well. This depends on the introduction of https://openjdk.org/projects/valhalla/[Project Valhalla], which aims to introduce value class functionality to Java.
+NOTE: The JVM backend requires a `@JvmInline` annotation, which may be obsolete in the future. Also, the single constructor argument restriction may be dropped. This depends on the introduction of https://openjdk.org/projects/valhalla/[Project Valhalla], which aims to introduce value class functionality to Java.
 
 [source,kotlin]
 ----
@@ -669,18 +627,18 @@ val marathonInMiles = Kilometers(42.195).toMiles() // Miles(value=26.219973)
 [#anonymous_objects]
 === Anonymous Objects (((Anonymous Objects)))
 
-While anonymous objects have no name, they still have their own - also unnamed - type. Here is a somewhat silly example to illustrate this point:
+While anonymous objects have no name, they still have their own type, which is also unnamed. Here is a somewhat silly example to illustrate this point:
 
 [source,kotlin]
 ----
-val greeting = object {
+object {
     fun sayHi() = "Hello!"
 }.sayHi()
 ----
 
-The anonymous object hasn't the type `Any`, else we couldn't call `sayHi()` on it. It defines its own (unnamed) type, which exposes variables and functions defined inside it. For this reason anonymous objects can be used in DSLs as a setup-stage or environment for later calculations.
+The anonymous object is not of type `Any`, otherwise we couldn't call `sayHi()` on it. It defines its own (unnamed) type that exposes the variables and functions defined within it. For this reason, anonymous objects can be used in DSLs as a setup or environment for later computations.
 
-A DSL with a method that measures the durations of several calls and returns the average time taken could be written as follows:
+A DSL with a method that measures the duration of several calls and returns the average time taken could be written as follows:
 
 [source,kotlin]
 ----
@@ -697,26 +655,26 @@ val nsSomeCall = env.measureTime { someCall(x) }
 val nsOtherCall = env.measureTime { otherCall(x) }
 ----
 
-The required setup information for the measuring phase is stored inside an anonymous object in the `env` variable.
+The necessary setup information for the measurement phase is stored inside an anonymous object in the `env` variable.
 
 [#annotations]
 === Annotations (((Annotations)))
 
-You can write whole DSLs using annotations, but more often annotations can support DSLs, e.g. by describing out how certain fields or classes should be handled. They are especially powerful when your DSL shows a certain default behavior, but needs to consider some edge cases or exceptions, like "don't persist this property".
+You can write entire DSLs using annotations, but more often annotations can support DSLs by describing how certain fields or classes should be handled. They are especially powerful if your DSL has a certain default behavior, but needs to take some edge cases or exceptions into account, such as "do not persist this property".
 
-Another useful application for annotations is code generation(((Code Generation))). E.g. the AutoDSL library (((AutoDSL))) uses the information provided via annotations to construct the DSL classes for you.
+Another useful application for annotations is code generation(((Code Generation))). For example, the AutoDSL library (((AutoDSL))) uses the information provided via annotations to construct the DSL classes for you.
 
 .Annotation Processors (((Annotation Processors))) (((KSP))) (((kapt))) (((Kotlin Symbol Processing API)))
 ****
-Annotation processors allow to execute custom processor code during the build process, according to the annotations present in the application code. Kotlin features two annotation processors, the older https://kotlinlang.org/docs/kapt.html[kapt], which won't be developed further, and the recommended https://kotlinlang.org/docs/ksp-overview.html[Kotlin Symbol Processing API] (KSP), which will be covered in <<chapter-12_generation.adoc#annotationProcessor,Chapter 12>>.
+Annotation processors allow custom processor code to be executed during the build process according to the annotations present in the application code. Kotlin provides two annotation processors, the older https://kotlinlang.org/docs/kapt.html[kapt], which is no longer actively developed, and the recommended https://kotlinlang.org/docs/ksp-overview.html[Kotlin Symbol Processing API] (KSP), which will be discussed in <<chapter-12_generation.adoc#annotationProcessor,Chapter 12>>.
 ****
 
-Last but not least, Kotlin contains annotations for supporting Java access. DSL code is often more challenging to call from Java, that's why we discuss this topic in <<chapter-13_java.adoc#javaInteroperability,Chapter 13>>.
+Finally, Kotlin includes annotations to support Java access. DSL code is often more difficult to call from Java, so we'll discuss this topic in <<chapter-13_java.adoc#javaInteroperability,Chapter 13>>.
 
 [#reflection]
 === Reflection (((Reflection))) (((Kotlin-Reflect)))
 
-Sometimes you need to inspect or deconstruct classes, call unknown methods, react to annotations etc., which can be done using reflection. If you need more than the most basic reflection in Kotlin, you have to import a separate dependency:
+Sometimes you need to inspect or deconstruct classes, call unknown methods, react to annotations, etc., which can be done using reflection. If you need more than the most basic reflection in Kotlin, you need to import a separate dependency:
 
 [source,kotlin]
 .Gradle (.kts)
@@ -739,7 +697,122 @@ dependencies {
 
 Depending on your use case, you might also consider alternatives like https://github.com/Kotlin/kotlinx.reflect.lite[kotlinx.reflect.lite].
 
+=== Experimental Features (((Experimental Features)
+
+Kotlin allows you to try experimental features (via compiler argument or `@OptIn` annotation). Some of the older of these features are quite stable and may be useful for DSL design, so it may be worth taking the risk of using them before they become an official part of the language.
+
+[#contextReceivers]
+==== Context Receivers (((Context Receivers)))
+
+The basic idea of https://github.com/Kotlin/KEEP/blob/master/proposals/context-receivers.md[Context receivers] is to get a class in scope that provides a certain service:
+
+[source,kotlin]
+----
+interface EnvironmentContext {
+    fun getProperty(name: String): String
+}
+
+context(EnvironmentContext)
+fun methodWithContext() {
+    val userName = getProperty("userName")
+    ...
+}
+----
+
+In this scenario, `methodWithContext()` gets access to members of the specified `EnvironmentContext` class, similar to an extension function. However, there is not only a syntactic difference, but also a semantic one: The function does not extend a receiver class, but is executed in the scope of an unrelated class that provides additional functionality. This design also allows you to have multiple contexts in scope, or to provide a context for an extension function.
+
+To call `methodWithContext()`, you must provide an implementation of `EnvironmentContext`. If the calling function isn't already in the same context, you can use the `with()` function.
+
+[source,kotlin]
+----
+fun test() {
+    val environmentContext = EnvironmentContextImpl()
+    with(environmentContext) {
+        methodWithContext()
+    }
+}
+----
+
+[TIP]
+====
+Using multiple context receivers is a great way to decouple unrelated aspects of the environment while maintaining a high degree of flexibility. Unfortunately, with multiple receivers, the `with()` calls must be nested, although this may change in the future. For now, if you find this impractical, you can use this function presented in the Kotlin Discussions forum:
+
+[source,kotlin]
+.https://discuss.kotlinlang.org/t/using-with-function-with-multiple-receivers/2062/6
+----
+@OptIn(ExperimentalContracts::class)
+@Suppress("SUBTYPING_BETWEEN_CONTEXT_RECEIVERS")
+inline fun <A, B, R> with(a: A, b: B, block: context(A, B) () -> R): R {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    return block(a, b)
+}
+----
+====
+
+Context receivers come into play when there's a need to include global information within a specific scope while maintaining the flexibility to accommodate different versions. By using a context receiver to provide DSL functionality, you gain control over the scope, you can influence the overall behavior of the DSL, and you can avoid potential naming conflicts.
+
+You can opt in to context receivers by specifying the compiler argument `-Xcontext-receivers`.
+
+[#contracts]
+==== Contracts (((Contracts)))
+
+https://github.com/Kotlin/KEEP/blob/master/proposals/kotlin-contracts.md[Kotlin Contracts] are a way to give the compiler additional information about the result of functions, allowing it to perform smart casts it couldn't do with just static code analysis.
+
+Here is an example taken from the documentation:
+
+[source,kotlin]
+.https://kotlinlang.org/docs/whatsnew13.html#custom-contracts
+----
+fun String?.isNullOrEmpty(): Boolean {
+    contract {
+        returns(false) implies (this@isNullOrEmpty != null)
+    }
+    return this == null || isEmpty()
+}
+
+...
+
+fun bar(x: String?) {
+    if (!x.isNullOrEmpty()) {
+        println("length of '$x' is ${x.length}") // smartcast
+    }
+}
+----
+
+You can also narrow the type when you perform a boolean check:
+
+[source,kotlin]
+----
+sealed class ContactData {
+    @OptIn(ExperimentalContracts::class)
+    fun isEmail(): Boolean {
+        contract {
+            returns(true) implies (this@ContactData is Email)
+            returns(false) implies (this@ContactData is Phone)
+        }
+        return this is Email
+    }
+}
+
+data class Email(val address: String): ContactData() {
+    fun send(msg: String) = println("sending '$msg' to $address")
+}
+
+data class Phone(val number: String): ContactData() {
+    fun call(msg: String) = println("calling $number telling '$msg'")
+}
+
+fun sendMessage(cd: ContactData, msg: String) =
+    if (cd.isEmail()) cd.send(msg) else cd.call(msg) // smartcasts
+----
+
+At the moment, contracts are still quite limited, but in some situations you can use them to protect the DSL user from boilerplate checks, casts, or explicit specification of generics.
+
+You can opt in to experimental contracts using the compiler argument `-Xopt-in=kotlin.contracts.ExperimentalContracts` or the annotation `@OptIn(ExperimentalContracts::class)`.
+
 === Conclusion
 
-This chapter provided a concise and high-level overview of numerous Kotlin language features that are relevant from a DSL standpoint. While further details can be explored in the comprehensive Kotlin documentation, this brief tour should have already given you a solid understanding of the extensive toolkit available for building DSLs. Kotlin offers remarkable creative freedom in this domain, empowering you to use your imagination to create powerful and intuitive DSLs.
+This chapter has provided a concise, high-level overview of many of the features of the Kotlin language that are relevant from a DSL perspective. While further details can be explored in the extensive Kotlin documentation, this brief tour should have given you a solid understanding of the extensive toolkit available for building DSLs. Kotlin offers remarkable creative freedom in this area, allowing you to use your imagination to create powerful and intuitive DSLs.
 
