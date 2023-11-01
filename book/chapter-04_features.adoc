@@ -697,7 +697,7 @@ dependencies {
 
 Depending on your use case, you might also consider alternatives like https://github.com/Kotlin/kotlinx.reflect.lite[kotlinx.reflect.lite].
 
-=== Experimental Features (((Experimental Features)
+=== Experimental Features (((Experimental Features)))
 
 Kotlin allows you to try experimental features (via compiler argument or `@OptIn` annotation). Some of the older of these features are quite stable and may be useful for DSL design, so it may be worth taking the risk of using them before they become an official part of the language.
 

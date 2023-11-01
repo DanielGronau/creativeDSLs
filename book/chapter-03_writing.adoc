@@ -1,3 +1,4 @@
+[#writing_a_dsl]
 == Writing a DSL
 
 Now that you've defined the requirements for your DSL and are ready to move into the design and implementation phase, it's important to take a structured approach to the process. While it's natural to be excited to get started, adding a little structure to your workflow can help you avoid common pitfalls and ensure that your DSL is successful.

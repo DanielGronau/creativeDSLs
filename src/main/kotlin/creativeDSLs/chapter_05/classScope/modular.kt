@@ -52,15 +52,22 @@ data class Modulus(val modulus: Long) {
         }
 }
 
-fun main() {
-    with(Modulus(7)) {
-        println(3.m + 5.m)
-        println(3.m - 5.m)
-        println(3.m * 5.m)
-        println(3.m / 5.m)
+fun <R> modulus(m: Long, body: Modulus.() -> R) =
+    with(Modulus(m)) {
+        body()
     }
-    println()
-    with(Modulus(10)) {
+
+fun main() {
+    val x = modulus(7) {
+        val a = 3.m + 5.m // Modular(n=1)
+        val b = 3.m - 5.m // Modular(n=5)
+        val c = 3.m * 5.m // Modular(n=1)
+        val d = 3.m / 5.m // Modular(n=2)
+        a + b + c + d
+    }
+    println(x) // Modular(n=2)
+
+    modulus(10) {
         println(3.m + 5.m)
         println(3.m - 5.m)
         println(3.m * 5.m)

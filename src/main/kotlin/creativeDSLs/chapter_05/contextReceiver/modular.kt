@@ -67,11 +67,16 @@ private fun extendedGCD(a: Long, b: Long): GcdResult =
 context(Modulus)
 fun square(n: Modular) = n * n
 
-fun main() {
-    with(Modulus(7)) {
-        val x = square(3.m + 5.m) + square(3.m - 5.m)
-        println(x)
+fun <R> modulus(m: Long, body: context(Modulus) () -> R) =
+    with(Modulus(m)) {
+        body(this)
     }
+
+fun main() {
+    val x = modulus(7) {
+        square(3.m + 5.m) + square(3.m - 5.m)
+    }
+    println(x) // Modular(n=5)
 }
 
 @OptIn(ExperimentalContracts::class)

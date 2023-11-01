@@ -1,16 +1,16 @@
-== Algebraic DSLs
+== Algebraic DSLs (((Algebraic DSL)))
 
-A common class of problems deals with objects that exhibit numeric-like behavior. These "algebraic" structures include complex numbers, quaternions, vectors, matrices, physical and monetary quantities, and many more. With Kotlin, it is relatively easy to write DSLs for these problems, especially when the required operators match with the existing ones.
+A common class of problems deals with objects that exhibit number-like behavior. These "algebraic" structures include complex numbers, quaternions, vectors, matrices, physical and monetary quantities, and many more. With Kotlin, it is relatively easy to write DSLs for these problems, especially if the required operators match the existing ones.
 
-NOTE: As for many other categories of DSLs, there seems to be no established name for this kind of DSL in the literature. I think calling them _Algebraic DSLs_ covers their behavior quite well, but you might find the same concept under different names elsewhere.
+NOTE: As with many other categories of DSLs, there seems to be no established name for this type of DSL in the literature. I think calling them _Algebraic DSLs_ covers their behavior quite well, but you may find the same concept under different names elsewhere.
 
-The Kotlin API itself contains some nice examples for small Algebraic DSLs, e.g. for `BigInteger` and `BigDecimal`, which can be used pretty much like "normal" numbers.
+The Kotlin API itself contains some nice examples of small algebraic DSLs, such as `BigInteger` and `BigDecimal`, which can be used pretty much like "normal" numbers.
 
-Even if your problem domain does not possess an inherent algebraic structure, the concepts and ideas presented in this chapter can still be partially applicable. Consider chemical equations as an example: While their components may not be inherently number-like, they do involve operations such as "addition" of molecules and scalar multiplication by coefficients. This demonstrates the versatility and flexibility of algebraic DSLs, as they can be adapted and utilized in various domains beyond traditional numeric applications.
+Even if your problem domain does not have an inherent algebraic structure, the concepts and ideas presented in this chapter may still be partially applicable. For example, consider chemical equations: While their components may not be inherently number-like, they do involve operations such as "addition" of molecules and scalar multiplication by coefficients. This demonstrates the versatility and flexibility of algebraic DSLs, as they can be adapted and used in various domains beyond traditional numerical applications.
 
 === Case Study: A DSL for Complex Numbers
 
-In order to keep things realistic, we will use an existing implementation, that you could find in a production environment. We will use the https://github.com/apache/commons-numbers/tree/master/commons-numbers-complex[Apache Commons Numbers: Complex] library, which is written in Java. The implementation behaves pretty much as expected:
+To keep things realistic, we will use an existing implementation, that you might find in a production environment. We will use the https://github.com/apache/commons-numbers/tree/master/commons-numbers-complex[Apache Commons Numbers: Complex] library, which is written in Java. The implementation behaves pretty much as expected:
 
 [source,kotlin]
 ----
@@ -23,13 +23,11 @@ val e = a.pow(b) // -1.860 + 11.837i
 
 There are some static factory methods to create `Complex` objects, like `Complex.ofCartesian()` or `Complex.ofPolar()`, and then you can use some methods like `add()` and `times()` on these objects.
 
-If we follow the steps from chapter 3, we should now come up with an ideal syntax. This is easy, as in mathematics we would simply write `3.0 + 4.0i` instead of `Complex.ofCartesian(3.0, 4.0)`. I think it is acceptable to have no special syntax for other ways to initialize complex numbers, like the polar definition.
+If we follow the steps from <<chapter-03_writing.adoc#writing_a_dsl, Chapter 3>>, we should now come up with an ideal syntax. This is easy, since in mathematics we would simply write `3.0 + 4.0i` instead of `Complex.ofCartesian(3.0, 4.0)`. I think it is acceptable to have no special syntax for other ways of initializing complex numbers, such as the polar definition. If we consider that `4.0i` is actually a multiplication, we are already there: A syntax like `3.0 + 4.0*i` can be implemented in Kotlin.
 
-When we consider that `4.0i` is actually a multiplication, we are already there: A syntax like `3.0 + 4.0*i` can be implemented in Kotlin.
+First, we need to define the imaginary unit `i` with `val i = Complex.I`. This is a bit risky because of possible name conflicts, so it would also be an option to import `Complex.I` instead.
 
-First, we need to define the imaginary unit `i` with `val i = Complex.I`. This is a bit risky because of possible name clashes, so it would be also an option to import `Complex.I` instead.
-
-Next, the arithmetic operations can be written using operator overloading. We need not only operations between two `Complex` instances, but also between `Complex` and `Double`. Here is an example for addition:
+Next, the arithmetic operations can be written using operator overloading. We not only need operations between two `Complex` instances, but also between `Complex` and `Double`. Here is an example for addition:
 
 [source,kotlin]
 ----
@@ -39,16 +37,18 @@ operator fun Double.plus(that: Complex): Complex =
     Complex.ofCartesian(this, 0.0).add(that)
 ----
 
-The other operations look basically the same. We could also support interoperability with `Int` in addition to `Double`, but it was omitted for the sake of brevity. A little improvement would be a helper method for the conversion from double to complex, instead of relying on the awkward `Complex.ofCartesian` factory.
+The other operations are basically the same. We could also support interoperability with `Int` in addition to `Double`, but for the sake of brevity it was omitted. A small improvement would be a helper method for converting double to complex, instead of relying on the clumsy `Complex.ofCartesian()` factory.
 
-Next, we need also to support negation of complex numbers (and maybe the unary plus, too, for symmetry reasons). This looks very similar to the code above:
+Next, we need to support the negation of complex numbers (and maybe the unary plus as well, for symmetry reasons). This looks a lot like the code above:
 
 [source,kotlin]
 ----
 operator fun Complex.unaryMinus(): Complex = this.negate()
 ----
 
-When you can't find an appropriate operator to overload, you can use infix functions instead. In our example, we could define `pow` as exponentiation operation, so we can write e.g. `3.0 + 4.0*i pow 3.0`. The infix operations have lower priority than the overloaded operators, so the example calculation would be interpreted as `(3.0 + 4.0*i) pow 3.0`. Note that the infix extension function can have the same name and arguments as an existing function (here `Complex.pow()`), but in this case it will be only called when using infix notation, else the original method will be called.
+If you can't find a suitable operator to overload, you can use infix functions instead. In our example, we could define `pow` as an exponentiation operation, so we could write, for example, `3.0 + 4.0*i pow 3.0`. The infix operations have a lower priority than the overloaded operators, so the example calculation would be interpreted as `(3.0 + 4.0*i) pow 3.0`.
+
+TIP: Note that the infix extension function can have the same name and arguments as an existing function (here `Complex.pow()`), but in this case it will only be called when using infix notation, otherwise the original method will be executed.
 
 [source,kotlin]
 ----
@@ -93,6 +93,7 @@ private fun fromDouble(d: Double) = Complex.ofCartesian(d, 0.0)
 ----
 
 Now our usage example can be written as:
+
 [source,kotlin]
 ----
 val a = 3.0 + 4.0*i
@@ -102,13 +103,13 @@ val d = a * b
 val e = a pow b
 ----
 
-Using complex numbers feels now as intuitive as using one of the built-in numeric types.
+Using complex numbers now feels as intuitive as using one of the built-in number types.
 
 === Case Study: Modular Arithmetic - Dealing with a Context
 
 Imagine you're faced with large modular arithmetic calculations. Often, simply calculating the modulo after an operation isn't enough. Certain operations, such as division, differ significantly from standard arithmetic. In addition, neglecting to optimize operations such as multiplication and exponentiation can result not only in slower performance, but also in arithmetic overflows.
 
-To address this problem, you decide to create a DSL tailored to modular arithmetic. However, a problem arises: where do you specify the modulus for these calculations? A global variable would be a precarious and unsafe solution. Embedding the modulus in each operand proves tedious and raises the question of how to handle operands with different moduli in one operation.
+To solve this problem, you decide to create a DSL tailored to modular arithmetic. However, a problem arises: where do you specify the modulus for these calculations? A global variable would be a precarious and unsafe solution. Embedding the modulus in each operand proves tedious and raises the question of how to handle operands with different moduli in a single operation.
 
 A common solution would be to define a class that holds the modulus, and make the parts of the DSL members of that class, so that they all have access to the modulus information:
 
@@ -175,22 +176,46 @@ As mentioned above, the division operation requires some arithmetic effort, but 
 
 [source,kotlin]
 ----
-with(Modulus(7)) {
-    println(3.m + 5.m) // Modular(n=1)
-    println(3.m - 5.m) // Modular(n=5)
-    println(3.m * 5.m) // Modular(n=1)
-    println(3.m / 5.m) // Modular(n=2)
+val x = with(Modulus(7)) {
+    val a = 3.m + 5.m // Modular(n=1)
+    val b = 3.m - 5.m // Modular(n=5)
+    val c = 3.m * 5.m // Modular(n=1)
+    val d = 3.m / 5.m // Modular(n=2)
+    a + b + c + d
 }
+println(x) // Modular(n=2)
+
 with(Modulus(10)) {
     println(3.m + 5.m) // Modular(n=8)
     println(3.m - 5.m) // Modular(n=8)
     println(3.m * 5.m) // Modular(n=5)
-    println(3.m / 5.m) // throws exception "Can't divide by 5 (mod 10)"
     println(3.m / 7.m) // Modular(n=9)
+    println(3.m / 5.m) // throws exception "Can't divide by 5 (mod 10)"
 }
 ----
 
-While this solution functions, its scalability is limited since the entire DSL is confined within a class. Although you could alleviate this by transforming some functions into extension functions to streamline the class, the operators must remain within the class. This constraint is due to the fact that the operators are already extension functions and can only have one receiver, namely their first operand. Another challenge emerges when the DSL requires multiple unrelated information sources, compelling them to be conflated into a single class. In essence, these issues stem from the DSL becoming strongly coupled with its enclosing class.
+The syntax can be further improved by introducing a helper function to provide the scope:
+
+[source,kotlin]
+----
+fun <R> modulus(m: Long, body: Modulus.() -> R) =
+    with(Modulus(m)) {
+        body()
+    }
+
+...
+
+val x = modulus(7) {
+    val a = 3.m + 5.m // Modular(n=1)
+    val b = 3.m - 5.m // Modular(n=5)
+    val c = 3.m * 5.m // Modular(n=1)
+    val d = 3.m / 5.m // Modular(n=2)
+    a + b + c + d
+}
+println(x) // Modular(n=2)}
+----
+
+While this solution works, its scalability is limited because the entire DSL is contained within a class. Although you could alleviate this by converting some functions to extension functions to streamline the class, the operators must remain within the class. This limitation is due to the fact that the operators are already extension functions and can only have one receiver, namely their first operand. Another challenge arises when the DSL requires several unrelated sources of information, forcing them to be combined into a single class. Essentially, these problems occur because the DSL is tightly coupled to its enclosing class.
 
 For those daring enough to delve into an experimental language feature, <<chapter-04_features.adoc#contextReceivers, Context Receivers>>(((Context Receivers))) were specifically designed to address scenarios like these by enabling a more flexible separation between the context scope and its consumers. Here is a rewritten version of the DSL above:
 
@@ -214,16 +239,20 @@ val Int.m
     get() = Modular(remainder(this.toLong()))
 
 context(Modulus)
-operator fun Modular.plus(that: Modular) = Modular(remainder(this.n + that.n))
+operator fun Modular.plus(that: Modular) =
+    Modular(remainder(this.n + that.n))
 
 context(Modulus)
-operator fun Modular.minus(that: Modular) = Modular(remainder(this.n - that.n))
+operator fun Modular.minus(that: Modular) =
+    Modular(remainder(this.n - that.n))
 
 context(Modulus)
-operator fun Modular.times(that: Modular) = Modular(remainder(this.n * that.n))
+operator fun Modular.times(that: Modular) =
+    Modular(remainder(this.n * that.n))
 
 context(Modulus)
-operator fun Modular.div(that: Modular) = Modular(remainder(this.n * inverse(that.n)))
+operator fun Modular.div(that: Modular) =
+    Modular(remainder(this.n * inverse(that.n)))
 
 context (Modulus)
 private fun remainder(n: Long) = when {
@@ -255,9 +284,14 @@ private fun extendedGCD(a: Long, b: Long): GcdResult =
             GcdResult(result.gcd, x, y)
         }
     }
+
+fun <R> modulus(m: Long, body: context(Modulus) () -> R) =
+    with(Modulus(m)) {
+        body(this)
+    }
 ----
 
-The usage pattern hasn't changed, you can use `with()` in exactly the same way to provide the `Modulus` instance. Furthermore, you can easily write new functions that "inherit" an existing scope:
+The usage pattern hasn't changed, you can use `with()` in exactly the same way to provide the `Modulus` instance, or you can use the `modulus()` helper function. Furthermore, you can easily write new functions that "inherit" an existing scope:
 
 [source,kotlin]
 ----
@@ -266,23 +300,27 @@ fun square(n: Modular) = n * n
 
 ...
 
-with(Modulus(7)) {
-    val x = square(3.m + 5.m) + square(3.m - 5.m)
-    println(x) // Modular(n=2)
+val x = modulus(7) {
+    square(3.m + 5.m) + square(3.m - 5.m)
 }
+println(x) // Modular(n=2)
 ----
 
 In my opinion, context receivers provide an elegant solution in situations where algebraic DSLs need additional information from the environment.
 
 === Java Interoperability
 
-Java doesn't allow operator overloading, and extension methods become just normal static methods with the receiver as the first argument. That means that our DSL definitely looks no longer elegant in Java. Given that in our case the underlying Apache Commons Numbers library itself is written in Java, we are probably better off using their methods.
+Java doesn't allow operator overloading, and extension methods become normal static methods with the receiver as the first argument. This means that the DSLs will definitely look less elegant in Java. In the case of the first case study, since the underlying Apache Commons Numbers library itself is written in Java, we are probably better off using its methods.
 
-However, our DSL is still working, and is quite straightforward to use, when you know how the operators translate to method names: Instead of `val a = 3.0 + 4.0*i`, you would have to write `Complex a = plus(3.0, times(4.0, getI()));` in a Java class.
+However, our DSL still works and is quite easy to use if you know how to translate the operators into method names: Instead of `val a = 3.0 + 4.0*i`, you would have to write `Complex a = plus(3.0, times(4.0, getI());` in a Java class.
 
 === Conclusion
 
-The case studies presented in this chapter serve to illustrate that creating algebraic DSLs is usually not that difficult. However, it is important to consider certain factors when deciding whether to employ an algebraic DSL. While algebraic notation can be powerful and expressive, it may not always be suitable for every use case. For instance, using algebraic notation for sum and product types, such as `Either` and tuples like `Pair` and `Triple`, might be unconventional and potentially confusing to some users, despite the underlying algebraic structure. Additionally, certain behaviors, like non-commutative multiplication found in quaternions and matrices, can introduce unexpected complexities and increase the likelihood of usage errors. Therefore, it is crucial to exercise good judgment and adhere to the _Principle of Least Surprise_ (((Principle of Least Surprise))) when designing algebraic DSLs, rather than simply adopting them because of their ease of implementation.
+The case studies presented in this chapter serve to illustrate that creating algebraic DSLs is usually not that difficult. However, it is important to consider certain factors when deciding whether to use an algebraic DSL. Although algebraic notation can be powerful and expressive, it is not always appropriate for every use case.
+
+For example, the use of algebraic notation in a type-constructing DSL to denote sum and product types may be unconventional and potentially confusing to some users, despite the underlying algebraic structure. In addition, certain behaviors, such as non-commutative multiplication found in quaternions and matrices, can introduce unexpected complexity and increase the likelihood of usage errors.
+
+Therefore, it is crucial to exercise good judgment and adhere to the _Principle of Least Surprise_ (((Principle of Least Surprise))) when designing algebraic DSLs, rather than blindly adopting them because of their ease of implementation.
 
 ==== Preferable Use Cases
 
@@ -303,9 +341,9 @@ The case studies presented in this chapter serve to illustrate that creating alg
 
 |* easy to write
 * intuitive to use
-* can use infix functions when no operator fits
+* can use infix functions as operator replacement
 
-|* possible name clashes with other DSLs
+|* possible name collisions with other DSLs
 * operator precedence can't be changed
 * difficult to use from Java client code
 |===
