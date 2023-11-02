@@ -53,7 +53,7 @@ _Chapter 14, Real-World DSL Examples_, explores established and tested DSLs for 
 
 === Prerequisites
 
-To try out the code examples in this book or in the accompanying project at https://github.com/creativeDsls[github.com/creativeDsls], you will need an integrated development environment (IDE) that can run Kotlin. I recommend using JetBrains' IntelliJ IDEA, which has a free community edition that is sufficient for this purpose. Alternatively, you can also use the online Kotlin sandbox   https://play.kotlinlang.org/[play.kotlinlang.org] for smaller examples. This book uses Kotlin version 1.8 and assumes Java language level 11 unless otherwise noted.
+To try out the code examples in this book or in the accompanying project at https://github.com/creativeDsls[github.com/creativeDsls], you will need an integrated development environment (IDE) that can run Kotlin. I recommend using JetBrains' IntelliJ IDEA, which has a free community edition that is sufficient for this purpose. Alternatively, you can also use the online Kotlin sandbox   https://play.kotlinlang.org/[play.kotlinlang.org] for smaller examples. This book uses Kotlin version 1.9 and assumes Java language level 11 unless otherwise noted.
 
 It is also recommended that you familiarize yourself with the https://kotlinlang.org/docs/home.html[Kotlin Documentation], which is a valuable resource for learning about the language and its features. This book will refer to the Kotlin documentation for specific or non-DSL-related topics, rather than repeating information that can already be found there.
 

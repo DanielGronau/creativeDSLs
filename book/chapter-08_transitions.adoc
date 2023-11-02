@@ -1,3 +1,4 @@
+[#state_transitions]
 == Modeling State Transitions in DSLs
 
 DSLs often need to model complex state transitions that occur during the execution of the program, to model workflows, or are needed when objects must be constructed in stages. In this chapter, we will explore three different techniques for modeling such use cases, how to choose the right one, and how to use these techniques in conjunction with other patterns such as the Builder and Loan pattern. The three approaches are:
@@ -323,7 +324,7 @@ The chameleon class concept might look somewhat strange at first, but results us
 
 ==== The Phantom Type Approach (Builder Pattern)
 
-The third approach uses <<chapter-04_features.adoc#typeLevelProgramming,phantom types>>(((Phantom Types))). The implementation is based on a DTO class with a generic parameter. This type parameter isn't used as type for any data inside the class - this is why it is called a "phantom type". Instead, this parameter is used by extension functions, which require that their receiver has the correct state
+The third approach uses <<chapter-04_features.adoc#typeLevelProgramming,phantom types>>(((Phantom Type))). The implementation is based on a DTO class with a generic parameter. This type parameter isn't used as type for any data inside the class - this is why it is called a "phantom type". Instead, this parameter is used by extension functions, which require that their receiver has the correct state
 
 For the SQL query DSL, we need a type hierarchy containing the different clauses. As a slight complication, we also need two additional interfaces for methods that are present in multiple clauses. Then we need the DTO class itself. The `cast()` extension function allows us to switch easily between states. As the generic parameter doesn't refer to any real data, the cast itself is safe. Of course, the `cast()` function must be private in order to avoid abuse:
 

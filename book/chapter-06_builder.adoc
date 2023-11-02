@@ -1,15 +1,15 @@
 == Builder Pattern DSLs
 
-A common task is the initialization of a complex, sometimes nested object. The classical solution for this is the Builder Pattern. The builder class is mutable, uses method chaining (a.k.a. "((Fluent Interfaces))") to simplify value assignments, and contains a terminal build method, which constructs the domain object.
+A common task is the initialization of a complex, sometimes nested object. The classic solution is the _Builder Pattern_: the builder class is mutable, uses method chaining(((Method Chaining))) (also called "Fluent Interfaces")(((Fluent Interface))) to simplify value assignment, and contains a terminal build method that constructs the domain object.
 
-This chapter covers the classical builder pattern as often used in Java. Sometimes this is overkill is Kotlin, as named arguments can be used for smaller classes. We will also discuss nesting builders. Next, we will address the problem of mandatory fields in builders by presenting the _Typesafe Builder Pattern_. Finally, we will cover the more exotic _Counting Builder_. In the conclusion section we discuss why in Kotlin builders are not as widely used as in Java.
+This chapter covers the classic builder pattern as it is often used in Java. Next, we will show how named arguments can often replace the builder pattern in Kotlin, especially when constructing smaller classes. We will also briefly discuss nested builders. Next, we will address the issue of mandatory fields in builders by introducing the _Typesafe Builder Pattern_, and we will also cover the related _Counting Builder_. Finally, we discuss why builders are not as widely used in Kotlin as they are in Java.
 
 === Classical Builder
 
 As an example for a classical builder with realistic complexity, we can use `java.net.http.HttpRequest`, which is written in Java. A typical builder call could look like this:
 
 [source,kotlin]
-.See https://docs.oracle.com/en/java/javase/18/docs/api/java.net.http/java/net/http/HttpRequest.Builder.html
+.https://docs.oracle.com/en/java/javase/18/docs/api/java.net.http/java/net/http/HttpRequest.Builder.html
 ----
 val request = HttpRequest.newBuilder(URI.create("https://acme.com:9876/products"))
     .GET()
@@ -19,13 +19,13 @@ val request = HttpRequest.newBuilder(URI.create("https://acme.com:9876/products"
     .build()
 ----
 
-As this example illustrates, a builder has three parts:
+As this example shows, a builder has three parts:
 
-* *Builder Initialization:* The builder requires a starting point, which can be achieved through a constructor or a factory method. This initializes the builder instance and prepares it for data collection.
-* *Data Collection:* Through method chaining, the builder instance accumulates the necessary data and configuration options. Each method call adds a specific attribute or behavior to the final object being constructed.
-* *Target Object Construction*: To finalize the construction process, a terminal method, often named `build()`, is invoked. This method performs any necessary validation on the collected data and proceeds to instantiate the target object with the provided configuration.
+* *Builder Initialization:* The builder needs a starting point, which can be provided by a constructor or factory method. This initializes the builder instance and prepares it for data collection.
+* *Data Collection:* Through method chaining, the builder instance collects the necessary data and configuration options. Each method call adds a specific attribute or behavior to the final object being constructed.
+* *Target Object Construction:* To complete the construction process, a terminal method, often called `build()`, is called. This method performs any necessary validation on the collected data and proceeds to instantiate the target object with the provided configuration.
 
-By following this pattern, builders offer a structured approach to construct objects with customizable parameters, providing a convenient and readable way to initialize complex objects in a flexible manner.
+By following this pattern, builders provide a structured approach to constructing objects with customizable parameters, providing a convenient and readable way to initialize complex objects in a flexible manner.
 
 If you want to write a builder in Kotlin, you can take advantage of the `apply()` or `also()` method. Consider this example:
 
@@ -84,7 +84,7 @@ class PersonBuilder {
 
 === Named Arguments instead of Builders
 
-In Kotlin, you might not need a builder, because the language contains features like named and default arguments, which can provide a similar functionality. Take this implementation of an RGBA color:
+In Kotlin, you may not need a builder because the language has features like named and default arguments that can provide similar functionality. Consider this implementation of an RGBA color:
 
 [source,kotlin]
 ----
@@ -98,7 +98,7 @@ data class Color(
 val c = Color(0, 100, 130, 200)
 ----
 
-Written like this, the four `Int` values might be a little confusing to read, especially when you expect only three values as for RGB colors. However, instead on relying on a builder, you can simply clarify the meaning by rewriting the last line as follows:
+Written like this, the four `Int` values may be a little confusing to read, especially when you expect only three values, as is usual for RGB colors. However, instead of relying on a builder, you can simply clarify the meaning by rewriting the last line as follows:
 
 [source,kotlin]
 ----
@@ -110,9 +110,9 @@ val c = Color(
 )
 ----
 
-The syntax differs, but functionality-wise this code resembles closely a builder. Of course, as for a builder, the arguments can be listed in any order. A noteworthy difference of named arguments is that every argument can be set only once, while a builder allows to set and - depending on the implementation - possibly overwrite an argument value multiple times.
+The syntax is different, but the functionality of this code is very similar to a builder. Of course, like a builder, the arguments can be listed in any order. A notable difference between named arguments is that each argument can only be set once, while a builder allows you to set (and possibly overwrite) an argument value multiple times.
 
-`Color` is immutable, but if you want to get modified copies of it, you can use the `copy()` method, like this:
+The `Color` class is immutable, but if you want to get modified copies, you can use the `copy()` method:
 
 [source,kotlin]
 ----
@@ -120,11 +120,11 @@ val c = Color(0, 100, 130, 200)
 val c1 = c.copy(red = 120)
 ----
 
-The `copy()` method is autogenerated for all data classes. In Java, you would have to write a method equivalent to `fun withRed(r: Int): Color` (sometimes called _wither_ similar to "getter" and "setter"). Such methods might be necessary in Kotlin when you can't use data classes, but they are less common than in Java.
+The `copy()` method is autogenerated for all `data` classes. In Java, you would have to write a method equivalent to `fun withRed(r: Int): Color` (sometimes called _wither_ similar to "getter" and "setter"). Such methods may also be necessary in Kotlin when you can't use data classes, but they are less common than in Java.
 
-=== Nesting Builders
+=== Nesting Builders (((Nested Builders)))
 
-When an object has complex components, it makes sense to have not only a top-level builder, but also builders for these components, their own subcomponents, etc. A typical example for such nested builders is the DSL of the https://square.github.io/kotlinpoet/[KotlinPoet] library:
+When an object has complex components, it makes sense to have not only a top-level builder, but also builders for those components, their own subcomponents, and so on. A typical example of such nested builders is the DSL of the  https://square.github.io/kotlinpoet/[KotlinPoet] library:
 
 [source,kotlin]
 .https://square.github.io/kotlinpoet/
@@ -158,9 +158,9 @@ val file = FileSpec.builder("", "HelloWorld")
   .build()
 ----
 
-As this example demonstrates, the necessity to call `build()` at the end of every nested builder leads to a lot of visual clutter. To avoid this issue, some DSLs make builder nesting more convenient by having two versions of every "nested" method: One version that takes as usual the constructed object as argument, and another version that accepts a builder of the object instead. This way, the user doesn't need to call repeatedly `build()` methods for the nested builders.
+As this example shows, the need to call `build()` at the end of each nested builder leads to a lot of visual clutter. To avoid this problem, some DSLs make builder nesting more convenient by having two versions of each nested method: One version that takes the constructed object as an argument as usual, and another version that takes a builder of the object instead. This way, the user doesn't have to repeatedly call `build()` methods for the nested builders.
 
-=== Flattening instead of Nesting
+==== Flattening instead of Nesting
 
 An alternative to nesting builders is to handle everything in the top-level builder, by putting the nested content between a start and end method. In KotlinPoet, control flows are implemented this way:
 
@@ -174,15 +174,18 @@ val funSpec = FunSpec.constructorBuilder()
     .build()
 ----
 
-Using this approach can make the DSL code more readable, but it requires more discipline from the user, who has to ensure that the start and end methods are placed properly.
-
-To give an example implementation, consider a person class containing a name, a phone number and a list of contacts, which in turn also have a name, and optionally a phone:
+This approach can make the DSL code more readable, but it requires more discipline on the part of the user to ensure that the start and end methods are placed properly. To give an example implementation, consider a `Person` class that contains a name, a phone number, and a list of contacts that also have a name and optionally a phone:
 
 [source,kotlin]
 ----
-data class Contact(val name: String, val phone: String?)
+data class Contact(
+    val name: String,
+    val phone: String?)
 
-data class Person(val name: String, val phone: String, val contacts: List<Contact>)
+data class Person(
+    val name: String,
+    val phone: String,
+    val contacts: List<Contact>)
 
 class PersonBuilder {
     private var name: String? = null
@@ -237,15 +240,15 @@ val superman = PersonBuilder()
     .build()
 ----
 
-The process flow of a flattened builder can be also regarded as a very simple state transition, namely from the outer level to the inner level and back. xref:chapter-08_transitions.adoc[Chapter 8] demonstrates techniques to implement such state transitions in a safe way, so the code wouldn't compile when start and end methods are placed incorrectly.
+The process flow of a flattened builder can also be thought of as a very simple state transition, namely from the outer layer to the inner layer and back. xref:chapter-08_transitions.adoc[Chapter 8] demonstrates techniques to implement such state transitions in a safe way, so that the code won't compile if the start and end methods are placed incorrectly.
 
-While there are certainly valid use cases for a flattening builder, the usual approach based on nesting is both conceptually and implementation-wise simpler, it also scales better, and should be therefore preferred.
+While there are certainly valid use cases for a flattening builder, the usual approach based on nesting is not only simpler conceptually and implementation-wise, it also scales better, and should therefore be preferred.
 
-=== The Typesafe Builder Pattern
+=== The Typesafe Builder Pattern (((Typesafe Builder Pattern)))
 
-A common issue with builders is the inability to enforce the setting of mandatory fields. While it's possible to check for these conditions in the build method, it would be better if the compiler could already prevent to build incomplete objects. To achieve this, we can use <<chapter-04_features.adoc#typeLevelProgramming, type-level programming>>(((Type Level Programming))), although it requires some boilerplate code.
+A common problem with builders is the inability to enforce the setting of mandatory fields. While it's possible to check for these conditions in the build method, it would be better if the compiler could prevent incomplete objects from being built. To achieve this, we can use <<chapter-04_features.adoc#typeLevelProgramming, type-level programming>>(((Type Level Programming))), although it requires some boilerplate code.
 
-By using generics to track the state of mandatory fields, the build method can be adapted to only accept builders with all mandatory values set. As an example, consider the following class for a product, which requires a product id, the name and the price, while the other attributes are optional:
+By using generics to track the state of mandatory fields, the build method can be adapted to accept only builders with all mandatory values set. For example, consider the following class for a product that requires a product id, name, and price, while the other attributes are optional:
 
 [source,kotlin]
 ----
@@ -257,7 +260,7 @@ By using generics to track the state of mandatory fields, the build method can b
     val images: List<URI>)
 ----
 
-The first prerequisite for our builder are three classes for representing the state of the mandatory fields. They are similar to `Optional`, with the difference that the empty and full states are represented by different subclasses. The type parameter `T: Any` was used because it prevents `T` from being inhabited by a nullable type.
+The first requirement for our builder is three classes to represent the state of the mandatory fields. They are similar to `Optional`, except that the empty and full states are represented by different subclasses. The type parameter `T: Any` was used because it prevents `T` from being inhabited by a nullable type.
 
 [source,kotlin]
 ----
@@ -285,7 +288,7 @@ data class ProductBuilder<
 }
 ----
 
- The generic signature looks complicated, but the underlying idea is simple: Each mandatory field has its own generic type parameter that tracks whether it is already set or not. The constructor is private in order to prevent that the builder is . Now we can implement a companion object that simulates a constructor using the `invoke` operator:
+The generic signature looks complicated, but the idea behind it is simple: Each mandatory field has its own generic type parameter that keeps track of whether it is already set or not. The constructor was made private because we want to make sure we start with an empty builder. As a replacement, we implement a companion object that simulates a constructor using the `invoke` operator:
 
 [source,kotlin]
 ----
@@ -326,9 +329,9 @@ data class ProductBuilder<
 }
 ----
 
-The inferred return type of this `invoke()` operation is `ProductBuilder<Without<UUID>, Without<String>, Without<BigDecimal>>`, which we thankfully don't have to write out. When an optional field is set, these type parameters don't change, but when a mandatory field is set, the signature will change from `Without` to `With` for this particular field. As the setters for the mandatory fields return a builder with a changed signature, we can't use the `copy()` method in these cases (at least if we don't want to use casts).
+The inferred return type of this `invoke()` operation is `ProductBuilder<Without<UUID>, Without<String>, Without<BigDecimal>>`, which fortunately we don't have to write out. When an optional field is set, these type parameters don't change, but when a mandatory field is set, the signature changes from `Without` to `With` for that particular field. Since the mandatory field setters return a builder with a changed signature, we can't use the `copy()` method in these cases (at least if we don't want to use casts).
 
-Of course, one crucial part is missing: The `build()` method. However, we can't write it as part of the builder class, as it needs to inspect the generic signature. It _has_ to be an extension method, because only there you can "fix" the type parameters to concrete types, which is known as <<chapter-04_features.adoc#typeNarrowing, type narrowing>>(((Type Narrowing))):
+Of course, a crucial part is missing: The `build()` method. But we can't write it as part of the builder class, because it needs to check the generic signature. It _must_ be an extension method, because only there can you "fix" the type parameters to concrete types, which is known as <<chapter-04_features.adoc#typeNarrowing, type narrowing>>(((Type Narrowing))):
 
 [source,kotlin]
 ----
@@ -336,7 +339,7 @@ fun ProductBuilder<With<UUID>, With<String>, With<BigDecimal>>.build() =
     Product(id.value, name.value, price.value, description, images)
 ----
 
-Note that you can access the `value` fields of the `With` classes, as the type inference matches on the "narrowed down" type. Now we have a builder with a `build()` method that can be only called if all mandatory fields are set:
+Note that you can access the `value` fields of the `With` classes, because the type inference matches on the "narrowed" type. Now we have a builder with a `build()` method that can only be called if all mandatory fields are set:
 
 [source,kotlin]
 ----
@@ -350,11 +353,11 @@ ProductBuilder()
 
 You can check that the code no longer compiles after removing one of the mandatory fields.
 
-NOTE: The Typesafe Builder Pattern was pioneered by http://blog.rafaelferreira.net/2008/07/type-safe-builder-pattern-in-scala.html[Rafael Ferreira] in Scala, using ideas from Haskell. The code shown here is based on the implementation of http://dcsobral.blogspot.de/2009/09/type-safe-builder-pattern.html[Daniel Sobral].
+NOTE: The Typesafe Builder Pattern was pioneered by http://blog.rafaelferreira.net/2008/07/type-safe-builder-pattern-in-scala.html[Rafael Ferreira] in Scala, using ideas from Haskell. The code shown here is based on the implementation by http://dcsobral.blogspot.de/2009/09/type-safe-builder-pattern.html[Daniel Sobral].
 
 === Counting Builder
 
-I have to admit that this is one of the more exotic builder variations, but I decided to include it because it is an interesting technique, and because this kind of construction might be useful in other contexts.
+I have to admit that this is one of the more exotic builder variations, but I decided to include it because it is an interesting technique, and because this type of construction might be useful in other contexts.
 
 Consider the following `Polygon` class, which could be part of a graphics library:
 
@@ -365,9 +368,9 @@ import java.awt.geom.Point2D
 data class Polygon(val points: List<Point2D>)
 ----
 
-However, a problem arises when we want to ensure that polygons are constructed with at least three points. To solve this issue, we could create a builder that counts the number of points added and only allows the construction of polygons with three or more points.
+However, a problem arises when we want to ensure that polygons are constructed with at least three points. To solve this problem, we could create a builder that counts the number of points added and only allows the construction of polygons with three or more points.
 
-While the obvious solution is to check the number of points at runtime, we can achieve better safety by preventing the creation of an invalid builder at compile time. This can be achieved by using a recursive type parameter to keep track of the number of points, once again employing <<chapter-04_features.adoc#typeLevelProgramming, type level programming>>(((Type Level Programming))). Though this may seem odd at first, the implementation is quite simple:
+While the obvious solution is to check the number of points at runtime, we can be more secure by preventing an invalid builder from being created at compile time. This can be achieved by using a recursive type parameter to keep track of the number of points, again using <<chapter-04_features.adoc#typeLevelProgramming, Type-Level Programming>>(((Type-Level Programming))). While this may seem odd at first, the implementation is quite simple:
 
 [source,kotlin]
 ----
@@ -394,25 +397,25 @@ class PolygonBuilder<N : Nat> private constructor() {
 fun <N : Nat> PolygonBuilder<S<S<S<N>>>>.build() = Polygon(points)
 ----
 
-First, we create a sealed interface `Nat` to represent the natural numbers, and two sub-interfaces, `Z` representing zero and `S<N>` representing the successor of a natural number `N`. For instance, the number 3 would be written as `S<S<S<Z>>>`. This is called the "Peano Representation" of the natural numbers. Note that even if we don't know the innermost part of `S<S<S<...>>>`, we can still deduce that the given number is greater or equal to 3, which is exactly what we need to check our condition. These recursively constructed numbers are used by the builder class as a generic "counter" parameter holding the number of points in the list.
+First, we create a sealed interface `Nat` to represent the natural numbers, and two sub-interfaces, `Z` representing zero and `S<N>` representing the successor of a natural number `N`. For example, the number 3 would be written as `S<S<S<Z>>>`. This is called the "Peano Representation" of the natural numbers. Note that even if we don't know the innermost part of `S<S<S<...>>>`, we can still deduce that the given number is greater than or equal to 3, which is exactly what we need to check our condition. These recursively constructed numbers are used by the builder class as a generic "counter" parameter, holding the number of items in the list.
 
 .The Peano Axioms
 ****
-When asked to count, the usual response is "zero, one, two, three...", not "zero, successor of zero, successor of successor of zero...", so you might wonder where the strange Peano Representation comes from. In 1889 Giuseppe Peano published his famous nine axioms in order to define natural numbers and their properties in a formal way, and the Peano Representation follows directly from these axioms.
+When asked to count, the usual answer is "one, two, three...", not "zero, successor of zero, successor of successor of zero...", so you might wonder where the strange _Peano Representation_ comes from. In 1889 Giuseppe Peano published his famous nine axioms to define natural numbers and their properties in a formal way, and the Peano Representation follows directly from these axioms.
 
-The first axiom covers the existence of zero, the following four axioms cover basic properties of equality (it is reflexive, symmetric, transitive and closed), but the next four axioms rely crucially on the use of the successor function:
+The first axiom states the existence of zero, the next four axioms cover basic properties of equality (it is reflexive, symmetric, transitive, and closed), but the next four axioms rely crucially on the use of the successor function:
 
-* For any natural number, its successor is a natural number as well
-* If the successors of two natural numbers are equal, then the numbers themselves are equal, too
-* Zero is not the successor of a natural number
-* Every natural number can be reached from zero by repeatedly applying the successor function (this is also known as "induction")
+* For every natural number, its successor is also a natural number.
+* If the successors of two natural numbers are equal, then the numbers themselves are equal.
+* Zero is not a successor of a natural number.
+* Any natural number can be reached from zero by repeatedly applying the successor function (this is also known as "induction").
 
-That's why from a mathematical point of view, the Peano Representation is the most basic way to write natural numbers, and our usual number systems (decimal, binary, hexadecimal...) could be regarded as convenient abbreviations.
+That's why, from a mathematical point of view, the Peano Representation is the most fundamental way to write natural numbers, and our usual number systems (decimal, binary, hexadecimal...) could be considered as convenient abbreviations.
 ****
 
-The builder class must hide its constructor, because a call like `PolygonBuilder<S<S<Z>>>()` would initialize the builder with a wrong counter. That's why we "simulate" a constructor using the `invoke()` operator in the companion object, which returns only builders with a counter correctly initialized to 0. The `add()` method appends a point to the list, but also casts the instance to one with an incremented counter. This is safe, as the counter is a phantom type(((Phantom Types))). Alternatively, we also could have constructed a new builder object on every `add()` call.
+Similar to the Typesafe Builder Pattern, the builder class must hide its constructor, because a call like `PolygonBuilder<S<S<Z>>>()` would initialize the builder with a wrong counter. That's why we simulate a constructor using the `invoke()` operator in the companion object, which only returns builders with a counter correctly initialized to 0. The `add()` method appends a point to the list, but also casts the instance to one with an incremented counter. This is safe because the counter is a phantom type(((Phantom Type))). Alternatively, we could have constructed a new Builder object on each `add()` call.
 
-The last ingredient is the `build()` method, which has to be an extension function, for the same reasons as in the typesafe builder example. The function is "counting" the points by inspecting the type signature of the builder. This is how a usage of our builder could look like:
+The last ingredient is the `build()` method, which must be an extension function for the same reasons as in the Typesafe Builder example. The function "counts" the points by checking the type signature of the builder. This is how our builder might be used:
 
 [source,kotlin]
 ----
@@ -423,17 +426,17 @@ val polygon = PolygonBuilder()
     .build()
 ----
 
-If one of the `add()` calls is removed, the code will no longer compile, as the type of the `PolygonBuilder` does no longer comply with the signature of the `build()` extension function.
+If one of the `add()` calls is removed, the code will no longer compile because the type of the `PolygonBuilder` no longer matches the signature of the `build()` extension function.
 
-Of course, you can use this pattern to count more than one thing, and you can combine it with the Typesafe Builder Pattern as well.
+Of course, you can use this pattern to count more than one thing, and you can also combine it with the Typesafe Builder Pattern.
 
 === Builders with multiple stages
 
-It is possible to build objects in different stages. However, as there are several ways to implement this use case, and as these techniques are not only applicable for builders, xref:chapter-08_transitions.adoc[Chapter 8] covers this topic in detail.
+It is possible to build objects in stages. However, since there are several ways to implement this use case, and since these techniques are not only applicable to builders, <<chapter-08_transitions.adoc#state_transitions, Chapter 8>> covers this topic in detail.
 
 === Conclusion
 
-The Builder Pattern is quite popular in Java - there are  libraries like https://projectlombok.org/[Project Lombok] which generate builders for you. The downside is that builders are quite inflexible and might be not very safe to use (although variations like the Typesafe Builder Pattern can help). In Kotlin, using named and default parameters can already provide a functionality similar to a builder. The next chapter will present another common approach in Kotlin, which has some advantages over the Builder Pattern.
+The Builder Pattern is quite popular in Java - there are even libraries like https://projectlombok.org/[Project Lombok] that generate builders for you. The downside is that builders are quite inflexible and may not be very safe to use, although variations like the Typesafe Builder Pattern can help. In Kotlin, using named and default parameters can already provide functionality similar to a builder. The next chapter introduces another common approach in Kotlin that has some advantages over the classic Builder Pattern.
 
 ==== Preferable Use Cases
 
