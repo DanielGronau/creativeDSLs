@@ -1,5 +1,8 @@
 == Requirements Analysis (((Requirement Analysis)))
 
+> If you think good architecture is expensive, try bad architecture.
+-- Brian Foote and Joseph Yoder
+
 As a software engineer, it's easy to get caught up in the excitement of building a DSL and lose sight of the bigger picture. However, it's important to take a step back and carefully consider the goals and requirements of your DSL before diving into implementation. This will help ensure that your DSL is complete, well-behaved, maintainable, and extensible.
 
 It is important that everyone involved has a clear understanding of the scope and purpose of your DSL. This includes identifying the target audience and how the DSL will be used. Getting everyone on the same page minimizes the risk of overlooking important details. However, this shouldn't be a long and boring process. To simplify this task, this chapter is essentially a checklist of decisions to make before you begin implementation.

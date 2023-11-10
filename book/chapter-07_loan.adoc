@@ -1,6 +1,11 @@
 == Loan Pattern DSLs
 
-This pattern is known by various names, and it can indeed be confusing. One of these names is the "builder pattern," which can lead to ambiguity since it shares similar use-cases with the classical builder pattern. However, in Kotlin, this pattern is often used as a replacement for the classical builder pattern. To provide a more accurate description of the underlying mechanism and avoid confusion, it will be referred here as the "Loan Pattern DSL".
+> Neither a borrower nor a lender be, +
+For loan oft loses both itself and friend, +
+And borrowing dulls the edge of husbandry.
+-- Shakespeare, Hamlet, Act 1, Scene 3
+
+NOTE: This pattern is known by various names, and it can indeed be confusing. One of these names is the "builder pattern," which can lead to ambiguity since it shares similar use-cases with the classical builder pattern. However, in Kotlin, this pattern is often used as a replacement for the classical builder pattern. To provide a more accurate description of the underlying mechanism and avoid confusion, it will be referred here as the "Loan Pattern DSL".
 
 In contrast to the classic builder pattern, the Loan Pattern DSL takes a different approach by using a mutable builder class that exposes its members through the Loan Pattern. This approach leverages the power of extension methods and the trailing lambda syntax in Kotlin. It is particularly useful for creating deeply nested structures. In such cases, the code can quickly become cluttered and hard to read when using the classical builder pattern. Further, it can be easier to enforce constraints and ensure type safety with this approach compared to using builders. Sometimes, the greater flexibility of Loan Pattern DSLs allows to incorporate other DSL techniques like operator overloading, while the builder approach is often too rigid for such improvements.
 

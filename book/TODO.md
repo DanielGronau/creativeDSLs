@@ -31,8 +31,7 @@ TODO:
   - Token based, e.g. turtle graphics
 - find a good Kotlin reflection book to refer to -> 8.3. TODO
 - Are the conclusion sections okay?
-- context receivers:
-  https://www.youtube.com/watch?v=GISPalIVdQY
+- Quote before every chapter?
 
 ## Research
 

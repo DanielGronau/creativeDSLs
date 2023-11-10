@@ -1,5 +1,8 @@
 == Algebraic DSLs (((Algebraic DSL)))
 
+> We could, of course, use any notation we want; do not laugh at notations; invent them, they are powerful. In fact, mathematics is, to a large extent, invention of better notations.
+-- Richard Feynman, The Feynman Lectures on Physics Vol 1
+
 A common class of problems deals with objects that exhibit number-like behavior. These "algebraic" structures include complex numbers, quaternions, vectors, matrices, physical and monetary quantities, and many more. With Kotlin, it is relatively easy to write DSLs for these problems, especially if the required operators match the existing ones.
 
 NOTE: As with many other categories of DSLs, there seems to be no established name for this type of DSL in the literature. I think calling them _Algebraic DSLs_ covers their behavior quite well, but you may find the same concept under different names elsewhere.

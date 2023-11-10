@@ -61,6 +61,11 @@ It is also recommended that you familiarize yourself with the https://kotlinlang
 
 This book uses a few typographical conventions to structure its content.
 
+Quotes look like this:
+
+> To be, or not to be: that is the question
+-- Shakespeare, Hamlet, Act 3 Scene 1
+
 Inlined code snippets are shown like this: `val answer = 42`
 
 Tips, warnings etc. are presented as follows:

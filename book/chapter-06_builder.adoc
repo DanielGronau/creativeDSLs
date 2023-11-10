@@ -1,5 +1,8 @@
 == Builder Pattern DSLs
 
+> Builders are the poets of object creation, crafting instances with eloquent syntax and profound semantics.
+-- ChapGPT 3.5
+
 A common task is the initialization of a complex, sometimes nested object. The classic solution is the _Builder Pattern_: the builder class is mutable, uses method chaining(((Method Chaining))) (also called "Fluent Interfaces")(((Fluent Interface))) to simplify value assignment, and contains a terminal build method that constructs the domain object.
 
 This chapter covers the classic builder pattern as it is often used in Java. Next, we will show how named arguments can often replace the builder pattern in Kotlin, especially when constructing smaller classes. We will also briefly discuss nested builders. Next, we will address the issue of mandatory fields in builders by introducing the _Typesafe Builder Pattern_, and we will also cover the related _Counting Builder_. Finally, we discuss why builders are not as widely used in Kotlin as they are in Java.
@@ -246,7 +249,7 @@ While there are certainly valid use cases for a flattening builder, the usual ap
 
 === The Typesafe Builder Pattern (((Typesafe Builder Pattern)))
 
-A common problem with builders is the inability to enforce the setting of mandatory fields. While it's possible to check for these conditions in the build method, it would be better if the compiler could prevent incomplete objects from being built. To achieve this, we can use <<chapter-04_features.adoc#typeLevelProgramming, type-level programming>>(((Type Level Programming))), although it requires some boilerplate code.
+A common problem with builders is the inability to enforce the setting of mandatory fields. While it's possible to check for these conditions in the build method, it would be better if the compiler could prevent incomplete objects from being built. To achieve this, we can use <<chapter-04_features.adoc#typeLevelProgramming, Type-Level Programming>>(((Type-Level Programming))), although it requires some boilerplate code.
 
 By using generics to track the state of mandatory fields, the build method can be adapted to accept only builders with all mandatory values set. For example, consider the following class for a product that requires a product id, name, and price, while the other attributes are optional:
 

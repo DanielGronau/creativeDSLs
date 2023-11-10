@@ -1,5 +1,10 @@
 == Introduction
 
+> There are two fatal errors that keep great projects from coming to life: +
+{nbsp}{nbsp}{nbsp}{nbsp}1. Not finishing +
+{nbsp}{nbsp}{nbsp}{nbsp}2. Not starting
+-- Buddha Gautama
+
 === What is a DSL?
 
 > A Domain-Specific Language (DSL) is a computer language that's targeted to a particular kind of problem, rather than a general purpose language that's aimed at any kind of software problem.

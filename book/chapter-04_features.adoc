@@ -1,6 +1,9 @@
 [#relevant_language_features]
 == Relevant Language Features
 
+> I suppose it is tempting, if the only tool you have is a hammer, to treat everything as if it were a nail.
+-- Abraham Maslow, Toward a Psychology of Being
+
 Kotlin is a modern and beautiful programming language that offers several key features not found in Java.Here are some of the most notable features that set Kotlin apart:
 
 * *Null-Safe Type System:* Kotlin's null-safety feature is a major improvement over Java, where null values can cause null pointer exceptions. This feature ensures that a variable cannot be null unless explicitly declared as such, reducing the risk of runtime errors.
@@ -20,9 +23,7 @@ This chapter gives a brief overview of language features that may be relevant to
 
 Kotlin allows almost arbitrary identifiers as long as they are enclosed in backticks. The main reason for introducing this feature was to allow the use of identifiers that are keywords in Kotlin but not in Java, such as `fun` or `when`. For DSLs, we can use them when we need descriptive identifiers that don't follow the usual syntactic rules.
 
-Backtick identifiers start and end with a backtick `{backtick}` - these are not part of the identifier, but just delimiters - and can contain almost all characters. E.g. for Kotlin on the JVM, all characters except `\r` `\n` `,` `.` `;` `:` `\` `|` `/` `[` `?` `]` `<` `>` `{backtick}` are allowed.
-
-A typical use case for backticks is DSLs for test libraries. While Java limits you to underscores and camel case, Kotlin allows very descriptive names for test functions by using the backtick syntax:
+Backtick identifiers start and end with a backtick `{backtick}` - these are not part of the identifier, but just delimiters - and can contain almost all characters. A typical use case for backticks is DSLs for test libraries. While Java limits you to underscores and camel case, Kotlin allows very descriptive names for test functions by using the backtick syntax:
 
 [source,kotlin]
 ----
@@ -31,7 +32,18 @@ fun `check that the slithy toves gyre and gimble in the wabe`() {
 }
 ----
 
-Another common use case is to simulate an operator with an infix function, e.g. you could define an exponentiation operation with a syntax like `5.0 {backtick}^{backtick} 3` (see section <<infix_notation, Infix Notation for Functions>>).
+For Kotlin on the JVM, all characters except `\r` `\n` `,` `.` `;` `:` `\` `|` `/` `[` `?` `]` `<` `>` `{backtick}` are allowed, and you will get a compiler error if you try to use an identifier that contains one of these characters. However, if you need to use some of them anyway, you can rename the method on the JVM with a valid identifier, and suppress the compiler check:
+
+[source,kotlin]
+----
+@Suppress("INVALID_CHARACTERS")
+@JvmName("diamond")
+fun `<>`() {
+   println("this works!")
+}
+----
+
+This is especially useful when simulating an operator with an infix function, see the section <<infix_notation, Infix Notation for Functions>> for details.
 
 === Named Arguments (((Named Arguments))) and Default Values (((Default Values)))
 
@@ -568,11 +580,11 @@ val worksToo = 2.1.GBP + 4.2.GBP // 6.3 £
 You can't add amounts of different currencies together, because the definition of `+` ensures that both amounts belong to the same currency. The generic type parameter `T` is called a "phantom type", and this code is a very simple example of type-level programming.
 
 [#typeLevelProgramming]
-.Type-level Programming (((Type Level Programming))) and Phantom Types (((Phantom Type)))
+.Type-Level Programming (((Type-Level Programming))) and Phantom Types (((Phantom Type)))
 ****
-*Type-level programming* is a programming paradigm in which types themselves are used as values that can be manipulated and computed at compile time, rather than being used only to check the correctness of program syntax and logic. In other words, type-level programming involves using types to encode complex computations and algorithms that are evaluated by the compiler at compile time rather than at runtime. Type-level programming can be used to achieve a variety of goals, such as improving program performance and enforcing stronger type constraints.
+*Type-Level Programming* is a programming paradigm in which types themselves are used as values that can be manipulated and computed at compile time, rather than being used only to check the correctness of program syntax and logic. In other words, type-level programming involves using types to encode complex computations and algorithms that are evaluated by the compiler at compile time rather than at runtime. Type-level programming can be used to achieve a variety of goals, such as improving program performance and enforcing stronger type constraints.
 
-*Phantom types* are a type-level programming technique in which a type is used to encode additional information about the data it represents without actually storing any data at runtime. Phantom types are types that have no values, but are used only for their type-level information. They can be used to enforce stronger type constraints, such as ensuring that only certain operations are performed on certain types of data. This can help reduce runtime errors and improve the safety of the program.
+*Phantom Types* are a type-level programming technique in which a type is used to encode additional information about the data it represents without actually storing any data at runtime. Phantom types are types that have no values, but are used only for their type-level information. They can be used to enforce stronger type constraints, such as ensuring that only certain operations are performed on certain types of data. This can help reduce runtime errors and improve the safety of the program.
 ****
 
 [#reifiedGenerics]
