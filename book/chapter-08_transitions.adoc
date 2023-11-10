@@ -1,6 +1,9 @@
 [#state_transitions]
 == Modeling State Transitions in DSLs
 
+> All things change in a dynamic environment. Your effort to remain what you are is what limits you.
+-- Ghost in the Shell
+
 DSLs often need to model complex state transitions that occur during the execution of the program, to model workflows, or are needed when objects must be constructed in stages. In this chapter, we will explore three different techniques for modeling such use cases, how to choose the right one, and how to use these techniques in conjunction with other patterns such as the Builder and Loan pattern. The three approaches are:
 
 * *Separate Classes*: The most intuitive implementation. Every State is represented by an independent class.

@@ -1,5 +1,8 @@
 == String-Parsing DSLs
 
+> Words are, of course, the most powerful drug used by mankind.
+-- Rudyard Kipling
+
 In some cases, the host language doesn't allow to create the DSL syntax you would like. A string-parsing DSL gives you the freedom to write basically anything. One topic where traditional DSL categories are particularly bad is giving the user some leeway, e.g. concerning upper and lower case syntax, order of operations or the use of special characters like symbols. String-based DSLs can easily incorporate such leniency.
 
 The downside is that these DSLs are hidden from the scrutiny of the compiler: There are no compile time checks, no hints for auto-completion etc., which means the user has to rely on the documentation. Another issue is writing the parser: Dissecting a string is usually more involved than collecting the data in other DSL types, although it is also no rocket science.
