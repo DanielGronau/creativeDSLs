@@ -4,15 +4,15 @@
 > All things change in a dynamic environment. Your effort to remain what you are is what limits you.
 -- Ghost in the Shell
 
-DSLs often need to model complex state transitions that occur during the execution of the program, to model workflows, or are needed when objects must be constructed in stages. In this chapter, we will explore three different techniques for modeling such use cases, how to choose the right one, and how to use these techniques in conjunction with other patterns such as the Builder and Loan pattern. The three approaches are:
+DSLs often need to model complex state transitions that occur during program execution, to model workflows, or when objects need to be constructed in stages. In this chapter, we will explore three different techniques for modeling such use cases, how to choose the right one, and how to use these techniques in conjunction with other patterns such as the Builder and the Loan Pattern. The three approaches are:
 
-* *Separate Classes*: The most intuitive implementation. Every State is represented by an independent class.
-* *Chameleon Class*: The different states are represented by interfaces with their respective methods. A single class implements all interfaces, but its methods return always one of the interfaces, never the class itself.
-* *Phantom Type Approach*: A single class has a generic type parameter representing the different states, and extension methods can be only called for the designated state by specifying the corresponding type parameter for their receiver.
+* *Separate Classes*: The most intuitive implementation, where each state is represented by an independent class.
+* *Chameleon Class*: The different states are represented by interfaces with their respective methods. A single class implements all interfaces, but the return type of its methods is always one of the interfaces, never the class itself.
+* *Phantom Type*: A single class has a generic type parameter representing the different states, and extension methods can only be called for a particular state by specifying the appropriate type parameter for their receiver.
 
 === Case Study: DSL for SQL queries (using the Builder Pattern)
 
-In order to allow a good comparison between the implementations, we will write a DSL for building SQL queries using the different approaches. As the SQL language is very complex, we have to limit our example to queries using just `SELECT`, `FROM`, `WHERE` and `GROUP BY` clauses, and use simple `String` arguments (for a serious SQL-DSL implementation check out https://www.jooq.org/[jOOQ]). The following state diagram gives an overview of the allowed transitions:
+To allow a good comparison between the implementations, we will write a DSL for building SQL queries using the different approaches. Since the SQL language is very complex, we have to limit our example to queries using only `SELECT`, `FROM`, `WHERE` and `GROUP BY` clauses and simple string arguments (for a serious SQL DSL implementation, see https://www.jooq.org/[jOOQ]). The following state diagram gives an overview of the allowed transitions:
 
 [ditaa,"sql-queries"]
 .Simplified Select SQL Query
@@ -56,18 +56,18 @@ val queryGroupBy = SELECT("p.age", "min(p.income)", "max(p.income)")
     .build()
 ----
 
-While this example code is using a builder pattern syntax, we will also discuss how a loan pattern implementation of the same functionality could look like.
+While this example code uses a Builder Pattern syntax, we will also discuss what a Loan Pattern implementation of the same functionality might look like.
 
 ==== The 'Separate Classes' Approach (Builder Pattern)
 
-The first approach is straight-forward: Every state is represented by a separate class, which is independent of all other classes. While this is conceptually very simple, the main drawback is that all the collected data have to be transferred between the classes representing the states. Often it is more convenient and readable to pass a dedicated data transfer object (DTO) (((Data Transfer Object)))around, instead of using several parameters.
+The first approach is straightforward: Each state is represented by a separate class that is independent of all other classes. While this is conceptually very simple, the main drawback is that all collected data must be transferred between the classes representing the states. Often it is more convenient and readable to pass a dedicated Data Transfer Object (DTO) (((Data Transfer Object))) instead of using multiple parameters.
 
 .Data Transfer Objects
 ****
 A Data Transfer Object (DTO) is a container object that is used to hold and transfer data across layers, without any business logic or behavior. DTOs are often used to simplify the interface between different subsystems of an application, and to reduce the amount of data that needs to be exchanged between them. The primary purpose of a DTO is to provide a simple, standardized way of representing data that can be easily serialized and deserialized.
 ****
 
-As preparation for writing the SQL query DSL we need two helper classes and the DTO:
+In preparation for writing the SQL query DSL, we need two helper classes and the DTO:
 
 [source,kotlin]
 ----
@@ -75,7 +75,6 @@ data class NameWithAlias(
     val name: String,
     val alias: String? = null
 ) {
-
     override fun toString(): String = when (alias) {
         null -> name
         else -> "$name AS $alias"
@@ -138,7 +137,7 @@ data class FromClause(val queryDTO: QueryDTO) {
 }
 ----
 
-From here, you can go to a `JoinClause`, which mimics the SQL syntax by permitting to write something like `fromClause.JOIN("Address","a").ON("p.addressId", "a.id")`. The other exit points lead to a `WhereClause` or a `GroupByClause`. Additionally, the `FromClause` has a `build()` method, because the `WHERE` and `GROUP BY` parts are optional. The `JoinClause` offers just an `ON()` method, which leads back to the `FromClause`.:
+From here you can go to a `JoinClause`, which mimics SQL syntax by allowing you to write something like `fromClause.JOIN("Address","a").ON("p.addressId", "a.id")`. The other exit points lead to a `WhereClause` or a `GroupByClause`. Additionally, the `FromClause` has a `build()` method, because the `WHERE` and `GROUP BY` parts are optional. The `JoinClause` only provides an `ON()` method, which leads back to the `FromClause`:
 
 [source,kotlin]
 ----
@@ -155,7 +154,7 @@ data class JoinClause(
 }
 ----
 
-The `WhereClause` is quite simple, but of course using `String` to represent the different conditions is not very safe and should be avoided in production code. Our SQL subset allows to progress to the `GroupByClause` (while the full syntax would also permit `HAVING`, `ORDER BY` etc). Alternatively, we can finish the query by calling the `build()` method:
+The `WhereClause` is quite simple, but of course using `String` to represent the different conditions is not very secure and should be avoided in production code. Our SQL subset allows us to proceed to the `GroupByClause` (while the full syntax would also allow `HAVING`, `ORDER BY`, etc.). Alternatively, we can end the query by calling the `build()` method:
 
 [source,kotlin]
 ----
@@ -176,7 +175,7 @@ data class WhereClause(val queryDTO: QueryDTO) {
 }
 ----
 
-The `GroupByClause` allows just a call to the `build()` method:
+The `GroupByClause` only allows you to call the `build()` method:
 
 [source,kotlin]
 ----
@@ -186,7 +185,7 @@ data class GroupByClause(val queryDTO: QueryDTO) {
 }
 ----
 
-The only missing part is the common `build(queryDTO)` method used by `FromClause`, `WhereClause` and `GroupByClause`:
+The only thing missing is the common `build(queryDTO)` method used by `FromClause`, `WhereClause` and `GroupByClause`:
 
 [source,kotlin]
 ----
@@ -213,23 +212,23 @@ private fun build(queryDTO: QueryDTO): String = with(StringBuilder()) {
 }.toString()
 ----
 
-Bundling all data in a DTO instance as shown here can reduce the overhead of moving all the data around substantially, especially by leveraging the power of the `copy()` method. In the next section, we will explore an alternative implementation of the same DSL.
+Bundling all data into a DTO instance, as shown here, can significantly reduce the overhead of moving all data around, especially by taking advantage of the power of the `copy()` method. In the next section, we will explore an alternative implementation of the same DSL.
 
 ==== The Chameleon Class Approach (Builder Pattern) (((Chameleon Class)))
 
-While having a separate DTO class makes the separate class approach more convenient, it would be nicer if we wouldn't need to copy data around in the first place. But what is with all the guarantees a chained builder provides, e.g. that you can't call `build()` or `JOIN()` in a `SELECT`  clause? One way to achieve this is using a technique I dubbed "chameleon class". The basic idea is to adapt the type of this class to the state it currently represents, and change it accordingly when the state changes.
+While using a separate DTO class makes the separate class approach more convenient, it would be nicer if we didn't have to copy data in the first place. But what about all the guarantees the first solution provides, e.g. that you can't call `build()` or `JOIN()` in a `SELECT` clause? One way to do this is to use a technique I call the "chameleon class". The basic idea is to adapt the type of this class to the current state it represents, and change it accordingly when the state changes.
 
 .The Chameleon Class
 ****
 A chameleon class
 
-* implements different interfaces
-* never exposes its own type, but always acts as one of these interfaces
-* has a private constructor in order to avoid leaking its own type
+* implements multiple interfaces
+* never exposes its own type, but always acts as one of those interfaces
+* has a private constructor to avoid exposing its own type
 * holds common data
 ****
 
-First need to translate our former state classes into interfaces:
+First, we must translate our former state classes into interfaces:
 
 [source,kotlin]
 ----
@@ -259,7 +258,7 @@ interface GroupByClause {
 }
 ----
 
-Now all left to do is to implement these interfaces in a single chameleon class, and to keep track of the data. It is important to make the constructor private, as the initial type shouldn't be the type of the class itself, but `SelectClause`.  That's why the `SELECT()` method in the companion object is used as starting point for the DSL:
+All that remains is to implement these interfaces in a single Chameleon class and keep track of the data. It's important to make the constructor private, because the initial type should not be the type of the class itself, but `SelectClause`.  That's why the `SELECT()` method in the companion object is used as a starting point for the DSL:
 
 [source,kotlin]
 ----
@@ -321,15 +320,15 @@ class QueryBuilder private constructor(val columns: List<String>):
 }
 ----
 
-For the compiler, it doesn't matter that you give back the same object over and over again at runtime, because only the static type decides which methods can be called, and this static type is never `QueryBuilder` itself, but instead one of the interfaces for the SQL clauses. Using the DSL looks like before, and you still can't call methods out of order.
+It doesn't matter to the compiler that you return the same object over and over again at runtime, because only the static type decides which methods can be called, and that static type is never `QueryBuilder` itself, but one of the interfaces for the SQL clauses. Using the DSL looks the same as before, and you still can't call methods out of order.
 
-The chameleon class concept might look somewhat strange at first, but results usually in compact and readable code. However, be aware that this approach is susceptible to name clashes, when two interfaces contain methods with the same name and parameters, but different return types.
+The chameleon class concept may look a bit strange at first, but usually results in compact and readable code. Be aware, however, that this approach is prone to name conflicts when two interfaces contain methods with the same name and parameters, but different return types.
 
 ==== The Phantom Type Approach (Builder Pattern)
 
-The third approach uses <<chapter-04_features.adoc#typeLevelProgramming,phantom types>>(((Phantom Type))). The implementation is based on a DTO class with a generic parameter. This type parameter isn't used as type for any data inside the class - this is why it is called a "phantom type". Instead, this parameter is used by extension functions, which require that their receiver has the correct state
+The third approach uses <<chapter-04_features.adoc#typeLevelProgramming,phantom types>>(((Phantom Type))). The implementation is based on a DTO class with a generic parameter. This type parameter is not used as a type for any data within the class - that's why it's called a "phantom type". Instead, this parameter is used by extension functions that require their receiver to have the correct state
 
-For the SQL query DSL, we need a type hierarchy containing the different clauses. As a slight complication, we also need two additional interfaces for methods that are present in multiple clauses. Then we need the DTO class itself. The `cast()` extension function allows us to switch easily between states. As the generic parameter doesn't refer to any real data, the cast itself is safe. Of course, the `cast()` function must be private in order to avoid abuse:
+For the SQL query DSL, we need a type hierarchy containing the different clauses. As a slight complication, we also need two additional interfaces for methods that are present in multiple clauses. Then we need the DTO class itself. The `cast()` extension function allows us to easily switch between states. Since the generic parameter doesn't refer to any real data, the cast itself is safe. Of course, the `cast()` function must be private to prevent misuse:
 
 [source,kotlin]
 ----
@@ -356,7 +355,7 @@ data class QueryDTO<out State>(
 private fun <S : State> QueryDTO<*>.cast(): QueryDTO<S> = this as QueryDTO<S>
 ----
 
-The extension functions for the state transitions are straight-forward:
+The extension functions for the state transitions are straightforward:
 
 [source,kotlin]
 ----
@@ -412,13 +411,18 @@ fun QueryDTO<CanBuild>.build(): String = with(StringBuilder()) {
 }.toString()
 ----
 
-Note that `GROUP_BY()` can be called e.g. on `QueryDTO<FromClause>`, even though it is defined as `fun QueryDTO<CanGroupBy>.groupBy(...)`. This is possible because the phantom type in `QueryDTO` was defined as contravariant using the `out` keyword. Without this, we would have needed a signature like `fun <S: CanGroupBy> QueryBuilder<S>.groupBy(...)` in order to be callable from a DTO with a sub-interface, which looks quite cryptic.
+Note that `GROUP_BY()` can be called, for example, on `QueryDTO<FromClause>` even though it is defined as `fun QueryDTO<CanGroupBy>.groupBy(...)`. This is possible because the phantom type in `QueryDTO` was defined as contravariant using the `out` keyword. Without this, we would have needed a signature like `fun <S: CanGroupBy> QueryBuilder<S>.groupBy(...)` to be callable from a DTO with a sub-interface, which looks rather cryptic.
 
-Chameleon classes and the phantom type implementation are conceptually similar, and it depends on the problem at hand whether a class with all the methods, or a DTO with extension methods is preferable. In case the DSL has to be called from Java, it should be considered that only the chameleon approach preserves the DSL syntax. On the other hand, the phantom type approach doesn't have fixed APIs for the different states, just extension functions operating on them, which means that new functionality can be added more easily than for the other techniques.
+.Declaration-Site (((Declaration-Site Variance))) vs Use-Site Variance (((Use-Site Variance))) (((Variance)))
+****
+Declaration-site variance is a way of specifying the variance of a generic type when the type is defined or declared. In the declaration of a generic type or interface, you use variance annotations to specify whether the type parameter is covariant (`out`), contravariant (`in`), or invariant (neither). In contrast, use-site variance allows you to specify the variance of a generic type when you use it in a particular context (at the use site) using type bounds or wildcards. While Kotlin supports both styles, Java only allows use-site variance.
+****
 
-=== Case Study: DSL for SQL queries (using the Loan Pattern)
+Chameleon classes and the phantom type implementation are conceptually similar, and it depends on the problem at hand whether a class with all methods or a DTO with extension methods is preferable. If the DSL needs to be called from Java, keep in mind that only the chameleon approach preserves the DSL syntax. On the other hand, the phantom type approach doesn't have fixed APIs for the different states, only extension functions that operate on them, which means that new functionality can be added more easily than with the other techniques.
 
-So far, all examples used a builder pattern syntax. This doesn't have to be the case. A DSL using the loan pattern (((Loan Pattern))) could look like this:
+=== Case Study: DSL for SQL queries (using the Loan Pattern) (((Loan Pattern)))
+
+So far, all examples have used a Builder Pattern syntax. This doesn't have to be the case. A DSL that uses the Loan Pattern style might look like this:
 
 [source,kotlin]
 ----
@@ -459,15 +463,15 @@ val queryGroupBy = SELECT{
 }.build()
 ----
 
-This looks quite different from the builder pattern syntax, and it is debatable whether this style looks better for this particular use case. It might be better suited in cases which need deeper nesting, or which require more complex operations in the trailing lambda bodies.
+This looks quite different from the Builder pattern syntax, and it is debatable whether this style looks better for this particular use case. It may be better suited for cases that require deeper nesting or more complex operations in the trailing lambda bodies.
 
-One difference to the builder example is that `JOIN` is now nested, which seems more natural here. The lambda bodies give more freedom to use other DSL techniques, e.g. infix functions like `AS`. Also, we still need `build()` methods, as it is not clear when we are done with constructing the query. In cases with only one exit state, the construction can be performed behind the scenes, as usual in loan pattern implementations.
+One difference from the builder example is that `JOIN` is now nested, which seems more natural here. The lambda bodies give more freedom to use other DSL techniques, such as infix functions like `AS`. Also, we still need `build()` methods, as it is not clear when we are done constructing the query. In cases with only one exit state, the construction can be done behind the scenes, as usual in Loan Pattern implementations.
 
-It should be noted that for a serious implementation the <<chapter-04_features.adoc#dslMarker,@DslMarker mechanism>> should be used, as the join clause is nested, but it isn't used in the following use cases for the sake of brevity.
+Note that for a serious implementation, the <<chapter-04_features.adoc#dslMarker,@DslMarker mechanism>> (((@DslMarker))) should be used, since the join clause is nested, but for the sake of brevity it won't be used in the following use cases.
 
 ==== The 'Separate Classes' Approach (Loan Pattern)
 
-Here is how an implementation using separate classes could look like. We start out as usual with the DTO, using the same helper classes `NameWithAlias` and `TableJoin` as before:
+Here is what an implementation using separate classes might look like. We start as usual with the DTO, using the same helper classes `NameWithAlias` and `TableJoin` as before:
 
 [source,kotlin]
 ----
@@ -480,7 +484,7 @@ data class QueryDTO(
 )
 ----
 
-Now we need a starting point, in form of a `SELECT` function. It executes the given body (where the columns can be added) and hands the results over to the `SelectClause` class, which in turn has a method for proceeding to the `FromClause`:
+Now we need a starting point, in the form of a `SELECT` function. It executes the given body (where the columns can be added) and passes the results to the `SelectClause` class, which in turn has a method to proceed to the `FromClause`:
 
 [source,kotlin]
 ----
@@ -540,7 +544,7 @@ data class JoinClause(val queryDTO: QueryDTO, val tableName: NameWithAlias) {
 }
 ----
 
-This schema continues in the same style for the other clauses:
+This scheme continues in the same style for the other clauses:
 
 [source,kotlin]
 ----
@@ -560,13 +564,13 @@ data class GroupByClause(val queryDTO: QueryDTO) {
 }
 ----
 
-The `build(queryDTO)` function is identical to the builder-style version of the code.
+The `build(queryDTO)` function is identical to the Builder-style version of the code.
 
-Admittedly, the code is more challenging to read and write, but allows for a more flexible syntax inside the trailing lambda blocks, which feels more natural and structured compared to the builder pattern syntax for a wide range of problems. Using the same techniques as before, we can improve the code.
+Admittedly, the code is more difficult to read and write, but it allows for more flexible syntax within the trailing lambda blocks, which feels more natural and structured compared to the Builder Pattern syntax for a wide range of problems. Using the same techniques as before, we can improve the code.
 
 ==== The Chameleon Class Approach (Loan Pattern) (((Chameleon Class)))
 
-To use a chameleon class, first we have to turn the clause data classes in interfaces:
+To use a chameleon class, we must first turn the clause data classes into interfaces:
 
 [source,kotlin]
 ----
@@ -590,7 +594,7 @@ interface GroupByClause {
 }
 ----
 
-All the `...Body` classes remain unchanged, so we will skip them. The only missing part is the chameleon class itself:
+All the `...Body` classes remain unchanged, so we will skip them. The only thing missing is the Chameleon class itself:
 
 [source,kotlin]
 ----
@@ -646,7 +650,7 @@ data class QueryBuilder private constructor(val columns: List<String>) :
 
 ==== The Phantom Type Approach (Loan Pattern)
 
-Implementing the DSL using phantom types is very similar to the corresponding builder pattern code. Again, the `...Body` classes are unchanged, and are left off.
+Implementing the DSL using phantom types is very similar to the corresponding Builder Pattern code. Again, the `...Body` classes are unchanged, and are omitted.
 
 [source,kotlin]
 ----
@@ -707,7 +711,7 @@ private fun QueryDTO<CanBuild>.build(): String = with(StringBuilder()) {
 
 === Conclusion
 
-In this chapter we discussed how state transitions can be expressed using different techniques. The DSLs can use either an underlying builder pattern or a loan pattern syntax, and there are different approaches to implementing them. If unsure, I would recommend to start with the separate classes approach, especially when prototyping. When using a DTO as recommended, the code can be transformed easily into the chameleon or phantom type style later.
+In this chapter we discussed how state transitions can be expressed using different techniques. The DSLs can use either an underlying builder pattern or a loan pattern syntax, and there are different approaches to implementing them. When in doubt, I would recommend starting with the separate classes approach, especially when prototyping. If you use a DTO (as recommended), the code can easily be converted to the Chameleon or Phantom Type style later.
 
 ==== Preferable Use Cases
 
@@ -735,5 +739,5 @@ In this chapter we discussed how state transitions can be expressed using differ
 |* hard to read code
 * boilerplate code
 * the "separate classes" approach requires to copy data over
-* the "phantom type" approach is hard to use from Java client code
+* the "Phantom Type" approach is hard to use from Java client code
 |===
