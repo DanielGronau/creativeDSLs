@@ -359,36 +359,39 @@ The extension functions for the state transitions are straightforward:
 
 [source,kotlin]
 ----
-fun QueryDTO<SelectClause>.from(
-        table: String,
-        alias: String?
-    ): QueryDTO<FromClause> =
+fun QueryDTO<SelectClause>.FROM(
+    table: String,
+    alias: String?
+): QueryDTO<FromClause> =
     copy(tableName = NameWithAlias(table, alias)).cast()
 
-fun QueryDTO<FromClause>.join(
-        tableName: String,
-        alias: String?
-    ): QueryDTO<JoinClause> =
+fun QueryDTO<FromClause>.JOIN(
+    tableName: String,
+    alias: String?
+): QueryDTO<JoinClause> =
     copy(joinTableName = NameWithAlias(tableName, alias)).cast()
 
-fun QueryDTO<FromClause>.where(
-        condition: String): QueryDTO<WhereClause> =
+fun QueryDTO<FromClause>.WHERE(
+    condition: String
+): QueryDTO<WhereClause> =
     copy(whereConditions = whereConditions + condition).cast()
 
-fun QueryDTO<JoinClause>.on(
-        firstColumn: String,
-        secondColumn: String
-    ): QueryDTO<FromClause> =
+fun QueryDTO<JoinClause>.ON(
+    firstColumn: String,
+    secondColumn: String
+): QueryDTO<FromClause> =
     copy(joinClauses = joinClauses +
         TableJoin(joinTableName, firstColumn, secondColumn)
     ).cast()
 
-fun QueryDTO<WhereClause>.and(
-        condition: String): QueryDTO<WhereClause> =
+fun QueryDTO<WhereClause>.AND(
+    condition: String
+): QueryDTO<WhereClause> =
     copy(whereConditions = whereConditions + condition)
 
-fun QueryDTO<CanGroupBy>.groupBy(
-        vararg groupByColumns: String): QueryDTO<GroupByClause> =
+fun QueryDTO<CanGroupBy>.GROUP_BY(
+    vararg groupByColumns: String
+): QueryDTO<GroupByClause> =
     copy(groupByColumns = groupByColumns.toList()).cast()
 
 fun QueryDTO<CanBuild>.build(): String = with(StringBuilder()) {
@@ -499,7 +502,10 @@ class SelectBody {
 class SelectClause(val queryDTO: QueryDTO) {
     fun FROM(body: FromBody.() -> Unit) =
         FromBody().apply(body).let{
-            FromClause(queryDTO.copy(tableName = it.tableName, joinClauses = it.joinClauses))
+            FromClause(queryDTO.copy(
+                tableName = it.tableName,
+                joinClauses = it.joinClauses)
+            )
         }
 }
 ----

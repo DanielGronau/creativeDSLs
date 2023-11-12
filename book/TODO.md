@@ -66,6 +66,8 @@ https://www.deepl.com/write#en
 
 - check all quotes
 - check code is running
+- check code formatting is okay in PDF and EPUB
+- add links from inlined code to the sample project
 - check links are working
 - check index has unique spelling
 

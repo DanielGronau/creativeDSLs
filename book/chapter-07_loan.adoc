@@ -201,7 +201,7 @@ class HttpRequestBuilder(var uri: URI) {
 }
 ----
 
-Retrofitting HttpRequestBuilder with a Loan Pattern DSL proved to be a relatively simple task, but the resulting DSL is comfortable and idiomatic. By customizing existing libraries in this way, especially those written in Java, it becomes possible to better meet the needs of users and integrate them more seamlessly into the Kotlin ecosystem. The end result is often a more natural and intuitive experience for developers.
+Retrofitting HttpRequestBuilder with a Loan Pattern DSL proved to be a relatively simple task, but the resulting DSL is comfortable and idiomatic. By customizing existing libraries in this way, especially those written in Java, it becomes possible to better meet the needs of users and integrate them more seamlessly into the Kotlin ecosystem.
 
 === Case Study: HttpRequest with AutoDSL (((AutoDSL)))
 

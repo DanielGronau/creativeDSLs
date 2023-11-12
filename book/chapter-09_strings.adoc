@@ -207,7 +207,7 @@ An `Element` contains a chemical symbol, like `"H"` (hydrogen) or `"Ba"` (barium
 
 A `Molecule` is a collection of elements or groups (which we subsume under a `Part` interface), and can also have a coefficient in front of it. An equation consists of two sides and either an arrow `-{zwsp}>` or - in case of reversible reactions - a double arrow `<{zwsp}-{zwsp}>` in the middle. Both sides consist of either a single molecule or a "sum" of molecules.
 
-The code and overwrites the `toString()` methods in order to give the output in chemical notation. Note that lists were used instead of varargs, because data classes don't allow varargs in their primary constructor.
+The code overwrites the `toString()` methods in order to give the output in chemical notation. Note that lists were used instead of varargs, because data classes don't allow varargs in their primary constructor.
 
 This diagram summarizes the structure of our model classes:
 

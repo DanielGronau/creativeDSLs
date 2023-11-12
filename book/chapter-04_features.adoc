@@ -4,7 +4,7 @@
 > I suppose it is tempting, if the only tool you have is a hammer, to treat everything as if it were a nail.
 -- Abraham Maslow, Toward a Psychology of Being
 
-Kotlin is a modern and beautiful programming language that offers several key features not found in Java.Here are some of the most notable features that set Kotlin apart:
+Kotlin is a modern and beautiful programming language that offers several key features not found in Java. Here are some of the most notable features that set Kotlin apart:
 
 * *Null-Safe Type System:* Kotlin's null-safety feature is a major improvement over Java, where null values can cause null pointer exceptions. This feature ensures that a variable cannot be null unless explicitly declared as such, reducing the risk of runtime errors.
 * *Concise Syntax:* Kotlin's syntax is designed to be as concise as possible, reducing the amount of boilerplate code that developers need to write. Optional semicolons, operator overloading, and expression body functions are just a few examples of the syntactic sugar that not only makes Kotlin code easier to read and maintain, but also helps you write expressive DSLs.
@@ -12,7 +12,7 @@ Kotlin is a modern and beautiful programming language that offers several key fe
 * *Functional Programming Features:* Kotlin also supports functional programming, including top-level and local functions, as well as trailing lambda syntax.
 * *Multiplatform Support:* Kotlin can be compiled to run on multiple platforms, including the JVM, JavaScript, and as a native application
 
-In addition, Kotlin has excellent interoperability with Java,(((Java Interoperability)))(((Interoperability))), making it easy to call Java code from Kotlin and vice versa. Kotlin also includes several annotations that make it easier to call Kotlin code from Java, ensuring that the two languages can work together seamlessly.
+In addition, Kotlin has excellent interoperability with Java(((Java Interoperability)))(((Interoperability))), making it easy to call Java code from Kotlin and vice versa. Kotlin also includes several annotations that make it easier to call Kotlin code from Java, ensuring that the two languages can work together seamlessly.
 
 As mentioned in the preface, this book assumes that the reader has a basic knowledge of Kotlin. However, DSLs often use little-known language features, or they use some features in a different way than ordinary code. Sometimes even the users of the DSL may not be aware of the kind of "machinery" that makes it work.
 
@@ -23,9 +23,9 @@ This chapter gives a brief overview of language features that may be relevant to
 
 Kotlin allows almost arbitrary identifiers as long as they are enclosed in backticks. The main reason for introducing this feature was to allow the use of identifiers that are keywords in Kotlin but not in Java, such as `fun` or `when`. For DSLs, we can use them when we need descriptive identifiers that don't follow the usual syntactic rules.
 
-Backtick identifiers start and end with a backtick `{backtick}` - these are not part of the identifier, but just delimiters - and can contain almost all characters. A typical use case for backticks is DSLs for test libraries. While Java limits you to underscores and camel case, Kotlin allows very descriptive names for test functions by using the backtick syntax:
+Backtick identifiers start and end with a backtick `{backtick}` and can contain almost any character. Note that the backticks themselves are not part of the identifier, just delimiters. A typical use case for backticks are DSLs for test libraries. While Java limits you to underscores and camel case, Kotlin allows very descriptive names for test functions by using the backtick syntax:
 
-[source,kotlin]
+[source]
 ----
 fun `check that the slithy toves gyre and gimble in the wabe`() {
    ...
@@ -109,12 +109,12 @@ val agedPerson = person.copy(age = person.age + 1)
 
 In the `copy()` method, the values of the current object are set as default values of the new instance, and thanks to the named argument feature you can pick just the arguments which should be changed, and leave all others untouched.
 
-(((Lenses)))
+(((Lenses))) (((Optics))) (((Arrow Optics)))
 [TIP]
 ====
 While the `copy()` method is convenient when working with immutable data classes, it doesn't scale well for nested data classes: Imagine you need a copy of a company, with the email of the address of the CEO changed. That means you need nested `copy()` calls as well, going down level by level. This is lengthy, hard to read and error-prone.
 
-In functional programming, this problem is often solved with an "optics" package, containing "lenses" and similar abstractions, which allow to easily compose copy operations for different nesting levels. If you want to learn more about this topic, I would suggest to check out https://arrow-kt.io/learn/immutable-data/intro[Arrow Optics](((Arrow-KT))).
+In functional programming, this problem is often solved with an "optics" package, which contains lenses and similar abstractions that allow to easily compose copy operations for different nesting levels. If you want to learn more about this topic, I suggest you have a look at https://arrow-kt.io/learn/immutable-data/intro[Arrow Optics](((Arrow-KT))).
 ====
 
 === Trailing Lambda Arguments (((Trailing Lambda)))
@@ -161,7 +161,7 @@ html {
 
 Varargs (from "variable arguments") are a useful feature in both Java and Kotlin, allowing methods to take a variable number of arguments. However, Kotlin has made several improvements to varargs that make them safer and more convenient to use.
 
-One of the most important improvements in Kotlin is that the syntax for varargs is now unambiguous. In Java, it was sometimes difficult to tell whether an array was intended to be a single argument to a vararg, or whether its elements should be used as individual arguments. Kotlin addresses this problem by introducing the unary "spread operator" `*`(((Spread Operator))), which indicates that the elements of an array (rather than not the array itself) should be used as arguments to a vararg.
+One of the most important improvements in Kotlin is that the syntax for varargs is now unambiguous. In Java, it was sometimes difficult to tell whether an array was intended to be a single argument to a vararg, or whether its elements should be used as individual arguments. Kotlin addresses this problem by introducing the unary "spread operator" `*`(((Spread Operator))), which indicates that the elements of an array (rather than the array itself) should be used as arguments to a vararg.
 
 In addition, Kotlin allows more flexible use of varargs. You can freely combine single-value arguments with elements of spread arrays:
 
@@ -270,11 +270,9 @@ On the JVM where Kotlin is typically compiled, extension functions are implement
 List<Integer> digits = IntUtilsKt.digits(1729, 10); // [1, 7, 2, 9]
 ----
 
-Given the usefulness of extension methods, it is not surprising that there are libraries that provide them in Java as well, such as http://manifold.systems/docs.html#the-extension-manifold[Manifold], https://projectlombok.org/features/experimental/ExtensionMethod[Project Lombok], or https://github.com/rogerkeays/fluent[Fluent].
-
 .History of Extension Functions
 ****
-Extension methods, originally introduced in C#, found their way into Kotlin as "extension functions", specifically with the goal of seamlessly integrating Java classes into the Kotlin ecosystem. This approach was chosen over Scala's _implicit conversion_ approach, which, while more powerful, was considered more complex to understand and manage. The benefits of extension methods became so apparent that they were also introduced in Scala 3. It is safe to say that extension methods are an important and successful advancement in modern object-oriented programming.
+Extension methods, originally introduced in C#, found their way into Kotlin as "extension functions", specifically with the goal of seamlessly integrating Java classes into the Kotlin ecosystem. This approach was chosen over Scala's _implicit conversion_ approach, which, while more powerful, was considered more complex to understand and manage. The benefits of extension methods became so apparent that they were also introduced in Scala 3. Plain Java doesn't provide support for extension methods, but there are Java libraries that do, such as http://manifold.systems/docs.html#the-extension-manifold[Manifold], https://projectlombok.org/features/experimental/ExtensionMethod[Project Lombok], or https://github.com/rogerkeays/fluent[Fluent]. It is safe to say that extension methods are an important and successful advancement in modern object-oriented programming.
 ****
 
 [#typeNarrowing]
@@ -433,7 +431,7 @@ If you don't want the normal binary form, but only the assignment, you can defin
 | `a %= b` | `fun A.remAssign(b: B): Unit`|
 |===
 
-Again, `a` must be mutable, `B` must be a subtype of `A`. Also, the return type of the function must be `Unit'. Having both the binary and assignment versions of an operator in scope results in an ambiguity error.
+Again, `a` must be mutable, `B` must be a subtype of `A`. Also, the return type of the function must be `Unit`. Having both the binary and assignment versions of an operator in scope results in an ambiguity error.
 
 ==== Range (((Range Operator))) and In Operators (((In Operator)))
 
@@ -482,7 +480,7 @@ Note that the index access operator `[]` requires at least one element, while th
 
 While overloaded operators can be a powerful tool in DSL design, it is important to use them judiciously and with care. While there are many potential applications for overloaded operators, it is important to ensure that there is a clear association or analogy between the operation being performed and the operator chosen.
 
-For example, using the `/` operator to concatenate file paths makes sense because it is a common path separator. Similarly, using the unary `+' operator to "add" a single value within a trailing lambda block has become a standard convention. And using `..` instead of `:` may be acceptable because of its visual similarity.
+For example, using the `/` operator to concatenate file paths makes sense because it is a common path separator. Similarly, using the unary `+` operator to "add" a single value within a trailing lambda block has become a standard convention. And using `..` instead of `:` may be acceptable because of its visual similarity.
 
 At some point, however, overloading operators can become confusing or even counterproductive. For example, using the `!` operator to invert a matrix may be a stretch since it has no clear association with matrix inversion. In general, it is important to avoid being too clever when designing a DSL, as users may not have the same associations or understanding of certain symbols or operators.
 
@@ -788,7 +786,7 @@ fun String?.isNullOrEmpty(): Boolean {
 
 fun bar(x: String?) {
     if (!x.isNullOrEmpty()) {
-        println("length of '$x' is ${x.length}") // smartcast
+        println("length of '$x' is ${x.length}") // smart cast
     }
 }
 ----
@@ -817,12 +815,15 @@ data class Phone(val number: String): ContactData() {
 }
 
 fun sendMessage(cd: ContactData, msg: String) =
-    if (cd.isEmail()) cd.send(msg) else cd.call(msg) // smartcasts
+    if (cd.isEmail()) cd.send(msg) else cd.call(msg) // smart casts
 ----
 
 At the moment, contracts are still quite limited, but in some situations you can use them to protect the DSL user from boilerplate checks, casts, or explicit specification of generics.
 
-You can opt in to experimental contracts using the compiler argument `-Xopt-in=kotlin.contracts.ExperimentalContracts` or the annotation `@OptIn(ExperimentalContracts::class)`.
+You can opt in to experimental contracts using
+
+* the compiler argument `-Xopt-in=kotlin.contracts.ExperimentalContracts` or
+* the annotation `@OptIn(ExperimentalContracts::class)`.
 
 === Conclusion
 
