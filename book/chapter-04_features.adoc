@@ -585,6 +585,37 @@ You can't add amounts of different currencies together, because the definition o
 *Phantom Types* are a type-level programming technique in which a type is used to encode additional information about the data it represents without actually storing any data at runtime. Phantom types are types that have no values, but are used only for their type-level information. They can be used to enforce stronger type constraints, such as ensuring that only certain operations are performed on certain types of data. This can help reduce runtime errors and improve the safety of the program.
 ****
 
+==== Resolving Type Erasure Conflicts
+
+Because of type erasure, two different generic functions can end up with the same signature in the JVM. Consider the following example:
+
+[source,kotlin]
+----
+// DOES NOT COMPILE
+
+fun average(list: List<Int>): Double =
+    list.sum().toDouble() / list.size
+
+fun average(list: List<Double>): Double =
+    list.sum() / list.size
+----
+
+The compiler complains "The following declarations have the same JVM signature (average(Ljava/util/List;)D)". In Java, the only solution is to rename the functions. In Kotlin, we can keep the same names in the code, and just rename them in the JVM:
+
+[source,kotlin]
+----
+@JvmName("averageInt")
+fun average(list: List<Int>): Double =
+    list.sum().toDouble() / list.size
+
+@JvmName("averageDouble")
+fun average(list: List<Double>): Double =
+    list.sum() / list.size
+
+println(average(listOf(1, 2, 3))) // 2.0
+println(average(listOf(7.0, 8.0, 9.0))) // 8.0
+----
+
 [#reifiedGenerics]
 ==== Reified Generics (((Generics))) (((Reified Generics)))
 
