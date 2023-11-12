@@ -70,13 +70,12 @@ private fun getPieces(piecesStr: String) = piecesStr
     }
     .split("/")
     .reversed()
-    .mapIndexed { rowIndex, row ->
+    .flatMapIndexed { rowIndex, row ->
         row.mapIndexedNotNull { colIndex, ch ->
             values().find { it.symbol == ch.toString() }
                 ?.let { "${'a' + colIndex}${rowIndex + 1}" to it }
         }
     }
-    .flatten()
     .toMap()
 
 private fun getToMove(toMoveStr: String) = when (toMoveStr) {

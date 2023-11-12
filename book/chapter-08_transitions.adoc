@@ -673,7 +673,7 @@ data class QueryDTO<out State>(
 )
 
 @Suppress("UNCHECKED_CAST")
-private fun <S : State> QueryDTO<*>.cast(): QueryDTO<S> = this as QueryDTO<S>
+private fun <S: State> QueryDTO<*>.cast(): QueryDTO<S> = this as QueryDTO<S>
 
 fun SELECT(body: SelectBody.() -> Unit): QueryDTO<SelectClause> =
     QueryDTO(columns = SelectBody().apply(body).columns)

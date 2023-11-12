@@ -94,7 +94,7 @@ Finally, be sure to follow best practices when implementing your DSL. This inclu
 
 Implementing a DSL is often different from the usual programming tasks, and therefore comes with its own challenges and pitfalls. The following are some of the issues that deserve special attention.
 
-==== Name Clashes (((Name Clashes)))
+==== Name Collisions (((Name Collision)))
 
 A good DSL can be used extensively in a codebase, but this can increase the risk of naming conflicts, especially if the DSL adds extension methods to classes like `Int` or `String` that are used frequently. One way to mitigate this risk is to try to limit the scope of your DSL functions by putting them into DSL-specific objects or classes whenever possible. It's also a good idea to consider the potential for collisions when naming your functions, operators, etc., so that they are less likely to cause conflicts.
 

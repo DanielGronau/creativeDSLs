@@ -1,6 +1,6 @@
 package creativeDSLs.chapter_09.manual
 
-import creativeDSLs.chapter_11.*
+import creativeDSLs.chapter_09.*
 
 private val elements = setOf(
     "H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si",
@@ -15,45 +15,50 @@ private val elements = setOf(
 )
 
 sealed interface ParseResult<out T> {
-    infix fun or(that: () -> ParseResult<@UnsafeVariance T>): ParseResult<T>
-    fun <U> flatMap(body: (T, String) -> ParseResult<U>): ParseResult<U>
-    fun filter(cond: (T) -> Boolean): ParseResult<T>
-}
 
-class Failure<T> : ParseResult<T> {
-    override fun or(that: () -> ParseResult<T>): ParseResult<T> = that()
-    override fun <U> flatMap(body: (T, String) -> ParseResult<U>) = Failure<U>()
-    override fun filter(cond: (T) -> Boolean): ParseResult<T> = this
-    override fun toString() = "Failure"
-}
+    fun <U> map(body: (T) -> U): ParseResult<U> = when (this) {
+        is Success -> Success(body(value), remaining)
+        is Failure -> Failure
+    }
 
-data class Success<T>(val value: T, val remaining: String) : ParseResult<T> {
-    override fun or(that: () -> ParseResult<T>): ParseResult<T> = this
-    override fun <U> flatMap(body: (T, String) -> ParseResult<U>): ParseResult<U> =
-        body(value, remaining)
+    fun <U> flatMap(body: (T, String) -> ParseResult<U>): ParseResult<U> = when (this) {
+        is Success -> body(value, remaining)
+        is Failure -> Failure
+    }
 
-    override fun filter(cond: (T) -> Boolean): ParseResult<T> = when {
-        cond(value) -> this
-        else -> Failure()
+    fun filter(cond: (T) -> Boolean): ParseResult<T> = when {
+        this is Success && cond(value) -> this
+        else -> Failure
     }
 }
 
-fun <T> successWhen(cond: Boolean, body: () -> Pair<T, String>): ParseResult<T> =
+data class Success<T>(
+    val value: T,
+    val remaining: String
+) : ParseResult<T>
+
+data object Failure : ParseResult<Nothing>
+
+infix fun <T> ParseResult<T>.or(that: () -> ParseResult<T>): ParseResult<T> =
+    when (this) {
+        is Success -> this
+        is Failure -> that()
+    }
+
+fun <T> givenThat(cond: Boolean, body: () -> Success<T>): ParseResult<T> =
     when {
-        cond -> body().run { Success(first, second) }
-        else -> Failure()
+        cond -> body()
+        else -> Failure
     }
 
-fun <T> ParseResult<T>.successOrNull(): Success<T>? = when (this) {
-    is Success -> this
-    else -> null
-}
+fun <T> ParseResult<T>.orNull(): Success<T>? = this as? Success<T>
 
 fun <T> sequence(start: ParseResult<T>, step: (String) -> ParseResult<T>): ParseResult<List<T>> =
     Success(
-        generateSequence(start.successOrNull()) { last ->
-            step(last.remaining).successOrNull()
-        }.toList(), ""
+        value = generateSequence(start.orNull()) { last ->
+            step(last.remaining).orNull()
+        }.toList(),
+        remaining = ""
     ).filter {
         it.isNotEmpty()
     }.flatMap { list, _ ->
@@ -62,7 +67,7 @@ fun <T> sequence(start: ParseResult<T>, step: (String) -> ParseResult<T>): Parse
 
 fun equation(string: String): Equation? =
     parseEquation(string.replace(" ", ""))
-        .successOrNull()
+        .orNull()
         ?.let { result ->
             result.value.takeIf { result.remaining.isEmpty() }
         }
@@ -71,7 +76,7 @@ fun parseEquation(string: String): ParseResult<Equation> =
     parseSide(string).flatMap { lhs, s1 ->
         parseArrow(s1).flatMap { arrow, s2 ->
             parseSide(s2).flatMap { rhs, s3 ->
-                Success(Equation(lhs, rhs, arrow == "<->"), s3)
+                Success(Equation(lhs, rhs, arrow), s3)
             }
         }
     }
@@ -93,7 +98,7 @@ fun parseMolecule(string: String): ParseResult<Molecule> =
         }
 
 fun parsePart(string: String): ParseResult<Part> =
-    Failure<Part>() or { parseElement(string) } or { parseGroup(string) }
+    parseElement(string) or { parseGroup(string) }
 
 
 fun parseElement(string: String): ParseResult<Element> =
@@ -108,8 +113,8 @@ fun parseElement(string: String): ParseResult<Element> =
     }
 
 fun findElement(string: String, charCount: Int): ParseResult<String> =
-    successWhen(elements.contains("$string!!".take(charCount))) {
-        "$string!!".take(charCount) to string.drop(charCount)
+    givenThat(elements.contains("$string##".take(charCount))) {
+        Success("$string##".take(charCount), string.drop(charCount))
     }
 
 fun parseGroup(string: String): ParseResult<Group> =
@@ -128,20 +133,19 @@ fun parseGroup(string: String): ParseResult<Group> =
         }
     }
 
-fun parseArrow(string: String): ParseResult<String> =
-    parsePattern(string, "<->") or
-            { parsePattern(string, "->") }
+fun parseArrow(string: String): ParseResult<Arrow> =
+    parsePattern(string, "<->").map { Arrow.REVERSIBLE } or
+            { parsePattern(string, "->").map { Arrow.IRREVERSIBLE } }
 
 fun parsePattern(string: String, pattern: String): ParseResult<String> =
-    successWhen(string.startsWith(pattern)) {
-        pattern to string.drop(pattern.length)
+    givenThat(string.startsWith(pattern)) {
+        Success(pattern, string.drop(pattern.length))
     }
 
 fun parseNum(string: String): ParseResult<Int> =
     string.takeWhile { it.isDigit() }.length.let { digitCount ->
-        successWhen(digitCount > 0) {
-            string.take(digitCount).toInt() to
-                    string.drop(digitCount)
+        givenThat(digitCount > 0) {
+            Success(string.take(digitCount).toInt(), string.drop(digitCount))
         }
     }
 

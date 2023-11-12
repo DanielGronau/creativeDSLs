@@ -8,8 +8,7 @@ import com.github.h0tk3y.betterParse.lexer.literalToken
 import com.github.h0tk3y.betterParse.lexer.regexToken
 import com.github.h0tk3y.betterParse.lexer.token
 import com.github.h0tk3y.betterParse.parser.Parser
-
-import creativeDSLs.chapter_11.*
+import creativeDSLs.chapter_09.*
 
 private val elements = setOf(
     "H", "He", "Li", "Be", "B", "C", "N", "O", "F", "Ne", "Na", "Mg", "Al", "Si",
@@ -25,8 +24,8 @@ private val elements = setOf(
 
 val equationGrammar = object : Grammar<Equation>() {
     val ws by regexToken("\\s+", ignore = true)
-    val reactsTo by literalToken("->")
-    val reversibleTo by literalToken("<->")
+    val irreversible by literalToken("->")
+    val reversible by literalToken("<->")
     val plus by literalToken("+")
     val leftPar by literalToken("(")
     val rightPar by literalToken(")")
@@ -39,8 +38,8 @@ val equationGrammar = object : Grammar<Equation>() {
         }
     }
 
-    val arrow: Parser<Boolean> by (reactsTo asJust false) or
-            (reversibleTo asJust true)
+    val arrow: Parser<Arrow> by (irreversible asJust Arrow.IRREVERSIBLE) or
+            (reversible asJust Arrow.REVERSIBLE)
     val number: Parser<Int> by (num use { text.toInt() })
     val element: Parser<Element> by (symbol and optional(number))
         .map { (s, n) -> Element(s.text, n ?: 1) }

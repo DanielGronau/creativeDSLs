@@ -1,5 +1,6 @@
 package creativeDSLs.chapter_11.equationDSL
 
+import creativeDSLs.chapter_09.*
 import creativeDSLs.chapter_11.*
 
 operator fun Element.get(subscript: Int) =
@@ -60,25 +61,25 @@ operator fun Molecule.plus(that: Part) = listOf(this, Molecule(1,listOf(that)))
 operator fun Part.plus(that: Molecule) = listOf(Molecule(1,listOf(this)), that)
 operator fun List<Molecule>.plus(that: Part) = this + Molecule( 1, listOf( that))
 
-infix fun List<Molecule>.reactsTo(that: List<Molecule>) = Equation(this, that, false)
-infix fun Molecule.reactsTo(that: List<Molecule>) = Equation(listOf(this), that, false)
-infix fun List<Molecule>.reactsTo(that: Molecule) = Equation(this, listOf(that), false)
-infix fun Molecule.reactsTo(that: Molecule) = Equation(listOf(this), listOf(that), false)
-infix fun Part.reactsTo(that: List<Molecule>) = Equation(listOf(Molecule(1,listOf(this))), that, false)
-infix fun List<Molecule>.reactsTo(that: Part) = Equation(this, listOf(Molecule(1, listOf(that))), false)
-infix fun Part.reactsTo(that: Part) = Equation(listOf(Molecule(1,listOf(this))), listOf(Molecule(1,listOf(that))), false)
-infix fun Part.reactsTo(that: Molecule) = Equation(listOf(Molecule(1,listOf(this))), listOf(that), false)
-infix fun Molecule.reactsTo(that: Part) = Equation(listOf(this), listOf(Molecule(1,listOf(that))), false)
+infix fun List<Molecule>.reactsTo(that: List<Molecule>) = Equation(this, that, Arrow.IRREVERSIBLE)
+infix fun Molecule.reactsTo(that: List<Molecule>) = Equation(listOf(this), that, creativeDSLs.chapter_09.Arrow.IRREVERSIBLE)
+infix fun List<Molecule>.reactsTo(that: Molecule) = Equation(this, listOf(that), Arrow.IRREVERSIBLE)
+infix fun Molecule.reactsTo(that: Molecule) = Equation(listOf(this), listOf(that), creativeDSLs.chapter_09.Arrow.IRREVERSIBLE)
+infix fun Part.reactsTo(that: List<Molecule>) = Equation(listOf(Molecule(1,listOf(this))), that, creativeDSLs.chapter_09.Arrow.IRREVERSIBLE)
+infix fun List<Molecule>.reactsTo(that: Part) = Equation(this, listOf(Molecule(1, listOf(that))), Arrow.IRREVERSIBLE)
+infix fun Part.reactsTo(that: Part) = Equation(listOf(Molecule(1,listOf(this))), listOf(Molecule(1,listOf(that))), creativeDSLs.chapter_09.Arrow.IRREVERSIBLE)
+infix fun Part.reactsTo(that: Molecule) = Equation(listOf(Molecule(1,listOf(this))), listOf(that), creativeDSLs.chapter_09.Arrow.IRREVERSIBLE)
+infix fun Molecule.reactsTo(that: Part) = Equation(listOf(this), listOf(Molecule(1,listOf(that))), creativeDSLs.chapter_09.Arrow.IRREVERSIBLE)
 
-infix fun List<Molecule>.reversibleTo(that: List<Molecule>) = Equation(this, that, false)
-infix fun Molecule.reversibleTo(that: List<Molecule>) = Equation(listOf(this), that, false)
-infix fun List<Molecule>.reversibleTo(that: Molecule) = Equation(this, listOf(that), false)
-infix fun Molecule.reversibleTo(that: Molecule) = Equation(listOf(this), listOf(that), false)
-infix fun Part.reversibleTo(that: List<Molecule>) = Equation(listOf(Molecule(1,listOf(this))), that, false)
-infix fun List<Molecule>.reversibleTo(that: Part) = Equation(this, listOf(Molecule(1,listOf(that))), false)
-infix fun Part.reversibleTo(that: Part) = Equation(listOf(Molecule(1,listOf(this))), listOf(Molecule(1,listOf(that))), false)
-infix fun Part.reversibleTo(that: Molecule) = Equation(listOf(Molecule(1, listOf(this))), listOf(that), false)
-infix fun Molecule.reversibleTo(that: Part) = Equation(listOf(this), listOf(Molecule(1, listOf(that))), false)
+infix fun List<Molecule>.reversibleTo(that: List<Molecule>) = Equation(this, that, Arrow.REVERSIBLE)
+infix fun Molecule.reversibleTo(that: List<Molecule>) = Equation(listOf(this), that, creativeDSLs.chapter_09.Arrow.REVERSIBLE)
+infix fun List<Molecule>.reversibleTo(that: Molecule) = Equation(this, listOf(that), Arrow.REVERSIBLE)
+infix fun Molecule.reversibleTo(that: Molecule) = Equation(listOf(this), listOf(that), creativeDSLs.chapter_09.Arrow.REVERSIBLE)
+infix fun Part.reversibleTo(that: List<Molecule>) = Equation(listOf(Molecule(1,listOf(this))), that, creativeDSLs.chapter_09.Arrow.REVERSIBLE)
+infix fun List<Molecule>.reversibleTo(that: Part) = Equation(this, listOf(Molecule(1,listOf(that))), Arrow.REVERSIBLE)
+infix fun Part.reversibleTo(that: Part) = Equation(listOf(Molecule(1,listOf(this))), listOf(Molecule(1,listOf(that))), creativeDSLs.chapter_09.Arrow.REVERSIBLE)
+infix fun Part.reversibleTo(that: Molecule) = Equation(listOf(Molecule(1, listOf(this))), listOf(that), creativeDSLs.chapter_09.Arrow.REVERSIBLE)
+infix fun Molecule.reversibleTo(that: Part) = Equation(listOf(this), listOf(Molecule(1, listOf(that))), creativeDSLs.chapter_09.Arrow.REVERSIBLE)
 
 fun main() {
     val equation2 = 3 * (Ba - (O..H)[2]) + 2 * (H[3] - P - O[4]) reactsTo

@@ -30,7 +30,7 @@ TODO:
   - Token based, e.g. turtle graphics
 - find a good Kotlin reflection book to refer to -> 8.3. TODO
 - Are the conclusion sections okay?
-- Quote before every chapter?
+- bibliography
 
 ## Research
 
@@ -59,3 +59,18 @@ https://languagetool.org/de
 https://www.wordtune.com/
 
 https://chat.openai.com/
+
+https://www.deepl.com/write#en
+
+## Pre-Launch Check List
+
+- check all quotes
+- check code is running
+- check links are working
+- check index has unique spelling
+
+## Launch
+- YouTube series
+- Website relaunch
+- Own book website?
+- Sample project on github?

@@ -3,21 +3,21 @@
 > Words are, of course, the most powerful drug used by mankind.
 -- Rudyard Kipling
 
-In some cases, the host language doesn't allow to create the DSL syntax you would like. A string-parsing DSL gives you the freedom to write basically anything. One topic where traditional DSL categories are particularly bad is giving the user some leeway, e.g. concerning upper and lower case syntax, order of operations or the use of special characters like symbols. String-based DSLs can easily incorporate such leniency.
+In some cases, the host language doesn't allow you to create the DSL syntax you want. A string parsing DSL gives you the freedom to write basically anything. One area where other DSL categories are particularly bad is in giving the user some leeway, for example regarding upper- and lower-case syntax, the order of operations, or the use of special characters such as symbols. String-based DSLs can easily incorporate such leniency.
 
-The downside is that these DSLs are hidden from the scrutiny of the compiler: There are no compile time checks, no hints for auto-completion etc., which means the user has to rely on the documentation. Another issue is writing the parser: Dissecting a string is usually more involved than collecting the data in other DSL types, although it is also no rocket science.
+One drawback is that these DSLs are hidden from the scrutiny of the compiler: There are no compile-time checks, no auto-completion hints, etc., so the user has to rely on the documentation. Another issue is writing the parser, which is usually more involved than collecting the data in other DSL types, although I hope this chapter convinces you that it is nothing to be afraid of either.
 
 (((Regular Expressions)))
 
-WARNING: Kotlin supports - like many languages - regular expressions, which can be seen as a kind of mini-parser. For small, isolated use cases they can be very convenient. However, employing them for larger problems can lead to code which is very hard to maintain, because this approach doesn't scale well. In my opinion, using regular expressions as full-blown "parsers" may be acceptable for prototypes and test environments, but not in production code.
+WARNING: Kotlin, like many languages, supports regular expressions, which can be thought of as a kind of mini-parser. For small, isolated use cases, they can be very convenient. However, using them for larger problems can result in code that is very hard to maintain because this approach doesn't scale well. In my opinion, using regular expressions as full-blown "parsers" may be acceptable for prototypes and test environments, but not in production code.
 
 === Case Study: Forsyth–Edwards Notation
 
-Before we dive into complicated problems requiring parsers, we will start with an easy example, where we need only a few string functions. If you don't play chess, you probably never heard of the https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation[Forsyth–Edwards Notation] (FEN):
+Before we dive into complicated problems requiring parsers, we will start with a simple example where we only need a few string functions. If you don't play chess, you've probably never heard of the https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation[Forsyth–Edwards Notation] (FEN):
 
 .Forsyth–Edwards Notation
 ****
-The Forsyth–Edwards Notation is a standard notation for describing the current position of pieces on a chessboard. It consists of a string of characters that represent the placement of the pieces, which are organized by rank and file. In FEN, uppercase letters are used to represent white pieces, and lowercase letters are used to represent black pieces. The digits 1-8 are used to represent empty squares, and a forward slash is used to separate ranks. FEN also includes information about:
+The Forsyth-Edwards Notation is a standard notation for describing the current position of pieces on a chessboard. It consists of a string of characters representing the placement of pieces, organized by rank. In FEN, uppercase letters are used to represent white pieces and lowercase letters are used to represent black pieces. The numbers 1 through 8 are used to represent successive empty squares, and a slash is used to separate ranks. FEN also contains information about:
 
 * which player has the next move
 * castling availability
@@ -26,9 +26,9 @@ The Forsyth–Edwards Notation is a standard notation for describing the current
 * number of moves played so far
 ****
 
-Rows are separated by `/` and pieces have the usual names used in chess notation (like "Q" for a queen), plus "P" for pawn. To keep the string short, empty squares are written with a kind of run-length encoding, e.g. 3 empty fields are represented by a 3. The castling rights are given by "k" for king-side and "q" for queen-side, again upper-case for white and lower-case for black. If nobody can castle, a `-` is written instead. The en-passant field contains either a square like `b3` or again a `-`.
+Rows are separated by `/` and pieces have the usual names used in chess notation (such as `Q` for a queen), plus `P` for a pawn. To keep the string short, empty squares are written with a kind of run-length encoding, e.g. three consecutive empty squares are represented by a `3`. Castling rights are indicated by `k` for king's side and `q` for queen's side, again in upper case for white and lower case for black. If no one can castle, a `-` is written instead. The en-passant entry contains either a square like `b3` or another `-`.
 
-A FEN looks like this: `rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2`. If you put the rows one below the other, and expand the numbers to empty fields, you can "see" the board position:
+A FEN looks like this: `rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2`. If you put the rows one under the other and expand the numbers to empty spaces, you can "see" the board position:
 
 [source,text]
 ----
@@ -89,11 +89,11 @@ data class Position(
 }
 ----
 
-The class contains already a function for generating a FEN - this is not required, but it makes testing much easier.
+The class already contains a function to generate a FEN - this is not required, but it makes testing much easier.
 
-.Round-trip Tests
+.Round-trip Tests (((Round Trip Tests)))
 ****
-When you have code that transforms forth and back between different formats, it is convenient to write round-trip tests: You're providing test data for the "easier" format, transform it to the other one(s) and back, and compare it with the original. Comparing data in the same format is simpler and safer than comparing different ones - often just a string comparison is sufficient.
+If you have code that transforms back and forth between different formats, it is convenient to write round-trip tests: You provide test data for the "easier" format, transform it to the other(s) and back, and compare it to the original. Comparing data in the same format is easier and safer than comparing data in different formats - often a simple string comparison is sufficient.
 ****
 
 Now we can write the DSL function for parsing a FEN:
@@ -119,13 +119,12 @@ private fun getPieces(piecesStr: String) = piecesStr
     }
     .split("/")
     .reversed()
-    .mapIndexed { rowIndex, row ->
+    .flatMapIndexed { rowIndex, row ->
         row.mapIndexedNotNull { colIndex, ch ->
             values().find { it.symbol == ch.toString() }
                  ?.let { "${'a' + colIndex}${rowIndex + 1}" to it }
         }
     }
-    .flatten()
     .toMap()
 
 private fun getToMove(toMoveStr: String) = when (toMoveStr) {
@@ -146,54 +145,71 @@ private fun getCastling(castlingStr: String) = castlingStr
     }
 ----
 
-The `readFEN()` function calls some helper functions for the different parts, and assembles the `Position` class. Most of the sanity checks were omitted for better readability. In easy cases like this, it is probably overkill to write a parser or to use a parser library. The hardest part was to read the piece positions correctly, and this took just a few lines.
+The `readFEN()` function calls some helper functions for the different parts, and assembles the `Position` class. Most of the sanity checks have been omitted for better readability. In simple cases like this, it is probably overkill to write a parser or use a parser library. The hardest part was to read the piece positions correctly, and that took only a few lines.
 
 [#chemicalEquationsAsString]
 === Case Study: Chemical Equations as Strings
 
-Writing a DSL for chemical equations is challenging using Kotlin syntax, because the concise notation doesn't naturally lend itself to be easily expressed using language features. That's why using the string parsing approach seems like a good fit. If you are curious how a hybrid DSL for chemicals could look like, you can skip ahead to <<chapter_11.adok#chemicalEquationsAsHybrid,Chapter 11 - Hybrid DSLs>>.
+Writing a DSL for chemical equations is challenging because the concise notation isn't easily portable into the more involved syntax of a host language, even one as flexible as Kotlin. That's why the string parsing approach seems like a good fit. If you are curious about what a hybrid DSL for chemical equations might look like, you can skip ahead to <<chapter-11_hybrid.adoc#chemicalEquationsAsHybrid,Chapter 11 - Hybrid DSLs>>.
 
-For our case study, we won't cover the full notation, e.g. we won't support writing ions or bonds. An example of a simple chemical equation in standard notation would be `3Ba(OH)~2~ + 2H~3~PO~4~ -> 6H~2~O + Ba~3~(PO~4~)~2~`. Of course, in scope of a DSL subscripts and special symbols are not very practical, so the target syntax would look more like `3Ba(OH)2 + 2H3PO4 -{zwsp}> 6H2O + Ba3(PO4)2`. To express such an equation, we use the following code:
+For our case study, we won't cover the full notation, e.g. we won't support writing ions or bonds. An example of a simple chemical equation in standard notation would be `3Ba(OH)~2~ + 2H~3~PO~4~ -> 6H~2~O + Ba~3~(PO~4~)~2~`. Of course, in the context of a DSL subscripts and special symbols are not very practical, so the target syntax would look more like `3Ba(OH)2 + 2H3PO4 -{zwsp}> 6H2O + Ba3(PO4)2`. To express such an equation, we use the following code:
 
 [source,kotlin]
 ----
 sealed interface Part
 
-data class Element(val symbol: String, val subscript: Int) : Part {
-    override fun toString() = when (subscript) {
-        1 -> symbol
-        else -> symbol + subscript
-    }
+data class Element(
+    val symbol: String,
+    val subscript: Int
+) : Part {
+    override fun toString() = symbol + subscript.oneAsEmpty()
 }
 
-data class Group(val parts: List<Part>, val subscript: Int) : Part {
-    override fun toString() = when (subscript) {
-        1 -> parts.joinToString("", "(", ")")
-        else -> parts.joinToString("", "(", ")") + subscript
-    }
+data class Group(
+    val parts: List<Part>,
+    val subscript: Int
+) : Part {
+    override fun toString() =
+        parts.joinToString("", "(", ")") +
+                subscript.oneAsEmpty()
 }
 
-data class Molecule(val coefficient: Int, val parts: List<Part>) {
-    override fun toString() = when (coefficient) {
-        1 -> parts.joinToString("")
-        else -> "$coefficient${parts.joinToString("")}"
-    }
+data class Molecule(
+    val coefficient: Int,
+    val parts: List<Part>
+) {
+    override fun toString() = coefficient.oneAsEmpty() +
+            parts.joinToString("")
 }
 
-data class Equation(val leftSide: List<Molecule>, val rightSide: List<Molecule>, val reversible: Boolean = false) {
-    override fun toString() = leftSide.joinToString(" + ") +
-            (if (reversible) " <-> " else " -> ") +
-            rightSide.joinToString(" + ")
+enum class Arrow(val symbol: String) {
+    IRREVERSIBLE("->"),
+    REVERSIBLE("<->")
 }
+
+data class Equation(
+    val leftSide: List<Molecule>,
+    val rightSide: List<Molecule>,
+    val arrow: Arrow
+) {
+    override fun toString() = listOf(
+        leftSide.joinToString(" + "),
+        arrow.symbol,
+        rightSide.joinToString(" + ")
+    ).joinToString(" ")
+}
+
+private fun Int.oneAsEmpty(): String =
+    takeIf { this > 1 }?.toString().orEmpty()
 ----
 
-An `Element` contains a chemical symbol, like `"H"` (hydrogen) or `"Ba"` (barium), and optionally a subscript, which is counting the number of atoms. A feature of the chemical notation is that you can also define groups like `"(OH)~2~"` in a molecule, which is why we need the `Group` class as well. A group can contain not only elements, but also other groups.
+An `Element` contains a chemical symbol, like `"H"` (hydrogen) or `"Ba"` (barium), and optionally a subscript that counts the number of atoms. A feature of the chemical notation is that you can also define groups like `"(OH)~2~"` in a molecule, which is why we need the `Group` class as well. A group can not only contain elements, but also other groups.
 
-A `Molecule` is a collection of elements or groups (which we subsume under a `Part` interface), and can also have a coefficient in front. An equation consists of two sides and either an arrow `-{zwsp}>` or - in case of reversible reactions - a double arrow `<{zwsp}-{zwsp}>` in the middle. Both sides consist either of a single molecule or a "sum" of molecules.
+A `Molecule` is a collection of elements or groups (which we subsume under a `Part` interface), and can also have a coefficient in front of it. An equation consists of two sides and either an arrow `-{zwsp}>` or - in case of reversible reactions - a double arrow `<{zwsp}-{zwsp}>` in the middle. Both sides consist of either a single molecule or a "sum" of molecules.
 
 The code and overwrites the `toString()` methods in order to give the output in chemical notation. Note that lists were used instead of varargs, because data classes don't allow varargs in their primary constructor.
 
-This chart summarizes the structure of our model classes:
+This diagram summarizes the structure of our model classes:
 
 [ditaa,"chemicalEquationAsString"]
 .Model for Chemical Equations
@@ -230,7 +246,7 @@ This chart summarizes the structure of our model classes:
 
 ....
 
-The equation mentioned above for making barium phosphate could be written like this:
+The above equation for making barium phosphate could be written as follows:
 
 [source,kotlin]
 ----
@@ -251,74 +267,72 @@ val bariumPhosphate = Molecule(1, listOf(Ba3, Group(listOf(P, O4), 2)))
 val equation = Equation(
     listOf(bariumHydroxide, phosphoricAcid),
     listOf(water, bariumPhosphate),
-    false)
+    Arrow.IRREVERSIBLE)
 
-println(equation)
-//3Ba(HO)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2
+println(equation) // 3Ba(HO)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2
 ----
 
-==== Writing a parser for Chemical Equations
+==== Writing a Parser for Chemical Equations (((Parser)))
 
-If you never worked with parsers, it can be a little confusing. Writing them by yourself is not really difficult, but boring and tedious, so most of the time using a library will be the better choice. Nevertheless, I think it is instructive to see how a simple parser works, so a naive manual implementation is presented first, before utilizing a parser combinator library.
+If you have never worked with parsers before, it can be a bit confusing. Writing them yourself is not really difficult, but boring and tedious, so using a library will be the better choice most of the time. Nevertheless, I think it is instructive to see how a simple parser works, so a naive manual implementation will be presented first, before using a parser combinator library.
 
-First, we need some general code for a rudimentary parser. We start from a common interface `ParseResult`, as we also have to cover the case when parsing a certain element fails. Real-world implementations would include useful information in this `Failure` class, but for our use case, we will leave this class empty. We then need a class `Success` to hold the current successful parsing result, together with current location we are working on. For the location, we simply use the remaining string - more performance-oriented implementations typically use just the index of the input string. Overall, these classes have a lot in common with Java's `Optional` class:
+First, we need some general code for a rudimentary parser. We start with a common interface `ParseResult`, as we also need to cover the case when parsing a certain element fails. Real-world implementations would include useful information in this `Failure` class, but for our use case we will leave it empty. We then need a `Success` class to hold the current successful parsing result, along with the current location we are working on. For the location, we simply use the remaining string - more performance-oriented implementations typically just use the index of the input string. All in all, these classes have a lot in common with Java's `Optional` class:
 
 [source,kotlin]
 ----
 sealed interface ParseResult<out T> {
 
-    infix fun or(that: () -> ParseResult<@UnsafeVariance T>): ParseResult<T>
+    fun <U> map(body: (T) -> U): ParseResult<U> =
+        when (this) {
+            is Success -> Success(body(value), remaining)
+            is Failure -> Failure
+        }
 
-    fun <U> flatMap(body: (T, String) -> ParseResult<U>): ParseResult<U>
+    fun <U> flatMap(body: (T, String) -> ParseResult<U>): ParseResult<U> =
+        when (this) {
+            is Success -> body(value, remaining)
+            is Failure -> Failure
+        }
 
-    fun filter(cond: (T) -> Boolean): ParseResult<T>
+    fun filter(cond: (T) -> Boolean): ParseResult<T> =
+        when {
+            this is Success && cond(value) -> this
+            else -> Failure
+        }
 }
 
-class Failure<T> : ParseResult<T> {
+data class Success<T>(
+    val value: T,
+    val remaining: String
+) : ParseResult<T>
 
-    override fun or(that: () -> ParseResult<T>): ParseResult<T> = that()
-
-    override fun <U> flatMap(body: (T, String) -> ParseResult<U>) = Failure<U>()
-
-    override fun filter(cond: (T) -> Boolean): ParseResult<T> = this
-
-    override fun toString() = "Failure"
-}
-
-data class Success<T>(val value: T, val remaining: String) : ParseResult<T> {
-
-    override fun or(that: () -> ParseResult<T>): ParseResult<T> = this
-
-    override fun <U> flatMap(body: (T, String) -> ParseResult<U>): ParseResult<U> =
-        body(value, remaining)
-
-    override fun filter(cond: (T) -> Boolean): ParseResult<T> = when {
-        cond(value) -> this
-        else -> Failure()
-    }
-}
+data object Failure : ParseResult<Nothing>
 ----
 
-Then we have some helper functions for reading parse results, and for generating lists from individual results:
+Then we have some helper functions for reading and combining parse results, and for generating lists of individual results:
 
 [source,kotlin]
 ----
-fun <T> successWhen(cond: Boolean, body: () -> Pair<T, String>): ParseResult<T> =
-    when {
-        cond -> body().run { Success(first, second) }
-        else -> Failure()
+infix fun <T> ParseResult<T>.or(that: () -> ParseResult<T>): ParseResult<T> =
+    when (this) {
+        is Success -> this
+        is Failure -> that()
     }
 
-fun <T> ParseResult<T>.successOrNull(): Success<T>? = when (this) {
-    is Success -> this
-    else -> null
-}
+fun <T> givenThat(cond: Boolean, body: () -> Success<T>): ParseResult<T> =
+    when {
+        cond -> body()
+        else -> Failure
+    }
+
+fun <T> ParseResult<T>.orNull(): Success<T>? = this as? Success<T>
 
 fun <T> sequence(start: ParseResult<T>, step: (String) -> ParseResult<T>): ParseResult<List<T>> =
     Success(
-        generateSequence(start.successOrNull()) { last ->
-            step(last.remaining).successOrNull()
-        }.toList(), ""
+        value = generateSequence(start.orNull()) { last ->
+            step(last.remaining).orNull()
+        }.toList(),
+        remaining = ""
     ).filter {
         it.isNotEmpty()
     }.flatMap { list, _ ->
@@ -326,9 +340,9 @@ fun <T> sequence(start: ParseResult<T>, step: (String) -> ParseResult<T>): Parse
     }
 ----
 
-Now that we have some minimal parsing support in place, we can start with working on the equation parsing. Note that we assume there are no whitespaces in the formula, because handling them everywhere is painful, and we can easily filter them out at top level.
+Now that we have some minimal parsing support in place, we can start working on equation parsing. Note that we assume that there are no whitespaces in the formula, because dealing with them everywhere is tedious, and we can easily filter them out at the top level.
 
-First, all the element names must be known:
+First, we need to know all the element symbols:
 
 [source,kotlin]
 ----
@@ -337,40 +351,37 @@ private val elements = setOf(
 )
 ----
 
-Next, we need functions who can recognize given patterns and natural numbers:
+Next, we need functions recognizing given patterns and natural numbers:
 
 [source,kotlin]
 ----
-fun parsePattern(string: String, pattern: String): ParseResult<String> = when {
-    string.startsWith(pattern) ->
-        Optional.of(pattern to string.substring(pattern.length))
-    else -> Optional.empty()
-}
+fun parsePattern(string: String, pattern: String): ParseResult<String> =
+    givenThat(string.startsWith(pattern)) {
+        Success(pattern, string.drop(pattern.length))
+    }
 
 fun parseNum(string: String): ParseResult<Int> =
-    Optional.of(
-        string.takeWhile { it.isDigit() }.length
-    ).filter { digitCount ->
-        digitCount > 0
-    }.map { digitCount ->
-        string.substring(0, digitCount).toInt() to string.substring(digitCount)
+    string.takeWhile { it.isDigit() }.length.let { digitCount ->
+        givenThat(digitCount > 0) {
+            Success(string.take(digitCount).toInt(), string.drop(digitCount))
+        }
     }
 ----
 
-The easiest function is `parsePattern()`, which tries to find a given prefix in the string. `parseNum()` is slightly more involved, as it needs to determine the number of digits first. With one exception (the function `findElement()`), all functions don't read directly from the string, but use these two low level functions and combine the results in certain ways - that's why this approach is known as "parser combinator".
+The simplest function is `parsePattern()`, which tries to find a given prefix in the string. `parseNum()` is a bit more complicated, as it needs to determine the number of digits first. With one exception (the `findElement()` function), all the other functions don't read the string directly, but use these two low level functions and combine the results in some way - that's why this approach is called "parser combinator".
 
-The first example for this "assembling" is the function for reading the equation arrow, which can be either `-{zwsp}>` or `<{zwsp}-{zwsp}>`:
+The first example of this "assembling" is the function for reading the equation arrow, which can be either `-{zwsp}>` or `<{zwsp}-{zwsp}>`:
 
 [source,kotlin]
 ----
-fun parseArrow(string: String): ParseResult<String> =
-    parsePattern(string, "<->")
-        .or { parsePattern(string, "->") }
+fun parseArrow(string: String): ParseResult<Arrow> =
+    parsePattern(string, "<->").map { Arrow.REVERSIBLE } or
+            { parsePattern(string, "->").map { Arrow.IRREVERSIBLE } }
 ----
 
-Reading an element is not difficult, the only pitfall is that two-letter symbols must be checked before the one-letter symbols, else the function would just find `H` in a string starting with `He`.
+Reading an element is not difficult, the only pitfall is that two-letter symbols must be checked before single-letter symbols, otherwise the function would just find `H` in a string starting with `He`.
 
-WARNING: It is a common problem that two parsers could match for the same input. Usually the parser reading the longer prefix is the one you want to execute, so you have to make sure to evaluate it first.
+WARNING: It is a common problem that two parsers may match for the same input. Usually the parser that reads the longer prefix is the one you want to run, so make sure you evaluate it first.
 
 [source,kotlin]
 ----
@@ -386,19 +397,19 @@ fun parseElement(string: String): ParseResult<Element> =
     }
 
 fun findElement(string: String, charCount: Int): ParseResult<String> =
-    successWhen(elements.contains("$string!!".take(charCount))) {
-        "$string!!".take(charCount) to string.drop(charCount)
+    givenThat(elements.contains("$string##".take(charCount))) {
+        Success("$string##".take(charCount), string.drop(charCount))
     }
 ----
 
-First, the `findElement()` function tries to find elements, first with two, and then - if this was unsuccessful - with one character. Artificially prolonging the string with some characters that definitely won't match (here `!`) avoids a possible `IndexOutOfBoundException`. The `map` block in `parseElement()` attempts to find a trailing number. If the number is found, it is used to construct the element, else the default subscript of 1 is used.
+First, the `findElement()` function tries to find elements, first with two characters, then - if that fails - with one character. Artificially extending the string with some characters that definitely won't match (here `#`) avoids a possible `IndexOutOfBoundException`. The `flatMap` block in `parseElement()` tries to find a trailing number. If the number is found, it is used to construct the element, otherwise the default subscript of 1 is used.
 
-Now the groups can be tackled:
+Now we are ready to take care of the groups:
 
 [source,kotlin]
 ----
 fun parsePart(string: String): ParseResult<Part> =
-    Failure<Part>() or { parseElement(string) } or { parseGroup(string) }
+    parseElement(string) or { parseGroup(string) }
 
 fun parseGroup(string: String): ParseResult<Group> =
     parsePattern(string, "(").flatMap { _, s1 ->
@@ -417,7 +428,7 @@ fun parseGroup(string: String): ParseResult<Group> =
     }
 ----
 
-The `parsePart()` method reads either an element or a group. The chain starts with an `Failure<Part>`, which is a trick to avoid casts for the more specialized return types of `parseElement()` and `parseGroup()`. The `parseGroup()` looks first for an opening parenthesis. Then it tries to read as many parts as possible, but at least one. After this, it looks for a closing parenthesis. The final `map()` call handles an optional subscript for the whole group, similar to `parseElement()`.
+The `parsePart()` method reads either an element symbol or a group. The `parseGroup()` first looks for an opening parenthesis. Then it tries to read as many parts as possible, but at least one. After that it looks for a closing parenthesis. The final `flatMap()` call handles an optional subscript for the whole group, similar to `parseElement()`.
 
 Now everything is in place to assemble a molecule:
 
@@ -434,9 +445,9 @@ fun parseMolecule(string: String): ParseResult<Molecule> =
         }
 ----
 
-First, the function looks for a possible coefficient in front, else it uses 1 as default. Then it tries to read as many element or group parts as possible. If some parts were found, the molecule is build, else the parser fails.
+First, the function looks for a possible coefficient in front, otherwise it uses 1 by default. Then it tries to read as many element or group parts as possible. If some parts are found, the molecule is built, otherwise the parser fails.
 
-This is the parser for gathering the left- and right-hand side of the equation:
+This is the parser for the left and right side of the equation:
 
 [source,kotlin]
 ----
@@ -455,42 +466,49 @@ fun parseEquation(string: String): ParseResult<Equation> =
     parseSide(string).flatMap { lhs, s1 ->
         parseArrow(s1).flatMap { arrow, s2 ->
             parseSide(s2).flatMap { rhs, s3 ->
-                Success(Equation(lhs, rhs, arrow == "<->"), s3)
+                Success(Equation(lhs, rhs, arrow), s3)
             }
         }
     }
 ----
 
-It just reads the left-hand side, the arrow symbol, the right-hand side, and combines them. Now the only missing part is a `equation()` function, which is the only part of our DSL which will be exposed to the user:
+It simply reads the left side, the arrow symbol, the right side, and combines them. Now all we need is an `equation()` function, which is the only part of our DSL that will be exposed to the user:
 
 [source,kotlin]
 ----
 fun equation(string: String): Equation? =
     parseEquation(string.replace(" ", ""))
-        .successOrNull()
+        .orNull()
         ?.let { result ->
             result.value.takeIf { result.remaining.isEmpty() }
         }
 ----
 
-This function removes all spaces from the input string, calls the parser, checks that no "unparsed" string is left, and returns the result or null. Now we can write e.g. `equation("3Ba(OH)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2")`, which is as concise at it can get for an internal DSL.
+This function removes all spaces from the input string, calls the parser, checks that no "unparsed" string is left, and returns the result or null. Now we can write e.g. `equation("3Ba(OH)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2")`, which is as concise as possible for an internal DSL.
 
-As mentioned in the last chapter, a "real" chemical equation looks more like `3Ba(OH)~2~ + 2H~3~PO~4~ -> 6H~2~O + Ba~3~(PO~4~)~2~`, and with a few simple modifications, we could allow this syntax as well. Generally speaking, allowing the syntax of a String-based DSL to be more lenient is relatively easy, while other DSL categories often struggle with this kind of flexibility.
+As mentioned in the last chapter, a "real" chemical equation looks more like `3Ba(OH)~2~ + 2H~3~PO~4~ -> 6H~2~O + Ba~3~(PO~4~)~2~`, and with some simple modifications we could allow this syntax as well. In general, it is relatively easy to make the syntax of a string-based DSL more lenient, while other DSL categories often struggle with this kind of flexibility.
 
-As already stated, writing such a parser manually isn't difficult. However, using a library has many advantages: It improves readability and maintainability, the code is easier to debug, you get more information when the parsing failed, and the library is usually better tested than our manual code.
+==== Using a Parser Library
 
-To give you an impression how using a parser library looks like, I rewrote the example code using the https://github.com/h0tk3y/better-parse[better-parse] project, which is an example for the parser-combinator approach:
+As already mentioned, it's not difficult to write such a parser by hand. However, using a library has many advantages: It improves readability and maintainability, the code is easier to debug, you get more information if the parsing fails, and the library is usually better tested than our manual code.
+
+To give you an idea of what using a parser library looks like, I rewrote the example code using the https://github.com/h0tk3y/better-parse[better-parse] project, which is an example of the parser-combinator approach:
 
 [source,kotlin]
 ----
+private val elements = setOf(
+    "H", "He", "Li", "Be", "B", "C", "N", "O" // etc.
+}
+
 val equationGrammar = object : Grammar<Equation>() {
     val ws by regexToken("\\s+", ignore = true)
-    val reactsTo by literalToken("->")
-    val reversibleTo by literalToken("<->")
+    val irreversible by literalToken("->")
+    val reversible by literalToken("<->")
     val plus by literalToken("+")
     val leftPar by literalToken("(")
     val rightPar by literalToken(")")
     val num by regexToken("\\d+")
+
     val symbol by token { cs, from ->
         when {
             elements.contains("$cs##".substring(from, from + 2)) -> 2
@@ -499,21 +517,28 @@ val equationGrammar = object : Grammar<Equation>() {
         }
     }
 
-    val arrow: Parser<Boolean> by (reactsTo asJust false) or
-            (reversibleTo asJust true)
+    val arrow: Parser<Arrow> by (irreversible asJust Arrow.IRREVERSIBLE) or
+            (reversible asJust Arrow.REVERSIBLE)
+
     val number: Parser<Int> by (num use { text.toInt() })
+
     val element: Parser<Element> by (symbol and optional(number))
         .map { (s, n) -> Element(s.text, n ?: 1) }
+
     val group: Parser<Group> by (skip(leftPar) and
             oneOrMore(parser(this::part)) and
             skip(rightPar) and
             optional(number))
         .map { (parts, n) -> Group(parts, n ?: 1) }
+
     val part: Parser<Part> = element or group
+
     val molecule: Parser<Molecule> = (optional(number) and oneOrMore(part))
         .map { (n, parts) -> Molecule(n ?: 1, parts) }
+
     val side: Parser<List<Molecule>> = separated(molecule, plus)
         .map { it.terms }
+
     override val rootParser: Parser<Equation> by (side and arrow and side)
         .map { (lhs, a, rhs) -> Equation(lhs, rhs, a) }
 }
@@ -522,11 +547,11 @@ val equationGrammar = object : Grammar<Equation>() {
 val eq = equationGrammar.parseToEnd("3Ba(OH)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2")
 ----
 
-Going into the details of this specific library is beyond the scope of this book, the important point is how much using a parser-combinator library can improve readability. However, you can still recognize the same pieces of grammar, which are assembled in a similar way as in our original code.
+Going into the details of this particular library is beyond the scope of this book; the important point is how much using a parser-combinator library can improve readability. However, you can still see the same pieces of grammar, assembled in a similar way to our original code.
 
 === Conclusion
 
-String-based DSLs allow to provide a very idiomatic syntax, and can also give the user some leeway by being more lenient than other DSL types. The price to pay is a lack of compile-time checks, less tooling support (e.g. autocomplete features), and from the implementation side the complexity and overhead involved with parsing, and the difficulty to extend them later.
+String-based DSLs allow for very idiomatic syntax, and can also give the user some leeway by being more forgiving than other DSL types. The drawbacks are a lack of compile-time checks, less tooling support (e.g. autocomplete features), and on the implementation side, the complexity and overhead of parsing, and the difficulty of extending them later.
 
 ==== Preferable Use Cases
 
