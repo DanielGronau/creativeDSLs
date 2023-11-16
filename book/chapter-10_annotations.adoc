@@ -1,16 +1,16 @@
 == Annotation-based DSLs
 
-Annotations can be used to tie specify actions or behavior to classes, methods, fields etc. Typical examples include dependency injection frameworks (like Spring or Dagger), transformers to formats like XML or JSON (like Gson, Jackson or JAXB), or authorization (like Spring Security). In Java, https://projectlombok.org/[Project Lombok] aims to reduce the boilerplate of the language in many ways, and uses annotations as well.
+Annotations can be used to bind specified actions or behaviors to classes, methods, fields, etc. Typical examples include dependency injection frameworks (such as Spring or Dagger), serializers to formats such as XML or JSON (such as Gson, Jackson, or JAXB), or authorization and access-control (such as Spring Security). In Java, https://projectlombok.org/[Project Lombok] aims to reduce the boilerplate of the language in many ways, and uses annotations to do so.
 
-As mentioned in <<chapter-04_features.adoc#annotations,4.10 Annotations>>, you might want to look into annotation processors, when you want to integrate your DSL somehow in the build process.
+As mentioned in <<chapter-04_features.adoc#annotations,4.10 Annotations>>, you may want to look into annotation processors if you need to integrate your DSL into the build process in some way.
 
 === Case Study: Mapper DSL
 
-Mapping between similar classes is a common and often tedious task. There exist already many solutions, e.g. the https://mapstruct.org/[MapStruct] library, which is a code generator for mapper classes.
+Mapping between similar classes is a common and often tedious task. There are already many solutions, such as the https://mapstruct.org/[MapStruct] library, which is a code generator for mapper classes.
 
-In this case study, we will write a very simple mapper DSL to transform e.g. data classes at runtime. The actual transformation code is not for the faint of heart, it relies on reflection and is very unsafe in order to keep it short. Explaining the details is beyond the scope of this book, the focus of the case study lies on how to employ annotations for expressing your intentions.
+In this case study, we will write a very simple mapper DSL to transform e.g. data classes at runtime. The actual transformation code is not for the faint of heart, it relies on reflection and is very insecure to keep it short. Explaining the details is beyond the scope of this book; the focus of the case study is on how to use annotations to express your intentions.
 
-Let's start with an example. Assume we have a `User` and a `Person` class, and that we want to transform users into persons:
+Let's start with an example. Suppose we have a `User' class and a `Person' class, and we want to convert users to persons:
 
 [source,kotlin]
 ----
@@ -26,13 +26,13 @@ data class Person(
     val age: Int)
 ----
 
-We have to consider three cases:
+We must consider the following cases:
 
-1. the source and target parameters have the same name and type, like `firstName`
-2. the source and target parameters have the same type, but different names, like  `familyName` and `lastName`
-3. the source and target parameters have different types, like `birthday` and `age`
+1. If the source and target parameters have the same name and type, like `firstName`, the mapper should just pass the values.
+2. If the source and target parameters have the same type but different names, like `familyName` and `lastName`, we need to specify a mapping between source and target.
+3. If the source and target parameters have different types, like `birthday` and `age`, we need to specify some kind of transformer in addition to the source and target.
 
-In the first case, our mapper should just transfer the values. In the second case, we must specify how the names should be mapped. In the third case, we also need some kind of transformer. As you might have guessed, we will specify the required information using annotations. This is how our DSL could look like:
+This is what our DSL might look like:
 
 [source,kotlin]
 ----
@@ -43,7 +43,7 @@ object UserToPerson : Mapper<User, Person>()
 val person = UserToPerson.map(getSomeUser())
 ----
 
-The definition of the `@Mapping` annotations is straightforward. They need to be present at runtime, they should be only valid on classes, and it must be possible to use several of them (which requires the `@Repeatable` annotation). As the annotation fields cannot be null, we have to use a dummy default class for the `transformer` field:
+The definition of the `@Mapping` annotations is straightforward. They must be present at runtime, they should only be valid on classes, and it must be possible to use multiple of them (which requires the `@Repeatable` annotation). Since the annotation fields cannot be null, we need to use a dummy default class for the `transformer` field:
 
 [source,kotlin]
 ----
@@ -57,7 +57,7 @@ annotation class Mapping(
 )
 ----
 
-The `AgeTransformer` could be just a function from `ZonedDateTime` to `Int`. When a class is specified in the annotation which isn't a function (like the default value, which is `Nothing`), we will simply ignore it. As the transformer is immutable and  reusable, we can implement it as an `object`:
+The `AgeTransformer` could just be a function from `ZonedDateTime` to `Int`. If the annotation specifies a class that isn't a function (like the default, which is `Nothing`), we will simply ignore it. Since the transformer is immutable and reusable, we can implement it as an `object`:
 
 [source,kotlin]
 ----
@@ -67,7 +67,7 @@ object AgeTransformer : (ZonedDateTime) -> Int {
 }
 ----
 
-Now the only thing missing is the `Mapper` class, which needs to figure out which fields need to be mapped, and which transformers to use. As mentioned, it is neither pretty nor safe, but here it goes:
+Now the only thing missing is the `Mapper` class, which has to figure out which fields to map and which transformers to use. As mentioned, this is neither pretty nor secure, but here goes:
 
 [source,kotlin]
 ----
@@ -98,38 +98,36 @@ abstract class Mapper<S : Any, T : Any> {
 }
 ----
 
-As it uses reflection, you need to include a dependency to the `kotlin-reflect` library, as described in chapter <<chapter-04_features.adoc#reflection,4.11 Reflection>>. Of course, the example could be improved in many ways, e.g. sometimes you would need multiple source fields to calculate a target field.
+Since it uses reflection, you need to include a dependency on the `kotlin-reflect' library, as described in <<chapter-04_features.adoc#reflection,4.14 Reflection>>. Of course, the example could be improved in many ways, e.g. sometimes you need multiple source fields to calculate a target field.
 
-.((Convention over Code))
+.Convention over Code (((Convention over Code)))
 ****
-One design choice in our example deserves attention: When the names and types of the source and target classes match, no `@Mapping` annotation is needed. This implicit mapping behavior may seem obvious and trivial, but it highlights the principle of _Convention over Code_, which suggests that common use-cases should work seamlessly without requiring explicit instructions or extra configuration. It applies to language design in general, but seems to be more often applicable to annotation based DSLs than to other DSL categories.
-
-It is important to remember that not everything needs to be explicitly stated, and that common use-cases should seamlessly work "out of the box" whenever possible. By following the _Convention over Code_ approach and providing a well-defined default behavior, which requires no additional effort, decision-making, or actions from the user, you can improve the user experience and enhance usability considerably.
+One design choice in our example deserves attention: If the names and types of the source and target classes match, no `@Mapping` annotation is required. This implicit mapping behavior may seem obvious and trivial, but it highlights the principle of _Convention over Code_, which suggests that common use cases should work seamlessly without requiring explicit instructions or extra configuration. It applies to language design in general, but seems to apply more often to annotation-based DSLs than to other DSL categories. Adherence to this principle can improve the user experience and greatly enhance usability.
 ****
 
-For serious applications, I would suggest to give https://mapstruct.org[MapStruct] a try. It is a Java library, but seems to work well with Kotlin, and has much more functionality than our example DSL. One main difference is that MapStruct generates sourcecode, avoiding the performance hit of using reflection, and making debugging much more convenient.
+For serious applications, I would suggest checking out https://mapstruct.org[MapStruct]. It is a Java library, but seems to work well with Kotlin, and has much more functionality than our example DSL. A major difference is that MapStruct generates source code, which avoids the performance hit of using reflection, and makes debugging much more convenient.
 
 === Synergy with String-based DSLs
 
-Syntactically, annotation-based DSLs are quite limited: The structure of an annotation is fixed, and only a few data types are allowed as fields. Thankfully, one of these data types is `String`, and the last chapter showed how expressive string-based DSLs can be. Therefore, it is only natural to overcome the limitations of the annotation-based approach by embedding string-based DSLs in annotations.
+Syntactically, annotation-based DSLs are quite limited: The structure of an annotation is fixed, and only a few data types are allowed as fields. Fortunately, one of these data types is `String`, and the last chapter showed how expressive string-based DSLs can be. It is therefore natural to overcome the limitations of the annotation-based approach by embedding string-based DSLs in annotations.
 
-Implementing such a DSL wouldn't give much new insights, however, Spring Data JPA can serve as an example:
+Implementing such a DSL wouldn't provide much new insight, but the Spring Data JPA can serve as an example:
 
 [source,kotlin]
 ----
 @Repository
 interface UserRepository : JpaRepository<UserEntity, Long> {
-    @Query("SELECT u FROM UserEntity u WHERE u.last_name = :lastName")
-    fun findAllByLastName(@Param("lastName") lastName: String):
+    @Query("SELECT u FROM UserEntity u WHERE u.lastLame = :lastName")
+    fun findAllByLastName(@Param("lastName") familyName: String):
        List<UserEntity>
 }
 ----
 
-The `@Query` annotation doesn't have fields for the `FROM` and `WHERE` clause, it allows to specify the whole query as a string (which is a DSL itself). In my opinion, this is clearly the better approach for this use-case.
+The `@Query' annotation has no fields for the `FROM' and `WHERE' clauses, it allows the entire query to be specified as a string (which is itself a DSL). In my opinion, this is clearly the better approach for this use case.
 
 === Conclusion
 
-In some cases, it can feel very natural to integrate a DSL in the existing user code, and use it to influence how certain structures are processed or translated. In these cases, annotation-based DSLs are a good choice. While these DSLs are often easy to use, the implementation overhead can be substantial. Another problem can be overusing annotations to the point of unreadability, and using annotations from different frameworks on the same class, method or property, which can be very confusing.
+In some cases, it feels very natural to integrate a DSL into the existing user code and use it to influence how certain structures are processed or translated. In these cases, annotation-based DSLs are a good choice. While these DSLs are often easy to use, the implementation overhead can be significant. Another problem can be overuse of annotations to the point of unreadability, and the use of annotations from different frameworks on the same class, method, or property, which can be very confusing.
 
 ==== Preferable Use Cases
 
@@ -162,7 +160,7 @@ In some cases, it can feel very natural to integrate a DSL in the existing user 
 * can't be used for external code
 * can clash with other annotation-based DSLs
 * relies often heavily on reflection
-* hard to debug in case of problems
+* hard to debug
 |===
 
 

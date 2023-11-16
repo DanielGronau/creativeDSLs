@@ -31,6 +31,8 @@ TODO:
 - find a good Kotlin reflection book to refer to -> 8.3. TODO
 - Are the conclusion sections okay?
 - bibliography
+- create index for ePUB
+- make source code readable for ePub with black background
 
 ## Research
 
@@ -68,8 +70,10 @@ https://www.deepl.com/write#en
 - check code is running
 - check code formatting is okay in PDF and EPUB
 - add links from inlined code to the sample project
-- check links are working
+- check external and internal links are working
+- check internal links are labeled correctly
 - check index has unique spelling
+- check for different spellings of the same term   
 
 ## Launch
 - YouTube series
