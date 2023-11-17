@@ -18,25 +18,36 @@ annotation class Mapping(
 abstract class Mapper<S : Any, T : Any> {
     fun map(s: S): T {
         val annotations = this::class.findAnnotations(Mapping::class)
-        val targetType = this::class.supertypes[0].arguments[1].type!!.classifier as KClass<*>
+
+        val targetType = this::class.supertypes[0]
+            .arguments[1]
+            .type!!
+            .classifier as KClass<*>
+
         val targetConstructor = targetType.primaryConstructor!!
-        val args = targetConstructor.parameters.map { targetParam ->
+
+        val targetArgs = targetConstructor.parameters.map { targetParam ->
+
             val ann = annotations.find { it.target == targetParam.name }
+
             val sourceParam = ann?.source ?: targetParam.name
-            val sourceValue = s::class.memberProperties.find { it.name == sourceParam }!!.getter.call(s)
-            val hasTransformer = ann?.transformer?.isSubclassOf(Function1::class) ?: false
-            when {
-                hasTransformer -> {
-                    val transformer = ann!!.transformer.objectInstance ?: ann.transformer.primaryConstructor!!.call()
+
+            val sourceValue = s::class.memberProperties.find {
+                it.name == sourceParam
+            }!!.getter.call(s)
+
+            ann?.transformer?.isSubclassOf(Function1::class).takeIf { it == true }
+                ?.let {
+                    val transformer = ann!!.transformer.objectInstance
+                        ?: ann.transformer.primaryConstructor!!.call()
                     transformer::class.memberFunctions
                         .find { it.name == "invoke" }!!
                         .call(transformer, sourceValue)
-                }
-                else -> sourceValue
-            }
+                } ?: sourceValue
         }.toTypedArray()
-        println(args.toList())
-        return targetConstructor.call(*args) as T
+
+        @Suppress("UNCHECKED_CAST")
+        return targetConstructor.call(*targetArgs) as T
     }
 }
 
@@ -45,10 +56,13 @@ data class User(val id: UUID, val firstName: String, val familyName: String, val
 
 data class Person(val firstName: String, val lastName: String, val age: Int)
 
-object AgeTransformer : (ZonedDateTime) -> Int {
-    override fun invoke(z: ZonedDateTime) =
-        ChronoUnit.YEARS.between(z, ZonedDateTime.now()).toInt()
+open class Transformer<in A, out B>(val lambda: (A) -> B) : (A) -> B {
+    override fun invoke(a: A): B = lambda(a)
 }
+
+object AgeTransformer : Transformer<ZonedDateTime, Int>({ z ->
+    ChronoUnit.YEARS.between(z, ZonedDateTime.now()).toInt()
+})
 
 @Mapping("familyName", "lastName")
 @Mapping("birthDay", "age", AgeTransformer::class)

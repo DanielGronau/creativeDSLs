@@ -1,8 +1,11 @@
 == Annotation-based DSLs
 
+> I have discovered a truly marvelous proof of this, which however the margin is not large enough to contain.
+-- Pierre de Fermat
+
 Annotations can be used to bind specified actions or behaviors to classes, methods, fields, etc. Typical examples include dependency injection frameworks (such as Spring or Dagger), serializers to formats such as XML or JSON (such as Gson, Jackson, or JAXB), or authorization and access-control (such as Spring Security). In Java, https://projectlombok.org/[Project Lombok] aims to reduce the boilerplate of the language in many ways, and uses annotations to do so.
 
-As mentioned in <<chapter-04_features.adoc#annotations,4.10 Annotations>>, you may want to look into annotation processors if you need to integrate your DSL into the build process in some way.
+As mentioned in <<chapter-04_features.adoc#annotations,4.13 Annotations>>, you may want to look into annotation processors if you need to integrate your DSL into the build process in some way.
 
 === Case Study: Mapper DSL
 
@@ -57,7 +60,7 @@ annotation class Mapping(
 )
 ----
 
-The `AgeTransformer` could just be a function from `ZonedDateTime` to `Int`. If the annotation specifies a class that isn't a function (like the default, which is `Nothing`), we will simply ignore it. Since the transformer is immutable and reusable, we can implement it as an `object`:
+The `AgeTransformer` must be a subclass of a function from `ZonedDateTime` to `Int`. If the annotation specifies a class that isn't a function (like the default, which is `Nothing`), we will simply ignore it. Since the transformer is immutable and reusable, we can implement it as an `object`:
 
 [source,kotlin]
 ----
@@ -67,6 +70,19 @@ object AgeTransformer : (ZonedDateTime) -> Int {
 }
 ----
 
+Alternatively, we could implement a helper class `Transformer`, which allows a slightly more concise definition of such transformer objects:
+
+[source,kotlin]
+----
+open class Transformer<in A, out B>(val lambda: (A) -> B) : (A) -> B {
+    override fun invoke(a: A): B = lambda(a)
+}
+
+object AgeTransformer : Transformer<ZonedDateTime, Int>({ z ->
+    ChronoUnit.YEARS.between(z, ZonedDateTime.now()).toInt()
+})
+----
+
 Now the only thing missing is the `Mapper` class, which has to figure out which fields to map and which transformers to use. As mentioned, this is neither pretty nor secure, but here goes:
 
 [source,kotlin]
@@ -74,31 +90,42 @@ Now the only thing missing is the `Mapper` class, which has to figure out which 
 abstract class Mapper<S : Any, T : Any> {
     fun map(s: S): T {
         val annotations = this::class.findAnnotations(Mapping::class)
-        val targetType = this::class.supertypes[0].arguments[1].type!!.classifier as KClass<*>
+
+        val targetType = this::class.supertypes[0]
+            .arguments[1]
+            .type!!
+            .classifier as KClass<*>
+
         val targetConstructor = targetType.primaryConstructor!!
-        val args = targetConstructor.parameters.map { targetParam ->
+
+        val targetArgs = targetConstructor.parameters.map { targetParam ->
+
             val ann = annotations.find { it.target == targetParam.name }
+
             val sourceParam = ann?.source ?: targetParam.name
-            val sourceValue = s::class.memberProperties.find { it.name == sourceParam }!!.getter.call(s)
-            val hasTransformer = ann?.transformer?.isSubclassOf(Function1::class) ?: false
-            when {
-                hasTransformer -> {
+
+            val sourceValue = s::class.memberProperties.find {
+                it.name == sourceParam
+            }!!.getter.call(s)
+
+            ann?.transformer?.isSubclassOf(Function1::class)
+                .takeIf { it == true }
+                ?.let {
                     val transformer = ann!!.transformer.objectInstance
                         ?: ann.transformer.primaryConstructor!!.call()
                     transformer::class.memberFunctions
                         .find { it.name == "invoke" }!!
                         .call(transformer, sourceValue)
-                }
-                else -> sourceValue
-            }
+                } ?: sourceValue
         }.toTypedArray()
-        println(args.toList())
-        return targetConstructor.call(*args) as T
+
+        @Suppress("UNCHECKED_CAST")
+        return targetConstructor.call(*targetArgs) as T
     }
 }
 ----
 
-Since it uses reflection, you need to include a dependency on the `kotlin-reflect' library, as described in <<chapter-04_features.adoc#reflection,4.14 Reflection>>. Of course, the example could be improved in many ways, e.g. sometimes you need multiple source fields to calculate a target field.
+Since it uses reflection, you need to include a dependency on the `kotlin-reflect` library, as described in <<chapter-04_features.adoc#reflection,4.14 Reflection>>. Of course, the example could be improved in many ways, e.g. sometimes you need multiple source fields to calculate a target field.
 
 .Convention over Code (((Convention over Code)))
 ****
@@ -123,7 +150,7 @@ interface UserRepository : JpaRepository<UserEntity, Long> {
 }
 ----
 
-The `@Query' annotation has no fields for the `FROM' and `WHERE' clauses, it allows the entire query to be specified as a string (which is itself a DSL). In my opinion, this is clearly the better approach for this use case.
+The `@Query` annotation has no fields for the `FROM` and `WHERE` clauses, it allows the entire query to be specified as a string (which is itself a DSL). In my opinion, this is clearly the better approach for this use case.
 
 === Conclusion
 
