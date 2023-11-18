@@ -2,6 +2,12 @@
 
 == Preface
 
+> A novice was trying to fix a broken Lisp machine by turning the power off and on. +
+Knight, seeing what the student was doing, spoke sternly: "You cannot fix a machine by just power-cycling it with no understanding of what is going wrong." +
+Knight turned the machine off and on. +
+The machine worked.
+-- an AI Koan
+
 === Why another book about DSLs in Kotlin?
 
 Kotlin is a powerful language that is well suited for writing Domain Specific Languages. There is already a lot of literature on the subject, but I find that many of these books fall short in a few key areas:

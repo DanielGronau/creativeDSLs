@@ -1,5 +1,8 @@
 == Hybrid DSLs (((Hybrid DSLs)))
 
+> In diversity, there is beauty and strength.
+-- Maya Angelou
+
 In many cases, it is hard to categorize a DSL because it uses a mix of different techniques: Some parts could resemble a builder, others look like an algebraic DSL, and in one place annotations are used. That's what I call a "hybrid DSL".
 
 When most of a DSL can be written in a certain style, it is usually a good idea to stick with it in order to ensure a coherent look and feel. So I wouldn't advocate to mix builder and loan pattern styles together, but to decide on one. But there is nothing wrong with designing a DSL which combines different approaches, when it gets the job done, and manages to provide a coherent language.

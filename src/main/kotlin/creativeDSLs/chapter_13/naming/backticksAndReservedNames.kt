@@ -6,6 +6,6 @@ object NamingTest {
     fun `check this out`() = println("backticks")
 
     @JvmStatic
-    @JvmName("instanceofFun")
+    @JvmName("instanceOf")
     fun instanceof() = println("instanceof")
 }

@@ -1,6 +1,9 @@
 [#javaInteroperability]
 == Java Interoperability (((Java Interoperability)))
 
+> Translation is the art of failure.
+-- Umberto Eco
+
 Using a Kotlin DSL from Java can be challenging. While some Kotlin features, such as operator overloading, simply aren't available, there are ways to make other features more accessible from Java, and to create a DSL that is useful and convenient in both languages. Fortunately, Kotlin has some built-in features to improve Java interoperability, which can be found at https://kotlinlang.org/docs/java-to-kotlin-interop.html[Kotlin Documentation: Calling Kotlin from Java]. This chapter discusses Java interoperability from a purely DSL design perspective, presenting the relevant built-in features and useful techniques for solving DSL-specific problems.
 
 Retrofitting an existing DSL for Java interoperability is always more expensive than planning for it from the beginning. By following some simple best practices, such as avoiding Java keywords when naming things, many problems won't arise in the first place.
@@ -17,7 +20,7 @@ object NamingTest {
     fun `check this out`() = println("backtick notation")
 
     @JvmStatic
-    @JvmName("instanceofFun")
+    @JvmName("instanceOf")
     fun instanceof() = println("instanceof")
 }
 ----
@@ -31,7 +34,7 @@ public class CallStrangeNames {
 
     public static void main(String[] args) {
         NamingTest.checkThisOut();
-        NamingTest.instanceofFun();
+        NamingTest.instanceOf();
     }
 }
 ----

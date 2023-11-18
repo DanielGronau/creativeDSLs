@@ -1,5 +1,8 @@
 == Code Generation for DSLs (((Code Generation)))
 
+> Do not cite the Deep Magic to me, witch! I was there when it was written.
+-- C. S. Lewis, The Lion, the Witch and the Wardrobe
+
 Sometimes you are prototyping a DSL and find a nice syntax, but it turns out it would need a lot of boilerplate code to make it work. One common reason is a combinatorial explosion, or there are many classes needed which follow the same pattern (e.g. tuple classes, or fixed length vectors). In such cases, you might consider using code generation.
 
 A popular library for generating Kotlin code is https://square.github.io/kotlinpoet[KotlinPoet]. If you work with Java, too, you might also check out its sister project https://github.com/square/javapoet[JavaPoet]. There is even some interoperability between the libraries.

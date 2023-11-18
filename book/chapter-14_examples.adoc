@@ -1,5 +1,8 @@
 == Real-World DSL Examples
 
+> Few things are harder to put up with than the annoyance of a good example.
+-- Mark Twain
+
 In this chapter we will have a look of some widely used and successful DSLs, characterize them, look at interesting details, and maybe even suggest some improvements.
 
 === KotlinPoet
