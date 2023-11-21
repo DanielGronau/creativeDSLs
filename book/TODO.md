@@ -48,7 +48,15 @@ https://www.savethestudent.org/make-money/best-ebook-publishing-companies.html
 
 https://selbst-schuld.com/mit-e-books-uber-amazon-kdp-erfolgreich-werden/
 
-https://www.epubli.de/
+### Aggregators
+
+https://www.epubli.de/ --> ePUB2 
+
+https://publishdrive.com/ -> ePUB, subscription, 15$ for one book
+
+https://www.ingramspark.com/ -> pay per eBool
+
+https://www.bod.de
 
 ## Taxes and Legalese
 
@@ -66,6 +74,7 @@ https://www.deepl.com/write#en
 
 ## Pre-Launch Check List
 
+- replace ditaa diagrams by pics
 - check all quotes
 - check code is running
 - check code formatting is okay in PDF and EPUB

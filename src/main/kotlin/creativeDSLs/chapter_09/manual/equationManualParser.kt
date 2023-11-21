@@ -76,7 +76,7 @@ fun parseEquation(string: String): ParseResult<Equation> =
     parseSide(string).flatMap { lhs, s1 ->
         parseArrow(s1).flatMap { arrow, s2 ->
             parseSide(s2).flatMap { rhs, s3 ->
-                Success(Equation(lhs, rhs, arrow), s3)
+                Success(Equation(lhs, arrow, rhs), s3)
             }
         }
     }
@@ -108,7 +108,7 @@ fun parseElement(string: String): ParseResult<Element> =
         parseNum(s).flatMap { subscript, s1 ->
             Success(Element(symbol, subscript), s1)
         } or {
-            Success(Element(symbol, 1), s)
+            Success(Element(symbol), s)
         }
     }
 
@@ -129,12 +129,12 @@ fun parseGroup(string: String): ParseResult<Group> =
         parseNum(s).flatMap { subscript, s1 ->
             Success(Group(parts, subscript), s1)
         } or {
-            Success(Group(parts, 1), s)
+            Success(Group(parts), s)
         }
     }
 
 fun parseArrow(string: String): ParseResult<Arrow> =
-    parsePattern(string, "<->").map { Arrow.REVERSIBLE } or
+    parsePattern(string, "<=>").map { Arrow.REVERSIBLE } or
             { parsePattern(string, "->").map { Arrow.IRREVERSIBLE } }
 
 fun parsePattern(string: String, pattern: String): ParseResult<String> =

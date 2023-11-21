@@ -160,14 +160,14 @@ sealed interface Part
 
 data class Element(
     val symbol: String,
-    val subscript: Int
+    val subscript: Int = 1
 ) : Part {
     override fun toString() = symbol + subscript.oneAsEmpty()
 }
 
 data class Group(
     val parts: List<Part>,
-    val subscript: Int
+    val subscript: Int = 1
 ) : Part {
     override fun toString() =
         parts.joinToString("", "(", ")") +
@@ -184,13 +184,13 @@ data class Molecule(
 
 enum class Arrow(val symbol: String) {
     IRREVERSIBLE("->"),
-    REVERSIBLE("<->")
+    REVERSIBLE("<=>")
 }
 
 data class Equation(
     val leftSide: List<Molecule>,
-    val rightSide: List<Molecule>,
-    val arrow: Arrow
+    val arrow: Arrow,
+    val rightSide: List<Molecule>
 ) {
     override fun toString() = listOf(
         leftSide.joinToString(" + "),
@@ -266,8 +266,8 @@ val bariumPhosphate = Molecule(1, listOf(Ba3, Group(listOf(P, O4), 2)))
 
 val equation = Equation(
     listOf(bariumHydroxide, phosphoricAcid),
-    listOf(water, bariumPhosphate),
-    Arrow.IRREVERSIBLE)
+    Arrow.IRREVERSIBLE,
+    listOf(water, bariumPhosphate))
 
 println(equation) // 3Ba(HO)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2
 ----
@@ -375,7 +375,7 @@ The first example of this "assembling" is the function for reading the equation 
 [source,kotlin]
 ----
 fun parseArrow(string: String): ParseResult<Arrow> =
-    parsePattern(string, "<->").map { Arrow.REVERSIBLE } or
+    parsePattern(string, "<=>").map { Arrow.REVERSIBLE } or
             { parsePattern(string, "->").map { Arrow.IRREVERSIBLE } }
 ----
 
@@ -466,7 +466,7 @@ fun parseEquation(string: String): ParseResult<Equation> =
     parseSide(string).flatMap { lhs, s1 ->
         parseArrow(s1).flatMap { arrow, s2 ->
             parseSide(s2).flatMap { rhs, s3 ->
-                Success(Equation(lhs, rhs, arrow), s3)
+                Success(Equation(lhs, arrow, rhs), s3)
             }
         }
     }
@@ -501,12 +501,19 @@ private val elements = setOf(
 }
 
 val equationGrammar = object : Grammar<Equation>() {
+
     val ws by regexToken("\\s+", ignore = true)
+
     val irreversible by literalToken("->")
-    val reversible by literalToken("<->")
+
+    val reversible by literalToken("<=>")
+
     val plus by literalToken("+")
+
     val leftPar by literalToken("(")
+
     val rightPar by literalToken(")")
+
     val num by regexToken("\\d+")
 
     val symbol by token { cs, from ->
@@ -540,7 +547,7 @@ val equationGrammar = object : Grammar<Equation>() {
         .map { it.terms }
 
     override val rootParser: Parser<Equation> by (side and arrow and side)
-        .map { (lhs, a, rhs) -> Equation(lhs, rhs, a) }
+        .map { (lhs, a, rhs) -> Equation(lhs, a, rhs) }
 }
 
 // calling an example string
