@@ -29,6 +29,8 @@ The following four-step workflow can be a helpful guide as you begin to design a
 
 ....
 
+//image::DevelopmentWorkflow.svg[Static,500]
+
 By following this straightforward workflow, you will ensure a well-organized and comprehensive structure for your DSL project.
 
 === Imagine the Ideal Syntax (((Ideal Syntax)))

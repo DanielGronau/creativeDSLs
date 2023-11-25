@@ -3,13 +3,13 @@
 > Do not cite the Deep Magic to me, witch! I was there when it was written.
 -- C. S. Lewis, The Lion, the Witch and the Wardrobe
 
-Sometimes you are prototyping a DSL and find a nice syntax, but it turns out it would need a lot of boilerplate code to make it work. One common reason is a combinatorial explosion, or there are many classes needed which follow the same pattern (e.g. tuple classes, or fixed length vectors). In such cases, you might consider using code generation.
+Sometimes you are prototyping a DSL, and you find a nice syntax, but it turns out that it would take a lot of boilerplate code to make it work. A common reason is combinatorial explosion, or you need many classes that follow the same pattern (e.g., tuple classes or fixed-length vectors). In such cases, you might consider using code generation.
 
-A popular library for generating Kotlin code is https://square.github.io/kotlinpoet[KotlinPoet]. If you work with Java, too, you might also check out its sister project https://github.com/square/javapoet[JavaPoet]. There is even some interoperability between the libraries.
+A popular library for generating Kotlin code is https://square.github.io/kotlinpoet[KotlinPoet]. If you are also working with Java, you may also want to check out its sister project https://github.com/square/javapoet[JavaPoet]. There is even some interoperability between them.
 
 === Case Study: Physical Quantities
 
-Let's assume you have already defined quantities for physical units, like seconds, square meters, or Watt:
+Let's say you've already defined quantities for physical units such as seconds, square meters, or Watts:
 
 [source,kotlin]
 ----
@@ -33,16 +33,16 @@ data class Watt(override val amount: Double) : Quantity
 data class Pascal(override val amount: Double) : Quantity
 ----
 
-WARNING: You should always consider whether the precision provided by `Double` is sufficient for the kind of calculations required by your application, and switch e.g. to `BigDecimal` if not.
+WARNING: You should always consider whether the precision provided by `Double` is sufficient for the kind of calculations required by your application, and switch to e.g. `BigDecimal` if not.
 
-At this point, we can't even add two quantities together. It would be nice if we could write this function only once in `Quantity`, but of course only quantities of the same unit are allowed to be added. There are techniques to make this safe, but would require the use of generics in Kotlin.
+At this point, we can't even add two quantities together. It would be nice if we could write this function only once in `Quantity`, but of course only quantities of the same unit can be added. There are techniques to make this safe, but they would require the use of generics in Kotlin.
 
-Instead, we will use https://square.github.io/kotlinpoet[KotlinPoet]. You need to add a dependency to your project, e.g.:
+Instead, we will use https://square.github.io/kotlinpoet[KotlinPoet]. You will need to add a dependency to your project, e.g:
 
 [source,kotlin]
 .Gradle (.kts)
 ----
-implementation("com.squareup:kotlinpoet:1.12.0")
+implementation("com.squareup:kotlinpoet:1.15.1")
 ----
 
 First, we will generate some extension functions for the missing addition:
@@ -61,7 +61,7 @@ fun makeAdditions() =
     Quantity::class.sealedSubclasses.map { makeAddition(it) }
 ----
 
-As you can see, KotlinPoet relies heavily on the Builder Pattern. In the `makeAdditions()` method, we use the fact that a sealed class - here `Quantity` - "knows" about its subclasses. As a result, we get a list of `FunSpec` instances, which represent functions, constructors, getters or setters. You can simply print the content in the console to see what the code would look like. Later we will add these instances to a `FileSpec`, which can be written to the file system. The generated functions will look like this:
+As you can see, KotlinPoet relies heavily on the builder pattern. In the `makeAdditions()` method, we take advantage of the fact that a sealed class - here `Quantity` - knows about its subclasses. As a result, we get a list of `FunSpec` instances representing functions, constructors, getters or setters. You can just print the contents to the console to see what the code would look like. Later we will add these instances to a `FileSpec' that can be written to the file system. The generated functions will look like this:
 
 [source,kotlin]
 ----
@@ -69,7 +69,7 @@ public operator fun Second.plus(that: Second) =
    copy(amount = this.amount + that.amount)
 ----
 
-The next operations follow pretty much the same pattern. They define subtraction, negation and scalar multiplication:
+The next operations follow pretty much the same pattern. They define subtraction, negation, and scalar multiplication:
 
 [source,kotlin]
 ----
@@ -106,7 +106,7 @@ fun makeScalarMultiplications() =
     Quantity::class.sealedSubclasses.map { makeScalarMultiplication(it) }
 ----
 
-The following part is more interesting: We need conversions from and back to `Double`. Note that we can define these conversions for more units than we have classes defined for, e.g. we can not only define `5.0.s` to give us `Second(5.0)`, but also `1.0.min` to give us `Seconds(60.0)`. And conversely, we want to be able to get from a `Second` instance not only the seconds, but also minutes etc. It is obvious that we need additional information to write the conversions for a certain unit: We need its name, the quantity class, and a factor to apply.
+The next part is more interesting: We need conversions from and back to `Double`. Note that we can define these conversions for more units than we have classes defined for, e.g. we can define not only `5.0.s` to get `Second(5.0)`, but also `1.0.min` to get `Seconds(60.0)`. And vice versa, we want to be able to get not only seconds from a `Second` instance, but also minutes and so on. It is obvious that we need additional information to write the conversions for a certain unit: We need its name, the quantity subclass, and a factor to apply.
 
 [source,kotlin]
 ----
@@ -129,7 +129,7 @@ private val fromToDouble = listOf(
 )
 ----
 
-In order to make the DSL slightly more readable, we will generate extension properties instead of extension functions, so we don't have parenthesis. The generating functions look like this:
+To make the DSL a bit more readable, we will generate extension properties instead of extension functions, so we don't have to use brackets. The generating functions look like this:
 
 [source,kotlin]
 ----
@@ -161,7 +161,7 @@ fun makeQuantityToDoubles() =
 
 ----
 
-In case you are wondering about the `(u, k, f)` part: This is the destructuring syntax, which works e.g. for `Pair`, `Triple` and data classes. Here is an example for a generated pair of conversions:
+In case you were wondering about the `(u, k, f)` part: This is the destructuring syntax, which works e.g. for `Pair`, `Triple` and data classes. Here is an example of a generated pair of transformations:
 
 [source,kotlin]
 ----
@@ -172,9 +172,9 @@ public val Joule.kJ: Double
   get() = this.amount / 1000.0
 ----
 
-So far, we can already generate a lot of boilerplate code, but for the next task - the multiplication and division of quantities - it would be extremely tedious to write the necessary code manually, even for our modest example. When we have N physical units, the number of possible multiplications and divisions is of order N² (we won't implement all possible combinations, but it is still a lot). When we have such polynomial or even exponential growth, we are dealing with a combinatorial explosion.
+So far, we can generate a lot of boilerplate code, but for the next task - multiplying and dividing quantities - it would be extremely tedious to write the necessary code by hand, even for our modest example. If we have N physical units, the number of possible multiplications and divisions is of the order of N² (we won't implement all possible combinations, but it's still a lot). When we have such polynomial or even exponential growth, we are dealing with a combinatorial explosion.
 
-To tackle this problem, we first need all valid multiplication equations. This could look like this, where the first two values of a triple are the types of the factors, and the third is the product type:
+To tackle this problem, we first need all valid multiplication equations. This could look like this, where the first two values of a triple are the types of the factors, and the third is the type of the product:
 
 [source,kotlin]
 ----
@@ -186,11 +186,13 @@ val multiply = listOf(
     Triple(MeterPerSecondSquared::class, Kilogram::class, Newton::class),
     Triple(Pascal::class, SquareMeter::class, Newton::class),
     Triple(Newton::class, Meter::class, Joule::class),
-    Triple(Watt::class, Second::class, Joule::class)
+    Triple(Watt::class, Second::class, Joule::class),
+
+    // etc.
 )
 ----
 
-Now we evaluate these equations both for multiplications and divisions. A slight complication is that we also want to add functions with the operands switched, but only if they have different types:
+Now we evaluate these equations for both multiplication and division. A slight complication is that we also want to add functions with swapped operands, but only if they are of different types:
 
 [source,kotlin]
 ----
@@ -237,7 +239,7 @@ fun makeDivisions() =
     }
 ----
 
-This is how the generated functions look like:
+This is the result of the function generation process:
 
 [source,kotlin]
 ----
@@ -252,9 +254,11 @@ public operator fun Joule.div(that: Meter) =
 
 public operator fun Joule.div(that: Newton) =
     Meter(this.amount / that.amount)
+
+// etc.
 ----
 
-In order to finish the DSL, we need to write the generated code in a file. For simplicity, will write it directly next to the generating file, but it is common to have separate directories for generated code. For convenience, I added two extension functions for `FileSpec`, which allow to add multiple properties or functions at once:
+To finish the DSL, we need to write the generated code to a file. For simplicity, we will write it right next to the generating file, but it is common to have separate directories for generated code. For convenience, I have added two extension functions to `FileSpec` that allow you to add multiple properties or functions at once:
 
 [source,kotlin]
 ----
@@ -279,9 +283,9 @@ fun FileSpec.Builder.addFunctions(functions: List<FunSpec>) =
     this.also { functions.forEach { this.addFunction(it) } }
 ----
 
-As you can see, working with KotlinPoet is quite straightforward. You use the different spec classes to assemble your code, and the `FileSpec` and `ClassSpec` classes allow you to write the file or class to the filesystem. Behind the scenes, KotlinPoet does a lot of work for you, e.g. managing imports or simplifying your code (e.g. turning function bodies with curly braces into expression syntax if possible).
+As you can see, working with KotlinPoet is pretty straightforward. You use the various spec classes to assemble your code, and the `FileSpec' and `ClassSpec' classes allow you to write the file or class to the file system. Behind the scenes, KotlinPoet does a lot of work for you, such as managing imports or simplifying your code (e.g., converting function bodies with braces to expression syntax where possible).
 
-With our generated DSL in place, we can now calculate physical quantities in a safe and convenient way, e.g.:
+With our generated DSL in place, we can now calculate physical quantities in a safe and convenient way, e.g:
 
 [source,kotlin]
 ----
@@ -291,13 +295,13 @@ val energy = force * 5.0.m
 println("${energy.kJ} kiloJoule")
 ----
 
-The example code is written in a way where you generate the code manually via the `main()` method when the DSL has changed. This is a simple approach when you know that code changes don't happen very often, but it can become cumbersome quickly when changes become more frequent. In the next section, we will discuss the use of an annotation processor instead.
+The example code is written in such a way that you manually generate the code via the `main()` method when the DSL has changed. This is a simple approach if you know that code changes won't happen very often, but it can quickly become cumbersome if changes become more frequent. In the next section, we will discuss using an annotation processor instead.
 
-=== Writing an annotation processor using KSP
+=== Writing an annotation processor using KSP (((Annotation Processor))) (((KSP))) (((Kotlin Symbol Processing API)))
 
-There are two APIs for Kotlin annotation processors. The older one is called `kapt`, which is no longer actively developed, but is still used for many projects. The more modern API is `KSP`, which stands for https://kotlinlang.org/docs/ksp-overview.html[Kotlin Symbol Processing].
+There are two APIs for annotation processors in Kotlin. The older one is called `kapt`, which is no longer actively developed, but is still used for many projects. The more modern API is `KSP`, which stands for https://kotlinlang.org/docs/ksp-overview.html[Kotlin Symbol Processing].
 
-Before deciding to write an annotation processor, it is important to understand how it works and what it's limitations are. You need at least two modules: One module containing annotations, related interfaces etc. you can use in your client code to invoke the annotation processor, and one module containing the annotation processor itself, which will be integrated in the build process to do things like code generation, reporting or tom provide tooling support. Often, a third module is added for testing purposes, as you not only want to have unit tests for the processor classes, but you also need to check whether the processor works as intended when building client code.
+Before deciding to write an annotation processor, it's important to understand how it works and what its limitations are. You will need at least two modules: One module containing annotations, related interfaces, etc. that you can use in your client code to specify your requirements to the annotation processor, and one module containing the annotation processor itself that is integrated into the build process to do things like code generation, reporting, or to provide tooling support. Often, a third module is added for testing purposes, because not only do you want to have unit tests for the processor classes, but you also need to verify that the processor works as intended when building client code.
 
 [ditaa,"generating-a-dsl"]
 .Annotation processor using KSP
@@ -316,13 +320,13 @@ Before deciding to write an annotation processor, it is important to understand 
 ....
 
 
-WARNING: At the time KSP is invoked, the client code is not yet built, which means **you can't use regular reflection** for client classes. The KSP API provides you with syntactic information about the code, but working with this API isn't as convenient as using reflection.
+WARNING: At the time you call KSP, the client code is not yet built, which means **you can't use regular reflection** for client classes. The KSP API gives you syntactic information about the code, but working with this API isn't as convenient as using reflection.
 
-The missing reflection support means that KSP might be not the right tool if you need to rely heavily on code inspection, and that you should think about making the process of information gathering as easy as possible for the processor, e.g. by using annotations.
+The lack of reflection support means that KSP may not be the right tool if you need to rely heavily on code inspection, and that you should think about making the process of gathering information as easy as possible for the processor, e.g. by using annotations.
 
 ==== Case Study: Designing the DSL and writing the annotations module
 
-How could an annotation based DSL for defining the relation between physical quantities look like? Now, we could annotate the `Quantity` interface with all the necessary information we had in the `fromToDouble` and `multiply` lists before:
+What would an annotation-based DSL for defining the relationship between physical quantities look like? One possible solution is to annotate the `Quantity` interface with all the necessary information we had in the `fromToDouble` and `multiply` lists before:
 
 [source,kotlin]
 ----
@@ -339,7 +343,7 @@ sealed interface Quantity {
 }
 ----
 
-So we need two annotations in the annotation module, so that the client application can ust them, and the processor can react to them:
+So we need two annotations in the annotation module so that the client application can use them and the processor can react to them:
 
 [source,kotlin]
 ----
@@ -367,7 +371,7 @@ annotation class Multiply(
 [#annotationProcessor]
 ==== Case Study: Writing the Annotation Processor
 
-This book can give just a very high-level overview of KSP. Please consult the https://kotlinlang.org/docs/ksp-quickstart.html[KSP Documentation] for a more comprehensive discussion.
+This book can only give a very high-level overview of KSP. Please consult the https://kotlinlang.org/docs/ksp-quickstart.html[KSP Documentation] for a more detailed discussion.
 
 KSP uses Java's https://docs.oracle.com/javase/tutorial/sound/SPI-intro.html[Service Provider Interface] mechanism to discover new processors. That's why we need to write a provider first:
 
@@ -388,9 +392,9 @@ class PhysicalQuantitiesProcessorProvider : SymbolProcessorProvider {
 }
 ----
 
-This provider must be registered in a text file called `SymbolProcessorProvider` located in `resources/META-INF/services`. In this file, you simply add the qualified name of the provider class.
+This provider must be registered in a text file called `SymbolProcessorProvider' located in `resources/META-INF/services'. In this file you simply add the qualified name of the provider class.
 
-Now we need to write the processor. The basic structure looks like this:
+Now we have to write the processor. The basic structure is as follows:
 
 [source,kotlin]
 ----
@@ -406,7 +410,7 @@ class PhysicalQuantitiesMapperProcessor(
 }
 ----
 
-To get the annotated elements, we can ask the resolver to provide them:
+We can ask the resolver to provide the annotated elements:
 
 [source,kotlin]
 ----
@@ -424,9 +428,9 @@ val multiplications = resolver
 
 === Conclusion
 
-Using code generation means bringing out the big guns, it certainly requires some planning and setup. However, this technique allows you to implement DSLs that would be just too much overhead without. And with libraries like https://square.github.io/kotlinpoet[KotlinPoet], it is quite intuitive to generate the code you want. Kotlin-Poet is itself a nice example for a real-world DSL, and will be explored as such in the next chapter.
+The decision to use code generation requires careful consideration because of the effort required. However, this technique allows you to implement DSLs that would just be too much overhead without it. And with libraries like https://square.github.io/kotlinpoet[KotlinPoet], it is quite intuitive to generate the code you want. Kotlin-Poet is itself a nice example of a real-world DSL, and will be explored as such in the final chapter.
 
-Using code generation in conjunction with annotation processors like KSP can produce flexible, powerful and well-integrated DSLs that wouldn't be possible otherwise.
+Using code generation in conjunction with annotation processors like KSP can produce flexible, powerful, and well-integrated DSLs that wouldn't otherwise be possible.
 
 ==== Preferable Use Cases
 

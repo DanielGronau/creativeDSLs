@@ -5,3 +5,4 @@
  */
 
 rootProject.name = "CreativeDsls"
+include("unitsAnnotations")

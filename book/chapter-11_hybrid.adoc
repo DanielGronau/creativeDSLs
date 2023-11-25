@@ -259,7 +259,7 @@ val copperSulfateComplex =
         (Cu-(H[2]-O)[4])-S-O[4]
 ----
 
-There is one optional improvement, which is more a matter of taste: We could add some extension properties for low subscript numbers of elements and groups, which would allow to write e.g. `N._2` instead of `N[2]`:
+There is an optional improvement, which is more a matter of taste: We could add some extension properties for low subscript numbers of elements and groups, which would allow to write e.g. `N._2` instead of `N[2]`:
 
 [source,kotlin]
 ----
@@ -286,13 +286,13 @@ Simulating the dense chemical notation is hard, and while using operator overloa
 
 === Case Study: Pattern Matching (((Pattern Matching)))
 
-Kotlin's `when` is certainly more versatile than Java's `switch`, but languages like Scala or Haskell go one step further and allow pattern matching. This feature allows you to deconstruct and match values against specific patterns. It provides a concise and powerful way to perform conditional branching and data extraction based on the structure and contents of the input.
+Kotlin's `when' is certainly more versatile than Java's `switch`, but languages like Scala or Haskell go a step further and allow pattern matching. This feature allows you to deconstruct and match values against specific patterns. It provides a concise and powerful way to perform conditional branching and data extraction based on the structure and content of the input.
 
-In pattern matching, you define a set of patterns that describe the possible shapes or values that an input can take. These patterns can include literals, variables, data constructors, or even more complex patterns like lists or tuples. The language then matches the input against these patterns and executes the corresponding code block or expression associated with the first matching pattern.
+In pattern matching, you define a set of patterns that describe the possible forms or values that an input can take. These patterns can include literals, variables, data constructors, or even more complex patterns such as lists or tuples. The language then matches the input against these patterns and executes the corresponding expression associated with the first matching pattern.
 
 In this case study, we want to provide similar functionality in Kotlin, although it won't be as elegant as its built-in counterparts in other languages.
 
-An ideal syntax could look like this:
+An ideal syntax might look like this:
 
 [source,text]
 ----
@@ -304,7 +304,7 @@ data class Person(
 
 val p = Person("Andy", "Smith", 43)
 
-// this is not Kotlin, but the ideal syntax
+// this is not Kotlin, but a suggestion for the ideal syntax
 val result = match(p) {
 
     Person("Andy", "Miller", _) ->
@@ -317,19 +317,20 @@ val result = match(p) {
 }
 ----
 
-However, we have to allow for some compromises to make it work in Kotlin:
+However, we have to make some compromises to make it work in Kotlin:
 
 * We can't use `Person` in the match cases, but we need to write a helper function (which we will call `person`).
-* It is difficult to support a mix of literal values and patterns, so we need to wrap values like `"Andy"` in a pattern, e.g. using the unary plus, like `+"Andy"`
-* for numbers, unary plus can't be used, so we fall back to a syntax like `eq(42)`
-* The arrow notation is not possible, we will use `then` instead
-* Comparisons as well as `and` and `or` can be only infix functions, not operators
-* The right sides should be only evaluated if needed, so we need lambda braces for lazy evaluation.
-* Capturing variables on the left and using them on the right requires using a `val` for defining a "capture" pattern.
-* `else` is a keyword, so `otherwise` is used instead. As it is not possible to determine at compile time whether the given conditions are exhaustive, the `otherwise` branch is mandatory
+* It is difficult to support a mix of literal values and patterns, so we need to wrap values like `"Andy"` in a pattern, e.g. using unary plus, like `+"Andy"`.
+* For numbers, unary plus can't be used, so we fall back on a syntax like `eq(42)`.
+* Arrow notation is not possible, so we use `then` instead.
+* Comparisons as well as `and` and `or` can only be infix functions, not operators.
+* The right sides should be evaluated only when needed, so we need lambda braces for lazy evaluation.
+* Capturing variables on the left and using them on the right requires using a `val` to define a capture pattern.
+* `else` is a keyword, so `otherwise` is used instead. Since it is not possible to determine at compile time whether the given conditions are exhaustive, the `otherwise` branch is mandatory.
+* `_` isn't a valid identifier, so we use `any()`
 * In some cases, we need to provide generic type information
 
-That's a rather long list, let's see how our example looks now using an attainable syntax:
+That's a pretty long list, so let's see how our example looks now, using a reachable syntax:
 
 [source,kotlin]
 ----
@@ -346,9 +347,9 @@ val result = match(p) {
 }
 ----
 
-That doesn't look too bad, even if the `+` prefixes take some getting used to. The problem is that the choices for overridable operators in Kotlin are quite limited. That's why the unary plus became something like a standard for such use cases, and is used this way in the https://kotlinlang.org/docs/type-safe-builders.html[Kotlin documentation] as well.
+That's not too bad, even if the `+' prefix looks a bit odd at first. The problem is that the choice of overridable operators in Kotlin is quite limited. That's why the unary plus has become something of a standard for such use cases, and is also used that way in the https://kotlinlang.org/docs/type-safe-builders.html[Kotlin documentation].
 
-The core of the DSL is quite small. It consists of a matcher providing a context for keeping track of the result and defining the `then` and `otherwise` methods. Then we have the pattern type, which is just a test function, so we can use a type alias instead of introducing a new interface. The `MatchResult` is just an interface wrapping a given value. And finally, the `match()` function ties everything together and acts as an entry point for the DSL:
+The core of the DSL is quite small. First, we have the pattern type, which is just a test function, so we can use a type alias instead of introducing a new interface. The `MatchResult` is just an interface that wraps a given value. The `Matcher` class provides a context for keeping track of the result, defines the `then` and `otherwise` methods, and introduces the unary plus as an alias for the `eq` pattern (which will be defined later). Finally, the `match()` function ties everything together and acts as an entry point for the DSL:
 
 [source,kotlin]
 ----
@@ -375,15 +376,17 @@ class Matcher<P, T : Any>(private val obj: P) {
     }
 }
 
-fun <P, T : Any> match(obj: P, body: Matcher<P, T>.() -> MatchResult<T>): T =
-    Matcher<P, T>(obj).run(body).value
+fun <P, T : Any> match(
+    obj: P,
+    body: Matcher<P, T>.() -> MatchResult<T>
+): T = Matcher<P, T>(obj).run(body).value
 ----
 
-Note that the `body` parameter of the `match()` method requires a `MatchResult` as return value, and immediately extracts its content. So why doesn't the block simply return a `T` value directly? Requiring a special type is a trick to "convince" users to call the `otherwise()` method at the end of the block, because this is the only obvious way to construct such a instance.
+Note that the `body` parameter of the `match()` method requires a `MatchResult` as a return value, and immediately extracts its content. So why doesn't the block just return a `T` value directly? Requiring a special type is a trick to "convince" users to call the `otherwise()` method at the end of the block, since this is the only obvious way to construct such an instance.
 
-The unary plus as synonym for the `eq` pattern is defined directly in `Matcher`, in order to avoid name clashes and unexpected behavior outside of `match` blocks. It's  good practice to keep the scope of potentially dangerous or confusing DSL elements as small as possible.
+The unary plus as a synonym for the `eq` pattern is defined directly in `Matcher` to avoid name conflicts and unexpected behavior outside of `match` blocks. It's good practice to keep the scope of potentially dangerous or confusing DSL elements as small as possible.
 
-Of course, there are still patterns missing for the left-hand sides of the `then` infix functions. Most of them are quite easy to write:
+Of course, there are still patterns missing for the left sides of the `then' infix functions. Most of these are fairly easy to write:
 
 [source,kotlin]
 ----
@@ -428,7 +431,7 @@ fun <P> isSame(value: P): Pattern<P> =
     { it === value }
 ----
 
-For comparing values, some type checks are needed in order to ensure that the value is comparable. That's why we need <<chapter-04_features.adoc#reifiedGenerics, reified generics>> in this case:
+Comparing values requires some type checking to ensure that the value is comparable.  That's why we need <<chapter-04_features.adoc#reifiedGenerics, reified generics>> in this case:
 
 [source,kotlin]
 ----
@@ -449,7 +452,7 @@ inline fun <reified C : Comparable<C>> le(value: C): Pattern<C> =
     { it <= value }
 ----
 
-For the `all()`, `any()` and `none()` predicates on `Iterable`{nbsp}s, we can define corresponding patterns:
+For the predicates `all()`, `any()` and `none()` on `Iterable`{nbsp}s, we can define corresponding patterns:
 
 [source, kotlin]
 ----
@@ -466,7 +469,7 @@ fun <P> none(p: Pattern<P>) : Pattern<Iterable<P>> =
     { it.none(p) }
 ----
 
-For capturing values we need a class implementing `Pattern<T>`, which can also hold a value:
+To capture values, we need a class that implements `Pattern<T>', which can also hold a value:
 
 [source,kotlin]
 ----
@@ -481,7 +484,7 @@ class Capture<P : Any> : Pattern<P> {
 inline fun <reified P : Any> capture() = Capture<P>()
 ----
 
-For capturing values, you first define a val using the `capture<T>()` method. Then you can use it on the left-hand side of `then` as a pattern, which always succeeds, but also stores the value. On the right-hand side the value can be read from the val. The initial example for the syntax demonstrates the usage
+To capture values, you first define a value with the `capture<T>()` method. Then you can use it as a pattern on the left side of `then`, which always succeeds, but also stores the value. On the right side you can read the value from val. The first syntax example demonstrates the usage:
 
 [source,kotlin]
 ----
@@ -494,7 +497,7 @@ val result = match(p) {
 }
 ----
 
-Now the only missing pattern is the one for decomposing a data class, but unfortunately it is not possible to write code to handle all data classes at once in a typesafe manner. So we are forced to write a pattern for every data class we want to use in a pattern, but it is straightforward to do so:
+Now the only pattern missing is the one for decomposing a data class, but unfortunately it is not possible to write code to handle all data classes at once in a typesafe manner. So we are forced to write a pattern for each data class we want to use in a pattern, but this is easy to do:
 
 [source,kotlin]
 ----
@@ -512,17 +515,17 @@ fun person(
 }
 ----
 
-Especially for data classes with many arguments, defining `any()` as default pattern for all arguments is very useful, as it allows to call the pattern for the data class using named arguments, and to ignore the arguments you don't care about.
+Especially for data classes with many arguments, defining `any()` as the default pattern for all arguments is very useful, as it allows you to invoke the pattern for the data class with named arguments, and ignore the arguments you don't care about.
 
-Even though writing such pattern classes is not hard, it becomes quickly annoying. The next chapter discusses how to generate such boilerplate code.
+While writing such pattern classes is not difficult, it can quickly become tedious. The next chapter discusses how to generate such boilerplate code.
 
-Of course, you can write many more patterns, but the DSL is already functional as it is. Regardless of the complexity of the topic, it wasn't that difficult to come up with a quite usable DSL, which demonstrates the power and expressiveness of Kotlin.
+Of course, you can write many more patterns, but the DSL is already functional as it is. Despite the complexity of the topic, it wasn't too difficult to come up with a fairly usable DSL that demonstrates the power and expressiveness of Kotlin.
 
 === Conclusion
 
-Writing high-quality hybrid DSLs can be a complex task, as it requires careful consideration and integration of different language features. It's important to recognize that not all language features may work seamlessly together, and in such cases, it is often better to stick with a consistent style throughout the DSL.
+Writing high-quality hybrid DSLs can be a complex task, requiring careful consideration and integration of different language features. It's important to recognize that not all language features will work together seamlessly, and in such cases it's often better to stick to a consistent style throughout the DSL.
 
-However, when done well, a well-designed hybrid DSL can effectively combine various techniques in a way that feels intuitive and organic. By leveraging the strengths of different language features and carefully designing their integration, you can create very powerful and expressive DSLs.
+However, when done well, a well-designed hybrid DSL can effectively combine different techniques in a way that feels intuitive and organic. By exploiting the strengths of different language features and carefully designing their integration, you can create very powerful and expressive DSLs.
 
 ==== Preferable Use Cases
 
