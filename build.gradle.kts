@@ -2,6 +2,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.9.20"
+    id("com.google.devtools.ksp") version "1.9.20-1.0.14"
 }
 
 group = "creativeDSLs"
@@ -20,6 +21,8 @@ dependencies {
     api("com.squareup:kotlinpoet:1.15.1")
     api("com.github.h0tk3y.betterParse:better-parse-jvm:0.4.4")
     api("com.faendir.kotlin.autodsl:annotations:2.2.15")
+    ksp(project(":unitsKSP"))
+    implementation(project(":unitsAnnotations"))
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:1.7.10")
     testImplementation("org.assertj:assertj-core:3.23.1")
 }

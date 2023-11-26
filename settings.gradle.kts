@@ -6,3 +6,4 @@
 
 rootProject.name = "CreativeDsls"
 include("unitsAnnotations")
+include("unitsKSP")

@@ -49,10 +49,11 @@ First, we will generate some extension functions for the missing addition:
 
 [source,kotlin]
 ----
-fun makeAddition(kClass: KClass<out Quantity>) =
+private fun makeAddition(kClass: KClass<out Quantity>) =
     FunSpec.builder("plus")
         .addModifiers(KModifier.OPERATOR)
         .receiver(kClass)
+        .returns(kClass)
         .addParameter("that", kClass)
         .addStatement("return copy(amount = this.amount + that.amount)")
         .build()
@@ -73,25 +74,28 @@ The next operations follow pretty much the same pattern. They define subtraction
 
 [source,kotlin]
 ----
-fun makeSubtraction(kClass: KClass<out Quantity>) =
+private fun makeSubtraction(kClass: KClass<out Quantity>) =
     FunSpec.builder("minus")
         .addModifiers(KModifier.OPERATOR)
         .receiver(kClass)
+        .returns(kClass)
         .addParameter("that", kClass)
         .addStatement("return copy(amount = this.amount - that.amount)")
         .build()
 
-fun makeNegation(kClass: KClass<out Quantity>) =
+private fun makeNegation(kClass: KClass<out Quantity>) =
     FunSpec.builder("unaryMinus")
         .addModifiers(KModifier.OPERATOR)
         .receiver(kClass)
+        .returns(kClass)
         .addStatement("return copy(amount = -this.amount)")
         .build()
 
-fun makeScalarMultiplication(kClass: KClass<out Quantity>) =
+private fun makeScalarMultiplication(kClass: KClass<out Quantity>) =
     FunSpec.builder("times")
         .addModifiers(KModifier.OPERATOR)
         .receiver(Double::class)
+        .returns(kClass)
         .addParameter("that", kClass)
         .addStatement("return that.copy(amount = this * that.amount)")
         .build()
@@ -133,7 +137,7 @@ To make the DSL a bit more readable, we will generate extension properties inste
 
 [source,kotlin]
 ----
-fun makeDoubleToQuantity(unit: String, kClass: KClass<out Quantity>, factor: Double) =
+private fun makeDoubleToQuantity(unit: String, kClass: KClass<out Quantity>, factor: Double) =
     PropertySpec.builder(unit, kClass)
         .receiver(Double::class)
         .getter(
@@ -143,7 +147,7 @@ fun makeDoubleToQuantity(unit: String, kClass: KClass<out Quantity>, factor: Dou
         )
         .build()
 
-fun makeQuantityToDouble(unit: String, kClass: KClass<out Quantity>, factor: Double) =
+private fun makeQuantityToDouble(unit: String, kClass: KClass<out Quantity>, factor: Double) =
     PropertySpec.builder(unit, Double::class)
         .receiver(kClass)
         .getter(
@@ -196,24 +200,26 @@ Now we evaluate these equations for both multiplication and division. A slight c
 
 [source,kotlin]
 ----
-fun makeMultiplication(
+private fun makeMultiplication(
     in1: KClass<out Quantity>,
     in2: KClass<out Quantity>,
-    out: KClass<out Quantity>) = FunSpec
-        .builder("times")
+    out: KClass<out Quantity>
+) = FunSpec.builder("times")
         .addModifiers(KModifier.OPERATOR)
         .receiver(in1)
+        .returns(out)
         .addParameter("that", in2)
         .addStatement("return %T(this.amount * that.amount)", out)
         .build()
 
-fun makeDivision(
+private fun makeDivision(
     in1: KClass<out Quantity>,
     in2: KClass<out Quantity>,
-    out: KClass<out Quantity>) = FunSpec
-        .builder("div")
+    out: KClass<out Quantity>
+) = FunSpec.builder("div")
         .addModifiers(KModifier.OPERATOR)
         .receiver(in1)
+        .returns(out)
         .addParameter("that", in2)
         .addStatement("return %T(this.amount / that.amount)", out)
         .build()
@@ -263,7 +269,7 @@ To finish the DSL, we need to write the generated code to a file. For simplicity
 [source,kotlin]
 ----
 fun main() {
-    FileSpec.builder("creativeDSLs.chapter_11", "generated")
+    FileSpec.builder("creativeDSLs.chapter_12.units", "generated")
         .addProperties(makeQuantityToAmounts())
         .addProperties(makeAmountToQuantities())
         .addFunctions(makeAdditions())
@@ -283,7 +289,7 @@ fun FileSpec.Builder.addFunctions(functions: List<FunSpec>) =
     this.also { functions.forEach { this.addFunction(it) } }
 ----
 
-As you can see, working with KotlinPoet is pretty straightforward. You use the various spec classes to assemble your code, and the `FileSpec' and `ClassSpec' classes allow you to write the file or class to the file system. Behind the scenes, KotlinPoet does a lot of work for you, such as managing imports or simplifying your code (e.g., converting function bodies with braces to expression syntax where possible).
+As you can see, working with KotlinPoet is pretty straightforward. You use the various spec classes to assemble your code, and the `FileSpec` and `ClassSpec` classes allow you to write the file or class to the file system. Behind the scenes, KotlinPoet does a lot of work for you, such as managing imports or simplifying your code (e.g., converting function bodies with braces to expression syntax where possible).
 
 With our generated DSL in place, we can now calculate physical quantities in a safe and convenient way, e.g:
 
@@ -320,58 +326,67 @@ Before deciding to write an annotation processor, it's important to understand h
 ....
 
 
-WARNING: At the time you call KSP, the client code is not yet built, which means **you can't use regular reflection** for client classes. The KSP API gives you syntactic information about the code, but working with this API isn't as convenient as using reflection.
+WARNING: At the time you call KSP, the client code is not yet built, which means **you can't use regular reflection** and no `KClass` instances of client classes. The KSP API gives you syntactic information about the code, but working with this API isn't as convenient and comprehensive as using reflection.
 
 The lack of reflection support means that KSP may not be the right tool if you need to rely heavily on code inspection, and that you should think about making the process of gathering information as easy as possible for the processor, e.g. by using annotations.
 
-==== Case Study: Designing the DSL and writing the annotations module
+==== Designing the DSL and writing the annotations module
 
-What would an annotation-based DSL for defining the relationship between physical quantities look like? One possible solution is to annotate the `Quantity` interface with all the necessary information we had in the `fromToDouble` and `multiply` lists before:
+What would an annotation-based DSL for defining the relationship between physical quantities look like? We don't want to hardcode the annotation processor to use our specific quantity hierarchy, but to be more flexible. Therefore, we will assume that the there is a sealed interface, that all quantities implement, and that the quantities are data classes with a single `Double` argument.
+
+We have three types of operations:
+
+* All classes implementing the top-level interface should support the basic operations like `+`, `-`, negation and scalar multiplication. Since a sealed interface knows its implementing classes, it is sufficient to mark only this interface with an annotation, which we will call `@QuantityOperations`.
+* The conversions from and to `Double` can be expressed by `@Conversion` annotations on the corresponding class.
+* The multiplication involves three classes, but it seems most convenient to annotate the resulting product class and refer to the factor classes in the annotation.
+
+The resulting annotation-based DSL might look like this:
 
 [source,kotlin]
 ----
-@Conversion("s", Second::class, 1.0)
-@Conversion("min", Second::class, 60.0)
-@Conversion("h", Second::class, 3600.0)
-...
-@Multiply(Meter::class, Meter::class, SquareMeter::class)
-@Multiply(Meter::class, SquareMeter::class, CubicMeter::class)
-@Multiply(MeterPerSecond::class, Second::class, Meter::class)
-...
+@QuantityOperations
 sealed interface Quantity {
     val amount: Double
 }
+
+@Conversion("mm2", 0.000_001)
+@Conversion("m2", 1.0)
+@Conversion("km2", 1_000_000.0)
+@MultiplicationResult(Meter::class, Meter::class)
+data class SquareMeter(override val amount: Double) : Quantity
 ----
 
-So we need two annotations in the annotation module so that the client application can use them and the processor can react to them:
+Here are the definitions of the required annotations:
 
 [source,kotlin]
 ----
-import kotlin.reflect.KClass
+@Target(AnnotationTarget.CLASS)
+@Retention(AnnotationRetention.RUNTIME)
+annotation class QuantityOperations
 
 @Repeatable
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class Conversion(
     val derivedUnit: String,
-    val baseUnit: KClass<*>,
     val factor: Double
 )
 
 @Repeatable
 @Target(AnnotationTarget.CLASS)
 @Retention(AnnotationRetention.RUNTIME)
-annotation class Multiply(
+annotation class MultiplicationResult(
     val factor1: KClass<*>,
-    val factor2: KClass<*>,
-    val result: KClass<*>
+    val factor2: KClass<*>
 )
 ----
 
-[#annotationProcessor]
-==== Case Study: Writing the Annotation Processor
+Since the annotation processor needs to know about these annotations as well, it would be tied to your specific client code if you put the annotations there. That's why it's almost always a good idea to put the annotations in a separate module that allows the annotation processor to be used in other environments.
 
-This book can only give a very high-level overview of KSP. Please consult the https://kotlinlang.org/docs/ksp-quickstart.html[KSP Documentation] for a more detailed discussion.
+[#annotationProcessor]
+==== Writing the Annotation Processor
+
+This book can only give a very high level overview of KSP. This means that the general structure of the KSP module is explained, but not the specifics of the KSP API. Please refer to https://kotlinlang.org/docs/ksp-quickstart.html[KSP Documentation] for a more detailed discussion.
 
 KSP uses Java's https://docs.oracle.com/javase/tutorial/sound/SPI-intro.html[Service Provider Interface] mechanism to discover new processors. That's why we need to write a provider first:
 
