@@ -39,11 +39,11 @@ class UnitsSymbolProcessor(
             MultiplicationVisitor(codeGenerator, logger)
         )
 
-        return listOf(conversionDeclarations, operationsDeclarations, multiplicationDeclarations)
-            .flatten()
-            .distinct()
-            .filterNot { it.validate() }
-            .toList()
+        return listOf(
+            conversionDeclarations,
+            operationsDeclarations,
+            multiplicationDeclarations
+        ).flatten().distinct().filterNot { it.validate() }
     }
 
     private fun invokeVisitor(

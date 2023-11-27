@@ -388,7 +388,15 @@ Since the annotation processor needs to know about these annotations as well, it
 
 This book can only give a very high level overview of KSP. This means that the general structure of the KSP module is explained, but not the specifics of the KSP API. Please refer to https://kotlinlang.org/docs/ksp-quickstart.html[KSP Documentation] for a more detailed discussion.
 
-KSP uses Java's https://docs.oracle.com/javase/tutorial/sound/SPI-intro.html[Service Provider Interface] mechanism to discover new processors. That's why we need to write a provider first:
+In your gradle build file, you will need dependencies to the KSP API (`com.google.devtools.ksp:symbol-processing-api`), to the KSP extensions of KotlinPoet (`com.squareup:kotlinpoet-ksp`), and to the module with your custom annotations.
+
+A KSP implementation consists of three main parts:
+
+- A `SymbolProcessorProvider`: This class allows the KSP library to use Java's https://docs.oracle.com/javase/tutorial/sound/SPI-intro.html[Service Provider Interface] mechanism to discover new processors.
+- A `SymbolProcessor`: This class is the starting point of the annotation processor. Typically, it determines what tasks need to be performed, e.g. by inspecting annotations.
+- KSVisitor` classes: After determining __what__ to do, the processor usually delegates the work to one or more visitor classes that know __how__ to do a particular task. You don't have to follow this pattern, but it helps to clarify responsibilities and is the preferred approach according to the KSP documentation.
+
+The provider class just points to our processor:
 
 [source,kotlin]
 ----
@@ -396,48 +404,314 @@ import com.google.devtools.ksp.processing.SymbolProcessor
 import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
 import com.google.devtools.ksp.processing.SymbolProcessorProvider
 
-class PhysicalQuantitiesProcessorProvider : SymbolProcessorProvider {
-
-    override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor =
-        PhysicalQuantitesProcessor(
-            codeGenerator = environment.codeGenerator,
-            logger = environment.logger,
-            options = environment.options
-        )
+class UnitsProcessorProvider : SymbolProcessorProvider {
+    override fun create(
+        environment: SymbolProcessorEnvironment
+    ): SymbolProcessor = UnitsSymbolProcessor(
+        codeGenerator = environment.codeGenerator,
+        logger = environment.logger,
+        options = environment.options
+    )
 }
 ----
 
-This provider must be registered in a text file called `SymbolProcessorProvider' located in `resources/META-INF/services'. In this file you simply add the qualified name of the provider class.
+This provider class must be registered in a text file called `SymbolProcessorProvider` located in the `resources/META-INF/services` folder. In this file you simply add a single line with the qualified name of the provider class.
 
-Now we have to write the processor. The basic structure is as follows:
+The processor will find all classes annotated with `@Conversion', `@QuantityOperations' and `@MultiplicationResult' and delegate code generation to the appropriate visitors:
 
 [source,kotlin]
 ----
-class PhysicalQuantitiesMapperProcessor(
+class UnitsSymbolProcessor(
     private val codeGenerator: CodeGenerator,
     private val logger: KSPLogger,
     private val options: Map<String, String>
 ) : SymbolProcessor {
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        ...
+
+        val conversionDeclarations = invokeVisitor(
+            resolver,
+            Conversion::class,
+            ConversionVisitor(codeGenerator, logger)
+        )
+
+        val operationsDeclarations = invokeVisitor(
+            resolver,
+            QuantityOperations::class,
+            OperationsVisitor(codeGenerator, logger)
+        )
+
+        val multiplicationDeclarations = invokeVisitor(
+            resolver,
+            MultiplicationResult::class,
+            MultiplicationVisitor(codeGenerator, logger)
+        )
+
+        return listOf(
+            conversionDeclarations,
+            operationsDeclarations,
+            multiplicationDeclarations
+        ).flatten().distinct().filterNot { it.validate() }
     }
+
+    private fun invokeVisitor(
+        resolver: Resolver,
+        annotation: KClass<*>,
+        visitor: KSVisitorVoid
+    ): List<KSClassDeclaration> =
+        resolver.getSymbolsWithAnnotation(annotation.qualifiedName!!)
+            .distinct()
+            .filterIsInstance<KSClassDeclaration>()
+            .toList()
+            .onEach { it.accept(visitor, Unit) }
 }
 ----
 
-We can ask the resolver to provide the annotated elements:
+The first visitor provides conversion functions from and to `Double`:
 
 [source,kotlin]
 ----
-val conversions = resolver
-    .getSymbolsWithAnnotation("creativeDsl.chapter12.ksp.annotations.Conversion")
-    .filterIsInstance<KSClassDeclaration>()
-val multiplications = resolver
-    .getSymbolsWithAnnotation("creativeDsl.chapter12.ksp.annotations.Multiply")
-    .filterIsInstance<KSClassDeclaration>()
+class ConversionVisitor(
+    private val codeGenerator: CodeGenerator,
+    private val logger: KSPLogger
+) : KSVisitorVoid() {
+
+    @OptIn(KspExperimental::class)
+    override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
+
+        val shortName = classDeclaration.simpleName.getShortName()
+
+        val annotations: List<Conversion> = classDeclaration
+            .getAnnotationsByType(Conversion::class).toList()
+
+        val fileSpec =
+            FileSpec.builder(
+                packageName = classDeclaration.packageName.asString(),
+                fileName = shortName.lowercase() + "Conversions"
+            ).run {
+                annotations.forEach { conversion ->
+                    addProperty(
+                        makeDoubleToQuantity(
+                            conversion.derivedUnit,
+                            classDeclaration.toClassName(),
+                            conversion.factor
+                        )
+                    )
+                    addProperty(
+                        makeQuantityToDouble(
+                            conversion.derivedUnit,
+                            classDeclaration.toClassName(),
+                            conversion.factor
+                        )
+                    )
+                }
+                build()
+            }
+
+        fileSpec.writeTo(codeGenerator, false)
+    }
+
+    fun makeDoubleToQuantity(unit: String, className: ClassName, factor: Double) =
+        PropertySpec.builder(unit, className)
+            .receiver(Double::class)
+            .getter(
+                FunSpec.getterBuilder()
+                    .addStatement("return %T(this * %L)", className, factor)
+                    .build()
+            )
+            .build()
+
+    fun makeQuantityToDouble(unit: String, className: ClassName, factor: Double) =
+        PropertySpec.builder(unit, Double::class)
+            .receiver(className)
+            .getter(
+                FunSpec.getterBuilder()
+                    .addStatement("return this.component1() / %L", factor)
+                    .build()
+            )
+            .build()
+}
 ----
 
-//TODO
+The resulting methods are written in a separate file, e.g. for the quantity class `Meter`, they are located in `meterConversions.kt`.
+
+Note that we don't rely on a specific argument name like `amount` in the quantity class, but rather access the value using the `component1()` method. This allows us to rename the argument in the client code without breaking the annotation processor.
+
+The next visitor deals with basic operations such as adding and subtracting quantities:
+
+[source,kotlin]
+----
+class OperationsVisitor(
+    private val codeGenerator: CodeGenerator,
+    private val logger: KSPLogger
+) : KSVisitorVoid() {
+
+    override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
+
+        val shortName = classDeclaration.simpleName.getShortName()
+
+        if (Modifier.SEALED !in classDeclaration.modifiers) {
+            logger.error("Can't generator operations, <$shortName> is not a sealed class.")
+        }
+
+        val subclasses: Sequence<ClassName> =
+            classDeclaration.getSealedSubclasses().map { it.toClassName() }
+
+        val fileSpec =
+            FileSpec.builder(
+                packageName = classDeclaration.packageName.asString(),
+                fileName = shortName.lowercase() + "Operations"
+            ).run {
+                subclasses.forEach { subclass ->
+                    addFunction(makeAddition(subclass))
+                    addFunction(makeSubtraction(subclass))
+                    addFunction(makeNegation(subclass))
+                    addFunction(makeScalarMultiplication(subclass))
+                }
+                build()
+            }
+
+        fileSpec.writeTo(codeGenerator, false)
+    }
+
+    private fun makeAddition(className: ClassName) =
+        FunSpec.builder("plus")
+            .addModifiers(KModifier.OPERATOR)
+            .receiver(className)
+            .returns(className)
+            .addParameter("that", className)
+            .addStatement("return copy(this.component1() + that.component1())")
+            .build()
+
+    private fun makeSubtraction(className: ClassName) =
+        FunSpec.builder("minus")
+            .addModifiers(KModifier.OPERATOR)
+            .receiver(className)
+            .returns(className)
+            .addParameter("that", className)
+            .addStatement("return copy(this.component1() - that.component1())")
+            .build()
+
+    private fun makeNegation(className: ClassName) =
+        FunSpec.builder("unaryMinus")
+            .addModifiers(KModifier.OPERATOR)
+            .receiver(className)
+            .returns(className)
+            .addStatement("return copy(-this.component1())")
+            .build()
+
+    private fun makeScalarMultiplication(className: ClassName) =
+        FunSpec.builder("times")
+            .addModifiers(KModifier.OPERATOR)
+            .receiver(Double::class)
+            .returns(className)
+            .addParameter("that", className)
+            .addStatement("return that.copy(this * that.component1())")
+            .build()
+}
+----
+
+In this case, we don't extract any information from the annotation, but rather from the class itself, which is assumed to be `sealed`, and thus allows us to enumerate its child classes.
+
+The last visitor generates the code to multiply and divide quantities:
+
+[source,kotlin]
+----
+class MultiplicationVisitor(
+    private val codeGenerator: CodeGenerator,
+    private val logger: KSPLogger
+) : KSVisitorVoid() {
+
+    override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
+
+        val shortName = classDeclaration.simpleName.getShortName()
+
+        val factorPairs: List<Pair<ClassName, ClassName>> = classDeclaration
+            .getAnnotations(MultiplicationResult::class)
+            .map(KSAnnotation::arguments)
+            .map { args ->
+                val factor1 = args.first { arg -> arg.name?.getShortName() == "factor1" }.value as KSType
+                val factor2 = args.first { arg -> arg.name?.getShortName() == "factor2" }.value as KSType
+                factor1.toClassName() to factor2.toClassName()
+            }
+
+        val fileSpec =
+            FileSpec.builder(
+                packageName = classDeclaration.packageName.asString(),
+                fileName = shortName.lowercase() + "Multiplications"
+            ).run {
+                factorPairs.forEach { (factor1, factor2) ->
+                    addFunctions(factor1, factor2, classDeclaration.toClassName())
+                    if (factor1.toString() != factor2.toString()) {
+                        addFunctions(factor2, factor1, classDeclaration.toClassName())
+                    }
+                }
+                build()
+            }
+
+        fileSpec.writeTo(codeGenerator, false)
+    }
+
+    private fun FileSpec.Builder.addFunctions(
+        factor1: ClassName,
+        factor2: ClassName,
+        result: ClassName
+    ) {
+        addFunction(makeMultiplication(factor1, factor2, result))
+        addFunction(makeDivision(result, factor1, factor2))
+    }
+
+    private fun makeMultiplication(
+        in1: ClassName,
+        in2: ClassName,
+        out: ClassName
+    ) = FunSpec.builder("times")
+        .addModifiers(KModifier.OPERATOR)
+        .receiver(in1)
+        .returns(out)
+        .addParameter("that", in2)
+        .addStatement("return %T(this.component1() * that.component1())", out)
+        .build()
+
+    private fun makeDivision(
+        in1: ClassName,
+        in2: ClassName,
+        out: ClassName
+    ) = FunSpec.builder("div")
+        .addModifiers(KModifier.OPERATOR)
+        .receiver(in1)
+        .returns(out)
+        .addParameter("that", in2)
+        .addStatement("return %T(this.component1() / that.component1())", out)
+        .build()
+
+    private fun KSClassDeclaration.getAnnotations(annotationClass: KClass<*>): List<KSAnnotation> =
+        annotations.filter { it.shortName.getShortName() == annotationClass.simpleName }.toList()
+}
+----
+
+As a small difficulty, we have to make sure that the operations with switched factors are added only if the factor classes are different.
+
+If you read the code carefully, you will notice the rather complicated annotation handling code. Why can't we just get the annotation and read its arguments like we did in `ConversionVisitor`? This is because accessing arguments of type `KClass` or `Class` will result in a `ClassNotFoundException` if the corresponding classes are not yet known.
+
+This is all we need to generate the necessary functions. To call our KSP module in client code, we need to add the KSP plugin and a dependency on our module to our Gradle build file:
+
+[source,kotlin]
+.build.gradle.kts
+----
+plugins {
+    ...
+    id("com.google.devtools.ksp") version "1.9.20-1.0.14"
+}
+...
+dependencies {
+    ...
+    ksp(/* reference to the KSP module */)
+    ...
+}
+----
+
+If the module is in a repository, it can be referenced with group, artifact, and version just like any other dependency. If it is part of the same multi-module project, it can be referenced as `ksp(project(":moduleName"))` instead. After this change, the processor will be invoked for each build and generate the necessary files.
 
 === Case Study: Generating Data Class Patterns ===
 
