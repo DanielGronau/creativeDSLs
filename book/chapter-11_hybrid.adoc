@@ -284,9 +284,10 @@ Please decide for yourself which version you prefer. Personally, I find the synt
 
 Simulating the dense chemical notation is hard, and while using operator overloading and infix notation made our example substantially shorter, it still contains a lot of clutter. Of course, after some time one would get used to the DSL, but there is clearly a learning curve involved. You have already seen how the same problem can be tackled with a string-based DSL, which seems to be the more elegant approach in this specific case. Nevertheless, it is still impressive how far you can push the syntax towards such a specific notation in Kotlin.
 
+[#patternMatching]
 === Case Study: Pattern Matching (((Pattern Matching)))
 
-Kotlin's `when' is certainly more versatile than Java's `switch`, but languages like Scala or Haskell go a step further and allow pattern matching. This feature allows you to deconstruct and match values against specific patterns. It provides a concise and powerful way to perform conditional branching and data extraction based on the structure and content of the input.
+Kotlin's `when` is certainly more versatile than Java's `switch`, but languages like Scala or Haskell go a step further and allow pattern matching. This feature allows you to deconstruct and match values against specific patterns. It provides a concise and powerful way to perform conditional branching and data extraction based on the structure and content of the input.
 
 In pattern matching, you define a set of patterns that describe the possible forms or values that an input can take. These patterns can include literals, variables, data constructors, or even more complex patterns such as lists or tuples. The language then matches the input against these patterns and executes the corresponding expression associated with the first matching pattern.
 

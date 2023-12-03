@@ -22,7 +22,9 @@ dependencies {
     api("com.github.h0tk3y.betterParse:better-parse-jvm:0.4.4")
     api("com.faendir.kotlin.autodsl:annotations:2.2.15")
     ksp(project(":unitsKSP"))
+    ksp(project(":patternKSP"))
     implementation(project(":unitsAnnotations"))
+    implementation(project(":patternAnnotations"))
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:1.7.10")
     testImplementation("org.assertj:assertj-core:3.23.1")
 }

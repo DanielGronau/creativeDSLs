@@ -715,6 +715,71 @@ If the module is in a repository, it can be referenced with group, artifact, and
 
 === Case Study: Generating Data Class Patterns ===
 
+In the last chapter, we developed a little pattern matching DSL, however it lacked the ability to create pattern functions for data classes. In this case study, we will discuss just the annotation and the KSP visitor class, as the remaining parts are very similar to the previous case study.
+
+[source,kotlin]
+----
+class PatternVisitor(
+    private val codeGenerator: CodeGenerator,
+    private val logger: KSPLogger
+) : KSVisitorVoid() {
+
+    private val patternClassName = ClassName("kopama", "Pattern")
+
+    override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
+        val shortName = classDeclaration.simpleName.getShortName()
+
+        logger.warn("found $shortName")
+
+        if (Modifier.DATA !in classDeclaration.modifiers) {
+            logger.error("Can't generate pattern, <$shortName> isn't a data class")
+        }
+
+        val parameters = classDeclaration.primaryConstructor!!.parameters
+        val funSpec = patternFunction(shortName, parameters, classDeclaration)
+
+        val fileSpec = FileSpec.builder(
+            packageName = classDeclaration.packageName.asString(),
+            fileName = shortName.decap() + "Pattern"
+        ).addFunction(funSpec).addImport("kopama", "any").build()
+
+        fileSpec.writeTo(codeGenerator, false)
+    }
+
+    private fun patternFunction(
+        shortName: String,
+        parameters: List<KSValueParameter>,
+        classDeclaration: KSClassDeclaration
+    ) = FunSpec.builder(functionName(shortName))
+        .addParameters(parameters.map { param ->
+            ParameterSpec.builder(
+                name = param.name!!.getShortName(),
+                type = patternClassName.parameterizedBy(param.type.toTypeName())
+            ).defaultValue("any")
+                .build()
+        })
+        .returns(patternClassName.parameterizedBy(classDeclaration.toClassName().copy(nullable = true)))
+        .beginControlFlow("return")
+        .beginControlFlow("when(it)")
+        .addCode("null -> false\n")
+        .addCode("else -> %L", parameters.joinToString(" &&\n        ", "", "\n") { param ->
+            "${param.name!!.getShortName()}(it.${param.name!!.getShortName()})"
+        })
+        .endControlFlow()
+        .endControlFlow()
+        .build()
+
+    private fun String.decap(): String = this.replaceFirstChar { it.lowercase(Locale.getDefault()) }
+
+    // use the decapitalized class name as function name,
+    // add "...Pattern" if it would otherwise cause a name clash
+    private fun functionName(shortName: String) = shortName.decap()
+        .let { decap ->
+            if (decap == shortName) "${decap}Pattern" else decap
+        }
+}
+----
+
 === Conclusion
 
 The decision to use code generation requires careful consideration because of the effort required. However, this technique allows you to implement DSLs that would just be too much overhead without it. And with libraries like https://square.github.io/kotlinpoet[KotlinPoet], it is quite intuitive to generate the code you want. Kotlin-Poet is itself a nice example of a real-world DSL, and will be explored as such in the final chapter.
