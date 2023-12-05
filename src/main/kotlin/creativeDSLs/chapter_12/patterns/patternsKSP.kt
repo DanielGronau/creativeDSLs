@@ -9,7 +9,6 @@ enum class Continent {
 @DataClassPattern
 data class Country(val name: String, val capital: String, val continent: Continent, val millionPeople: Double)
 
-
 fun main() {
     val country = Country(
         name = "Estonia",

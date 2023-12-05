@@ -16,14 +16,19 @@ import com.squareup.kotlinpoet.ksp.toTypeName
 import com.squareup.kotlinpoet.ksp.writeTo
 import java.util.*
 
+private const val patternPackage = "creativeDSLs.chapter_12.patterns"
+
 class PatternVisitor(
     private val codeGenerator: CodeGenerator,
     private val logger: KSPLogger
 ) : KSVisitorVoid() {
 
-    private val patternClassName = ClassName("creativeDSLs.chapter_12.patterns", "Pattern")
+    private val patternClassName = ClassName(patternPackage, "Pattern")
 
-    override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
+    override fun visitClassDeclaration(
+        classDeclaration: KSClassDeclaration,
+        data: Unit
+    ) {
         val shortName = classDeclaration.simpleName.getShortName()
 
         logger.warn("found $shortName")
@@ -38,7 +43,7 @@ class PatternVisitor(
         val fileSpec = FileSpec.builder(
             packageName = classDeclaration.packageName.asString(),
             fileName = shortName.decap() + "Pattern"
-        ).addFunction(funSpec).addImport("creativeDSLs.chapter_12.patterns", "any").build()
+        ).addFunction(funSpec).addImport(patternPackage, "any").build()
 
         fileSpec.writeTo(codeGenerator, false)
     }
@@ -66,10 +71,9 @@ class PatternVisitor(
         .endControlFlow()
         .build()
 
-    private fun String.decap(): String = this.replaceFirstChar { it.lowercase(Locale.getDefault()) }
+    private fun String.decap(): String =
+        this.replaceFirstChar { it.lowercase(Locale.getDefault()) }
 
-    // use the decapitalized class name as function name,
-    // add "...Pattern" if it would otherwise cause a name clash
     private fun functionName(shortName: String) = shortName.decap()
         .let { decap ->
             if (decap == shortName) "${decap}Pattern" else decap
