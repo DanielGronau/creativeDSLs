@@ -1,4 +1,4 @@
-== Builder Pattern DSLs
+== Builder Pattern DSLs and Fluent Interfaces
 
 > Builders are the poets of object creation, crafting instances with eloquent syntax and profound semantics.
 -- ChapGPT 3.5
@@ -246,6 +246,125 @@ val superman = PersonBuilder()
 The process flow of a flattened builder can also be thought of as a very simple state transition, namely from the outer layer to the inner layer and back. xref:chapter-08_transitions.adoc[Chapter 8] demonstrates techniques to implement such state transitions in a safe way, so that the code won't compile if the start and end methods are placed incorrectly.
 
 While there are certainly valid use cases for a flattening builder, the usual approach based on nesting is not only simpler conceptually and implementation-wise, it also scales better, and should therefore be preferred.
+
+==== Nesting with Varargs (((Varargs)))
+
+If you are building a tree-like structure where each node has only one type of child, method chaining using varargs can lead to quite elegant DSLs. A good example is data validation, where you check if a value matches your specification, and if it does not, you get a list of problems. You can have validators that just check a simple condition, like a `String` not being blank, but you can also have validators that combine the results of sub-validators.
+
+Here is our validation result type:
+
+[source,kotlin]
+----
+sealed interface Validation {
+    data object Success : Validation
+    data class Failure(val reasons: List<String>) : Validation
+
+    operator fun Validation.plus(that: Validation): Validation = when {
+        this is Failure && that is Failure -> this.copy(reasons = this.reasons + that.reasons)
+        this is Success -> that
+        else -> this
+    }
+}
+----
+
+Now we need the `Validator` interface and a validate extension function that can be called on any object. When nesting validators, we would not only see our own `validate()` method, but also the one from our caller, etc., so we use the `@DslMarker` (((@DslMarker))) mechanism to hide the latter. We also include a helper function to construct a validator based on a condition.
+
+[source,kotlin]
+----
+@DslMarker
+annotation class ValidationDsl
+
+@ValidationDsl
+fun interface Validator<T> {
+    fun validate(t: T): Validation
+}
+
+fun <T> T.validate(
+    vararg validators: Validator<T>
+): Validation = validators.fold<_, Validation>(Validation.Success) { result, validator ->
+    result + validator.validate(this)
+}
+
+private infix fun Boolean.then(reason: String) = when {
+    this -> Validation.Failure(listOf(reason))
+    else -> Validation.Success
+}
+----
+
+Writing simple validators is straightforward, especially since `Validator` is a functional interface, so I'll only show a few examples for string validators:
+
+[source,kotlin]
+----
+fun notBlank() = Validator<String> {
+    it.isBlank() then "String can't be blank"
+}
+
+fun minLength(min: Int) = Validator<String> {
+    (it.length < min) then "String '$it' must have at least $min characters"
+}
+
+fun maxLength(max: Int) = Validator<String> {
+    (it.length > max) then "String '$it' must have at most $max characters"
+}
+----
+
+Using them is very simple, a typical call could be `myString.validate(notBlank(), maxLength(10))`.
+
+Now comes the interesting part, namely validators that take other validators as arguments, or more specifically, as varargs:
+
+[source,kotlin]
+----
+fun <T> forAll(vararg validators: Validator<T>) = Validator<List<T>> {
+    it.fold<_, Validation>(Validation.Success) { result, element ->
+        result + element.validate(*validators)
+    }
+}
+
+fun <T, S> KProperty1<T, S>.validate(
+    vararg validators: Validator<S>
+) = Validator<T> {
+    validators.fold<_, Validation>(Validation.Success) { result, validator ->
+        result + validator.validate(this.call(it))
+    }
+}
+
+fun <T, S> KFunction1<T, S>.validate(
+    vararg validators: Validator<S>
+) = Validator<T> {
+    validators.fold<_, Validation>(Validation.Success) { result, validator ->
+        result + validator.validate(this.call(it))
+    }
+}
+----
+
+The `forAll()` function applies the given validators to all elements of a list. The next two functions allow you to validate properties and getter-like functions of the given value. If you look at the sample calls, you can see how the nested varargs give the DSL a tree-like shape, without much syntactic clutter:
+
+[source,kotlin]
+----
+data class Child(val name: String, val friends: List<String>)
+
+val child = Child("Charlie", listOf("Snoopy", "Lucy", "Linus"))
+
+val result = child.validate(
+    Child::name.validate(
+        minLength(2),
+        maxLength(3)
+    ),
+    Child::friends.validate(
+        forAll(
+            notBlank(),
+            maxLength(5)
+        )
+    )
+)
+
+// Failure(reasons=[
+//   String 'Charlie' must have at most 3 characters,
+//   String 'Snoopy' must have at most 5 characters
+// ])
+----
+
+As mentioned above, this style isn't always feasible, but when it can be used, it looks pretty clean.
 
 === The Typesafe Builder Pattern (((Typesafe Builder Pattern)))
 
