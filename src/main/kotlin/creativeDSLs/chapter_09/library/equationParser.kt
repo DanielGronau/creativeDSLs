@@ -25,7 +25,7 @@ private val elements = setOf(
 val equationGrammar = object : Grammar<Equation>() {
     val ws by regexToken("\\s+", ignore = true)
     val irreversible by literalToken("->")
-    val reversible by literalToken("<->")
+    val reversible by literalToken("<=>")
     val plus by literalToken("+")
     val leftPar by literalToken("(")
     val rightPar by literalToken(")")
@@ -54,7 +54,7 @@ val equationGrammar = object : Grammar<Equation>() {
     val side: Parser<List<Molecule>> = separated(molecule, plus)
         .map { it.terms }
     override val rootParser: Parser<Equation> by (side and arrow and side)
-        .map { (lhs, a, rhs) -> Equation(lhs, rhs, a) }
+        .map { (lhs, a, rhs) -> Equation(lhs, a, rhs) }
 }
 
 fun main() {

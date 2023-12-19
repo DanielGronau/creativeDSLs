@@ -4,6 +4,7 @@ public class CallStrangeNames {
 
     public static void main(String[] args) {
         NamingTest.checkThisOut();
-        NamingTest.instanceofFun();
+        NamingTest.instanceOf();
+        Toplevel.someToplevelFunction();
     }
 }

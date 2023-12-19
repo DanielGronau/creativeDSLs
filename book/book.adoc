@@ -1,7 +1,6 @@
 = Creative DSLs in Kotlin
 :imagesdir: ./images
 :front-cover-image: image:cover.jpg[]
-:page-background-image: image:preprint.png[]
 :doctype: book
 :encoding: utf-8
 :lang: en
@@ -9,12 +8,13 @@
 :toclevels: 3
 :numbered:
 :showtitle: Creative DSLs in Kotlin
-:revyear: 2022
+:revyear: 2023
 :revnumber: 0.1
 :source-highlighter: rouge
 :icons: font
 :author: Daniel Gronau
 :srcdir: ../src/main/kotlin/creativeDsls
+:pdf-page-size: [17cm, 22cm]
 
 include::colophon.adoc[]
 
@@ -60,7 +60,7 @@ include::chapter-14_examples.adoc[]
 
 = Back Matter
 
-include::epilog.adoc[]
+include::epilogue.adoc[]
 
 include::bibliography.adoc[]
 

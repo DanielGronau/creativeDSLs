@@ -19,35 +19,36 @@ annotation class Mapping(
 abstract class Mapper<S : Any, T : Any> {
     fun map(s: S): T {
         val annotations = this::class.findAnnotations(Mapping::class)
+
         val targetType = this::class
             .supertypes[0]
             .arguments[1]
             .type!!
             .classifier as KClass<*>
         val targetConstructor = targetType.primaryConstructor!!
-        val args = targetConstructor.parameters.map { targetParam ->
-            val ann = annotations.find { it.target == targetParam.name }
-            val sourceParam = ann?.source ?: targetParam.name
-            val sourceValue = s::class.memberProperties
-                .find { it.name == sourceParam }!!
-                .getter.call(s)
-            when {
-                ann?.transformer != null -> {
-                    val transformer = ann.transformer.objectInstance
-                        ?: ann.transformer.primaryConstructor?.call()
-                        ?: Unit
-                    transformer::class.memberFunctions
-                        .find { it.name == "invoke" }
-                        ?.call(transformer, sourceValue)
-                        ?: sourceValue
-                }
 
-                else -> sourceValue
-            }
+        val targetArgs = targetConstructor.parameters.map { targetParam ->
+
+            val ann = annotations.find { it.target == targetParam.name }
+
+            val sourceParam = ann?.source ?: targetParam.name
+
+            val sourceValue = s::class.memberProperties.find {
+                it.name == sourceParam
+            }!!.getter.call(s)
+
+            ann?.transformer?.isSubclassOf(Function1::class).takeIf { it == true }
+                ?.let {
+                    val transformer = ann!!.transformer.objectInstance
+                        ?: ann.transformer.primaryConstructor!!.call()
+                    transformer::class.memberFunctions
+                        .find { it.name == "invoke" }!!
+                        .call(transformer, sourceValue)
+                } ?: sourceValue
         }.toTypedArray()
-        println(args.toList())
+
         @Suppress("UNCHECKED_CAST")
-        return targetConstructor.call(*args) as T
+        return targetConstructor.call(*targetArgs) as T
     }
 }
 

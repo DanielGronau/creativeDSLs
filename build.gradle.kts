@@ -1,7 +1,8 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.9.0"
+    kotlin("jvm") version "1.9.20"
+    id("com.google.devtools.ksp") version "1.9.20-1.0.14"
 }
 
 group = "creativeDSLs"
@@ -17,9 +18,13 @@ dependencies {
     api("org.junit.platform:junit-platform-commons:1.9.0")
     api("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.7.10")
     api("org.jetbrains.kotlin:kotlin-reflect:1.7.10")
-    api("com.squareup:kotlinpoet:1.12.0")
+    api("com.squareup:kotlinpoet:1.15.1")
     api("com.github.h0tk3y.betterParse:better-parse-jvm:0.4.4")
     api("com.faendir.kotlin.autodsl:annotations:2.2.15")
+    ksp(project(":unitsKSP"))
+    ksp(project(":patternKSP"))
+    implementation(project(":unitsAnnotations"))
+    implementation(project(":patternAnnotations"))
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit5:1.7.10")
     testImplementation("org.assertj:assertj-core:3.23.1")
 }

@@ -1,11 +1,11 @@
-== Loan Pattern DSLs
+== Loan Pattern DSLs (((Loan Pattern DSL)))
 
 > Neither a borrower nor a lender be, +
 For loan oft loses both itself and friend, +
 And borrowing dulls the edge of husbandry.
 -- Shakespeare, Hamlet, Act 1, Scene 3
 
-NOTE: This pattern is known by several different names, one of which is "builder pattern". This can be particularly confusing because it is similar to, and often used in place of, the classic builder pattern discussed in the last chapter. To avoid confusion, and to provide a more accurate description of the underlying mechanism, it will be referred to here as the "Loan Pattern DSL".
+This pattern is known by several different names, one of which is "builder pattern". This can be particularly confusing because it is similar to, and often used in place of, the classic builder pattern discussed in the last chapter. Another commonly used term is "lambdas with receivers"(((Lambda with Receiver))), but I would argue that this describes an implementation detail rather than the underlying idea. To avoid confusion, and to provide a more accurate description of the underlying mechanism, it will be referred to here as the "Loan Pattern DSL".
 
 The Loan Pattern DSL uses a mutable builder class that exposes its members through the Loan Pattern. This approach leverages the power of extension methods and the trailing lambda syntax in Kotlin. It is especially useful for creating deeply nested structures. In such cases, the code can quickly become cluttered and hard to read when using the classic builder pattern. Also, it can be easier to enforce constraints and ensure type safety with this approach compared to using builders. Sometimes the greater flexibility of Loan Pattern DSLs allows other DSL techniques, such as operator overloading, to be incorporated, while the builder approach is often too rigid for such improvements.
 
@@ -205,7 +205,7 @@ Retrofitting HttpRequestBuilder with a Loan Pattern DSL proved to be a relativel
 
 === Case Study: HttpRequest with AutoDSL (((AutoDSL)))
 
-Since this type of DSL is very common, and its structure is quite predictable, it shouldn't be surprising that there are libraries for automatically deriving such DSLs. At this point we will discuss the https://github.com/F43nd1r/autodsl[AutoDSL] library, which has to be set up as an annotation processor (either via kapt (((kapt))) or (((KSP))) KSP). Please follow the description on the GitHub project page.
+Since this type of DSL is very common, and its structure is quite predictable, it shouldn't be surprising that there are libraries for automatically deriving such DSLs. At this point we will discuss the https://github.com/F43nd1r/autodsl[AutoDSL] library, which has to be set up as an annotation processor (either via kapt (((kapt))) or (((KSP))) (((Kotlin Symbol Processing API))) KSP). Please follow the description on the GitHub project page.
 
 WARNING: Please make sure you are using the correct GitHub project. There is an older library called "AutoDsl" which was the inspiration for this project. Unfortunately, it is no longer maintained and does not work with Kotlin 1.4 or newer.
 

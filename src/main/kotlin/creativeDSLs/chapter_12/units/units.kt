@@ -1,4 +1,4 @@
-package creativeDSLs.chapter_12
+package creativeDSLs.chapter_12.units
 
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
@@ -115,6 +115,7 @@ private fun makeAddition(kClass: KClass<out Quantity>) =
     FunSpec.builder("plus")
         .addModifiers(KModifier.OPERATOR)
         .receiver(kClass)
+        .returns(kClass)
         .addParameter("that", kClass)
         .addStatement("return copy(amount = this.amount + that.amount)")
         .build()
@@ -123,6 +124,7 @@ private fun makeSubtraction(kClass: KClass<out Quantity>) =
     FunSpec.builder("minus")
         .addModifiers(KModifier.OPERATOR)
         .receiver(kClass)
+        .returns(kClass)
         .addParameter("that", kClass)
         .addStatement("return copy(amount = this.amount - that.amount)")
         .build()
@@ -131,6 +133,7 @@ private fun makeNegation(kClass: KClass<out Quantity>) =
     FunSpec.builder("unaryMinus")
         .addModifiers(KModifier.OPERATOR)
         .receiver(kClass)
+        .returns(kClass)
         .addStatement("return copy(amount = -this.amount)")
         .build()
 
@@ -138,22 +141,31 @@ private fun makeScalarMultiplication(kClass: KClass<out Quantity>) =
     FunSpec.builder("times")
         .addModifiers(KModifier.OPERATOR)
         .receiver(Double::class)
+        .returns(kClass)
         .addParameter("that", kClass)
         .addStatement("return that.copy(amount = this * that.amount)")
         .build()
 
-private fun makeMultiplication(in1: KClass<out Quantity>, in2: KClass<out Quantity>, out: KClass<out Quantity>) =
-    FunSpec.builder("times")
+private fun makeMultiplication(
+    in1: KClass<out Quantity>,
+    in2: KClass<out Quantity>,
+    out: KClass<out Quantity>
+) = FunSpec.builder("times")
         .addModifiers(KModifier.OPERATOR)
         .receiver(in1)
+        .returns(out)
         .addParameter("that", in2)
         .addStatement("return %T(this.amount * that.amount)", out)
         .build()
 
-private fun makeDivision(in1: KClass<out Quantity>, in2: KClass<out Quantity>, out: KClass<out Quantity>) =
-    FunSpec.builder("div")
+private fun makeDivision(
+    in1: KClass<out Quantity>,
+    in2: KClass<out Quantity>,
+    out: KClass<out Quantity>
+) = FunSpec.builder("div")
         .addModifiers(KModifier.OPERATOR)
         .receiver(in1)
+        .returns(out)
         .addParameter("that", in2)
         .addStatement("return %T(this.amount / that.amount)", out)
         .build()
@@ -193,7 +205,7 @@ private fun makeDivisions() =
     }
 
 fun main() {
-    FileSpec.builder("creativeDSLs.chapter_11", "generated")
+    FileSpec.builder("creativeDSLs.chapter_12.units", "generated")
         .addProperties(makeQuantityToAmounts())
         .addProperties(makeAmountToQuantities())
         .addFunctions(makeAdditions())

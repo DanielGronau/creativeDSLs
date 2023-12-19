@@ -5,3 +5,8 @@
  */
 
 rootProject.name = "CreativeDsls"
+
+include("unitsAnnotations")
+include("unitsKSP")
+include("patternAnnotations")
+include("patternKSP")

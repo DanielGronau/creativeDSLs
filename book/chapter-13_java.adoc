@@ -1,11 +1,14 @@
 [#javaInteroperability]
 == Java Interoperability (((Java Interoperability)))
 
+> Translation is the art of failure.
+-- Umberto Eco
+
 Using a Kotlin DSL from Java can be challenging. While some Kotlin features, such as operator overloading, simply aren't available, there are ways to make other features more accessible from Java, and to create a DSL that is useful and convenient in both languages. Fortunately, Kotlin has some built-in features to improve Java interoperability, which can be found at https://kotlinlang.org/docs/java-to-kotlin-interop.html[Kotlin Documentation: Calling Kotlin from Java]. This chapter discusses Java interoperability from a purely DSL design perspective, presenting the relevant built-in features and useful techniques for solving DSL-specific problems.
 
 Retrofitting an existing DSL for Java interoperability is always more expensive than planning for it from the beginning. By following some simple best practices, such as avoiding Java keywords when naming things, many problems won't arise in the first place.
 
-=== Renaming Identifiers
+=== Renaming Identifiers (((@JvmName)))
 
 When writing DSLs, it is common to use unusual names that may not be allowed in Java, either because they use forbidden characters or because they match a Java keyword. In this case, the `@JvmName` annotation can help. Of course, sometimes additional annotations may be needed, such as `@JvmStatic` to expose object members as static class members in Java:
 
@@ -17,7 +20,7 @@ object NamingTest {
     fun `check this out`() = println("backtick notation")
 
     @JvmStatic
-    @JvmName("instanceofFun")
+    @JvmName("instanceOf")
     fun instanceof() = println("instanceof")
 }
 ----
@@ -31,7 +34,7 @@ public class CallStrangeNames {
 
     public static void main(String[] args) {
         NamingTest.checkThisOut();
-        NamingTest.instanceofFun();
+        NamingTest.instanceOf();
     }
 }
 ----
@@ -55,9 +58,8 @@ The function could be called from Java as `com.acme.UtilsKt.someFunction()`. Oft
 [source,kotlin]
 .utils.kt
 ----
-package com.acme
-
 @file:JvmName("Utils")
+package com.acme
 
 fun someFunction() {
     ...
@@ -65,6 +67,38 @@ fun someFunction() {
 ----
 
 It is even possible to map the contents of multiple Kotlin files to the same Java class, but then an additional `@file:JvmMultifileClass` annotation is needed in every file.
+
+=== Generate Overloaded Methods (((@JvmOverloads)))
+
+Java doesn't have default arguments, they are "simulated" by having several overloaded methods. The Kotlin compiler can generate such overloaded methods when requested via the `@JvmOverloads` annotation. Consider the following Kotlin function:
+
+[source,kotlin]
+----
+@JvmOverloads
+fun withOverloading(
+    s: String = "one",
+    i: Int = 42,
+    j: Int,
+    b: Boolean = false
+) {
+    println("$s $i $j $b")
+}
+----
+
+In a Java class, you can see now four methods of this name. If you call the different implementations, you get the following results:
+
+[source,java]
+.Java Code
+----
+withOverloading("two", 12, 17, true);  // "two 12 17 true"
+withOverloading("two", 12, 17);        // "two 12 17 false"
+withOverloading("two", 17);            // "two 42 17 false"
+withOverloading(17);                   // "one 42 17 false"
+----
+
+As you can see, you can either call the method with all arguments, or you can leave the right-most arguments with default values off. Of course, you have always to specify the argument `j`, which has no default.
+
+You can also annotate constructors with `@JvmOverloads`.
 
 === Value Classes (((Value Classes))) and Mangling (((Mangling)))
 
@@ -90,3 +124,8 @@ fun display(x: Miles) { println("${x.value} miles") }
 ----
 
 From Java, you can call the example methods by their JVM names and with `double` arguments, e.g. `displayKm(23.0);` and `displayMiles(42.3);`.
+
+=== Checked Exceptions
+
+Kotlin doesn't have the concept of "checked exceptions", but if a function that might throw such an exception is called from Java, the Java compiler expects that the exception is declared in the function signature. In order to avoid problems in such cases, you can give the Kotlin compiler a hint to add a checked exception to the function signature by annotating the function with `Throws(SomeCheckedException::class)`.
+

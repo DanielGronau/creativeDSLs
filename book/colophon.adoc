@@ -17,6 +17,6 @@ Germany
 Email: creativeDSLs@protonmail.com
 
 [%hardbreaks]
-Distribution: epubli – a service of the neopubli GmbH, Berlin, Germany
+Distribution: XXX
 eBook ISBN: XXX-X-XXX-XXXXX-X
 Paperback ISBN: XXX-X-XXX-XXXXX-X

@@ -22,6 +22,8 @@ class Matcher<P, T : Any>(private val obj: P) {
     fun otherwise(default: () -> T) = object : MatchResult<T> {
         override val value = result ?: default()
     }
+
+    operator fun Any.unaryPlus() = eq(this)
 }
 
 fun <P, T : Any> match(obj: P, body: Matcher<P, T>.() -> MatchResult<T>): T =
