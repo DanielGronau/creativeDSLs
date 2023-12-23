@@ -1,9 +1,9 @@
-== Builder Pattern DSLs and Fluent Interfaces
+== Builder Pattern DSLs and Method Chaining
 
 > Builders are the poets of object creation, crafting instances with eloquent syntax and profound semantics.
 -- ChapGPT 3.5
 
-A common task is the initialization of a complex, sometimes nested object. The classic solution is the _Builder Pattern_: the builder class is mutable, uses method chaining(((Method Chaining))) (also called "Fluent Interfaces")(((Fluent Interface))) to simplify value assignment, and contains a terminal build method that constructs the domain object.
+A common task is to initialize a complex, sometimes nested object. The classic solution is the _Builder Pattern_: the builder class is mutable, uses method chaining(((Method Chaining))) (also called "Fluent Interfaces")(((Fluent Interface))) to simplify value assignment, and contains a terminal build method that constructs the domain object. Note that while builders are the most prominent use case, method chaining can be used in other contexts, and the points made for builders can usually be applied to such cases as well.
 
 This chapter covers the classic builder pattern as it is often used in Java. Next, we will show how named arguments can often replace the builder pattern in Kotlin, especially when constructing smaller classes. We will also briefly discuss nested builders. Next, we will address the issue of mandatory fields in builders by introducing the _Typesafe Builder Pattern_, and we will also cover the related _Counting Builder_. Finally, we discuss why builders are not as widely used in Kotlin as they are in Java.
 
@@ -364,7 +364,7 @@ val result = child.validate(
 // ])
 ----
 
-As mentioned above, this style isn't always feasible, but when it can be used, it looks pretty clean.
+As mentioned above, this style isn't always feasible, but when it can be used, it often improves readability.
 
 === The Typesafe Builder Pattern (((Typesafe Builder Pattern)))
 
