@@ -390,6 +390,8 @@ This book can only give a very high level overview of KSP. This means that the g
 
 In your gradle build file, you will need dependencies to the KSP API (`com.google.devtools.ksp:symbol-processing-api`), to the KSP extensions of KotlinPoet (`com.squareup:kotlinpoet-ksp`), and to the module with your custom annotations.
 
+WARNING: KSP runs by default in https://kotlinlang.org/docs/ksp-incremental.html[incremental mode], which means that it tries to avoid unnecessary re-processing of the sources. This setting is based on the assumption that the KSP code itself usually doesn't change during subsequent runs, which in turn means that it won't work correctly during the implementation of the KSP module itself. To disable incremental mode in the modules that use your KSP during development, set the gradle property `ksp.incremental=false`, e.g. in their `gradle.settings` files.
+
 A KSP implementation consists of three main parts:
 
 - A `SymbolProcessorProvider`: This class allows the KSP library to use Java's https://docs.oracle.com/javase/tutorial/sound/SPI-intro.html[Service Provider Interface] mechanism to discover new processors.

@@ -639,6 +639,8 @@ fun main() {
 
 Note the expression `T::class`, which shouldn't work, considering that type erasure removes all generic type information at runtime. However, the function is defined as an `inline` function, and the generic parameter `T` is marked as "reified". The details are beyond the scope of this book, but basically the inlining allows the compiler to get the generic type information from where the inlining occurs, and make it look like there was no type erasure. It should be noted that inline functions are subject to some restrictions and behave slightly differently than normal functions, e.g. in handling returns.
 
+WARNING: Functions with reified type parameters cannot be called from Java because it has no mechanism for inlining functions, and only inlining allows Kotlin to capture the generic type. This issue will be discussed in <<chapter-13_java.adoc#reifiedGenerics,Chapter 13>>.
+
 === Value Classes (((Value Classes)))
 
 Value classes are a feature introduced in Kotlin 1.5 that allows developers to create lightweight, efficient classes that represent simple values. Value classes are designed to be used for values that are commonly used and require little to no additional functionality beyond what is already provided by the underlying data type.
