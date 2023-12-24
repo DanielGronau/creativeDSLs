@@ -43,11 +43,10 @@ build/
 ### Mac OS ###
 .DS_Store
 
-/book/book.epub
+### Gradle ###
+/.gradle/
 
-/.gradle/5.4.1/fileHashes/fileHashes.lock
-/.gradle/5.4.1/gc.properties
-/.gradle/5.4.1/fileChanges/last-build.bin
+/book/book.epub
 
 ### AsciiDoc ###
 *.cache
