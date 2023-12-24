@@ -9,7 +9,11 @@ One drawback is that these DSLs are hidden from the scrutiny of the compiler: Th
 
 (((Regular Expressions)))
 
-WARNING: Kotlin, like many languages, supports regular expressions, which can be thought of as a kind of mini-parser. For small, isolated use cases, they can be very convenient. However, using them for larger problems can result in code that is very hard to maintain because this approach doesn't scale well. In my opinion, using regular expressions as full-blown "parsers" may be acceptable for prototypes and test environments, but not in production code.
+[WARNING]
+.Regular Expressions
+====
+Kotlin, like many languages, supports regular expressions, which can be thought of as a kind of mini-parser. For small, isolated use cases, they can be very convenient. However, using them for larger problems can result in code that is very hard to maintain because this approach doesn't scale well. In my opinion, using regular expressions as full-blown "parsers" may be acceptable for prototypes and test environments, but not in production code.
+====
 
 === Case Study: Forsyth–Edwards Notation
 

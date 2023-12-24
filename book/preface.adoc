@@ -78,8 +78,12 @@ Tips, warnings etc. are presented as follows:
 
 TIP: When the white frost comes, do not eat the yellow snow.
 
-WARNING: Beware the Jabberwock, my son! The jaws that bite, the claws that catch!
+[WARNING]
+.Jabberwocky
+====
+Beware the Jabberwock, my son! The jaws that bite, the claws that catch!
 Beware the Jubjub bird, and shun the frumious Bandersnatch!
+====
 
 Example code is shown like this, and may include a file name or other indication of origin before the code block:
 

@@ -384,7 +384,11 @@ With an extension function, the best syntax we could achieve is `22.46.USD()`, b
 
 Kotlin allows operator overloading, but is conservative in the sense that it only allows a fixed set of operators.
 
-NOTE: The boolean operators `&&` and `||`, the access operators `.`, `?.` and `!!`, the unary spread operator `*` and the Elvis operator `?:` cannot be overloaded.
+[NOTE]
+.Overloading Restrictions
+====
+The boolean operators `&&` and `||`, the access operators `.`, `?.` and `!!`, the unary spread operator `*` and the Elvis operator `?:` cannot be overloaded.
+====
 
 Some overloading functions require specific return types. The type `R` is used in the following tables to indicate that there are no such restrictions.
 
@@ -639,7 +643,11 @@ fun main() {
 
 Note the expression `T::class`, which shouldn't work, considering that type erasure removes all generic type information at runtime. However, the function is defined as an `inline` function, and the generic parameter `T` is marked as "reified". The details are beyond the scope of this book, but basically the inlining allows the compiler to get the generic type information from where the inlining occurs, and make it look like there was no type erasure. It should be noted that inline functions are subject to some restrictions and behave slightly differently than normal functions, e.g. in handling returns.
 
-WARNING: Functions with reified type parameters cannot be called from Java because it has no mechanism for inlining functions, and only inlining allows Kotlin to capture the generic type. This issue will be discussed in <<chapter-13_java.adoc#reifiedGenerics,Chapter 13>>.
+[WARNING]
+.Java Interoperability
+====
+Functions with reified type parameters cannot be called from Java because it has no mechanism for inlining functions, and only inlining allows Kotlin to capture the generic type. This issue will be discussed in <<chapter-13_java.adoc#reifiedGenerics,Chapter 13>>.
+====
 
 === Value Classes (((Value Classes)))
 
@@ -651,7 +659,11 @@ Value classes are optimized for performance, as they are designed to avoid the o
 
 One of the main advantages of value classes is that they can be used to create more expressive and type-safe APIs. For example, a value class representing a particular unit of measurement can help ensure that only valid unit conversions are performed, and can help catch errors at compile time rather than at runtime.
 
-NOTE: The JVM backend requires a `@JvmInline` annotation, which may be obsolete in the future. Also, the single constructor argument restriction may be dropped. This depends on the introduction of https://openjdk.org/projects/valhalla/[Project Valhalla], which aims to introduce value class functionality to Java.
+[NOTE]
+.@JvmInline
+====
+The JVM backend requires a `@JvmInline` annotation, which may be obsolete in the future. Also, the single constructor argument restriction may be dropped. This depends on the introduction of https://openjdk.org/projects/valhalla/[Project Valhalla], which aims to introduce value class functionality to Java.
+====
 
 [source,kotlin]
 ----

@@ -475,7 +475,11 @@ ProductBuilder()
 
 You can check that the code no longer compiles after removing one of the mandatory fields.
 
-NOTE: The Typesafe Builder Pattern was pioneered by http://blog.rafaelferreira.net/2008/07/type-safe-builder-pattern-in-scala.html[Rafael Ferreira] in Scala, using ideas from Haskell. The code shown here is based on the implementation by http://dcsobral.blogspot.de/2009/09/type-safe-builder-pattern.html[Daniel Sobral].
+[NOTE]
+.Origins
+====
+The Typesafe Builder Pattern was pioneered by http://blog.rafaelferreira.net/2008/07/type-safe-builder-pattern-in-scala.html[Rafael Ferreira] in Scala, using ideas from Haskell. The code shown here is based on the implementation by http://dcsobral.blogspot.de/2009/09/type-safe-builder-pattern.html[Daniel Sobral].
+====
 
 === Counting Builder
 

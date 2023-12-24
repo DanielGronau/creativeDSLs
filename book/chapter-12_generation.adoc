@@ -33,7 +33,11 @@ data class Watt(override val amount: Double) : Quantity
 data class Pascal(override val amount: Double) : Quantity
 ----
 
-WARNING: You should always consider whether the precision provided by `Double` is sufficient for the kind of calculations required by your application, and switch to e.g. `BigDecimal` if not.
+[WARNING]
+.Representing Quantities and Currency Amounts
+====
+You should always consider whether the precision provided by `Double` is sufficient for the kind of calculations required by your application, and switch to e.g. `BigDecimal` if not.
+====
 
 At this point, we can't even add two quantities together. It would be nice if we could write this function only once in `Quantity`, but of course only quantities of the same unit can be added. There are techniques to make this safe, but they would require the use of generics in Kotlin.
 
@@ -326,7 +330,11 @@ Before deciding to write an annotation processor, it's important to understand h
 ....
 
 
-WARNING: At the time you call KSP, the client code is not yet built, which means **you can't use regular reflection** and no `KClass` instances of client classes. The KSP API gives you syntactic information about the code, but working with this API isn't as convenient and comprehensive as using reflection.
+[WARNING]
+.KSP and Reflection
+====
+At the time you call KSP, the client code is not yet built, which means **you can't use regular reflection** and no `KClass` instances of client classes. The KSP API gives you syntactic information about the code, but working with this API isn't as convenient and comprehensive as using reflection.
+====
 
 The lack of reflection support means that KSP may not be the right tool if you need to rely heavily on code inspection, and that you should think about making the process of gathering information as easy as possible for the processor, e.g. by using annotations.
 
@@ -390,7 +398,15 @@ This book can only give a very high level overview of KSP. This means that the g
 
 In your gradle build file, you will need dependencies to the KSP API (`com.google.devtools.ksp:symbol-processing-api`), to the KSP extensions of KotlinPoet (`com.squareup:kotlinpoet-ksp`), and to the module with your custom annotations.
 
-WARNING: KSP runs by default in https://kotlinlang.org/docs/ksp-incremental.html[incremental mode], which means that it tries to avoid unnecessary re-processing of the sources. This setting is based on the assumption that the KSP code itself usually doesn't change during subsequent runs, which in turn means that it won't work correctly during the implementation of the KSP module itself. To disable incremental mode in the modules that use your KSP during development, set the gradle property `ksp.incremental=false`, e.g. in their `gradle.settings` files.
+[WARNING]
+.Incremental Mode
+====
+KSP runs in https://kotlinlang.org/docs/ksp-incremental.html[incremental mode] by default, which means that it tries to avoid unnecessary re-processing of the sources. This is implemented by restricting the results of methods like `Resolver.getAllFiles()` and `Resolver.getSymbolsWithAnnotation()` to only the files that have changed.
+
+This setting is based on the assumption that the KSP code itself usually doesn't change during subsequent runs, which in turn means that it won't work correctly during the implementation of the KSP module itself. To disable incremental mode in the modules that use your KSP during development, set the gradle property `ksp.incremental=false`, e.g. in their `gradle.settings` files.
+
+There are other settings that affect which files are considered "dirty" (changed) such as `ksp.intermodule.change` and `aggregating`, see the documentation for more information.
+====
 
 A KSP implementation consists of three main parts:
 
