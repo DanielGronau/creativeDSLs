@@ -9,6 +9,7 @@ target/
 /.idea/compiler.xml
 /.idea/workspace.xml
 /.idea/uiDesigner.xml
+/.idea/gradle.xml
 /.idea/codeStyles/
 /.idea/libraries/
 /.idea/kotlinc.xml
@@ -45,6 +46,7 @@ build/
 
 ### Gradle ###
 /.gradle/
+/gradle/
 
 /book/book.epub
 
