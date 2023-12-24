@@ -114,7 +114,7 @@ In the `copy()` method, the values of the current object are set as default valu
 ====
 While the `copy()` method is convenient when working with immutable data classes, it doesn't scale well for nested data classes: Imagine you need a copy of a company, with the email of the address of the CEO changed. That means you need nested `copy()` calls as well, going down level by level. This is lengthy, hard to read and error-prone.
 
-In functional programming, this problem is often solved with an "optics" package, which contains lenses and similar abstractions that allow to easily compose copy operations for different nesting levels. If you want to learn more about this topic, I suggest you have a look at https://arrow-kt.io/learn/immutable-data/intro[Arrow Optics](((Arrow-KT))).
+In functional programming, this problem is often solved with an "optics" package, which contains lenses and similar abstractions that allow to easily compose copy operations for different nesting levels. If you want to learn more about this topic, I suggest you have a look at https://arrow-kt.io/learn/immutable-data/intro[ArrowKt Optics]footnote:[ArrowKt Optics: https://arrow-kt.io/learn/immutable-data/intro](((Arrow-KT))).
 ====
 
 === Trailing Lambda Arguments (((Trailing Lambda)))
@@ -272,7 +272,7 @@ List<Integer> digits = IntUtilsKt.digits(1729, 10); // [1, 7, 2, 9]
 
 .History of Extension Functions
 ****
-Extension methods, originally introduced in C#, found their way into Kotlin as "extension functions", specifically with the goal of seamlessly integrating Java classes into the Kotlin ecosystem. This approach was chosen over Scala's _implicit conversion_ approach, which, while more powerful, was considered more complex to understand and manage. The benefits of extension methods became so apparent that they were also introduced in Scala 3. Plain Java doesn't provide support for extension methods, but there are Java libraries that do, such as http://manifold.systems/docs.html#the-extension-manifold[Manifold], https://projectlombok.org/features/experimental/ExtensionMethod[Project Lombok], or https://github.com/rogerkeays/fluent[Fluent]. It is safe to say that extension methods are an important and successful advancement in modern object-oriented programming.
+Extension methods, originally introduced in C#, found their way into Kotlin as "extension functions", specifically with the goal of seamlessly integrating Java classes into the Kotlin ecosystem. This approach was chosen over Scala's _implicit conversion_ approach, which, while more powerful, was considered more complex to understand and manage. The benefits of extension methods became so apparent that they were also introduced in Scala 3. Plain Java doesn't provide support for extension methods, but there are Java libraries that do, such as http://manifold.systems/docs.html#the-extension-manifold[Manifold]footnote:[Manifold Extension Methods: http://manifold.systems/docs.html#the-extension-manifold](((Manifold))), https://projectlombok.org/features/experimental/ExtensionMethod[Project Lombok]footnote:[Project Lombok Extension Methods: https://projectlombok.org/features/experimental/ExtensionMethod](((Project Lombok))), or https://github.com/rogerkeays/fluent[Fluent]footnote:[Fluent: https://github.com/rogerkeays/fluent](((Fluent))). It is safe to say that extension methods are an important and successful advancement in modern object-oriented programming.
 ****
 
 [#typeNarrowing]
@@ -646,10 +646,10 @@ Note the expression `T::class`, which shouldn't work, considering that type eras
 [WARNING]
 .Java Interoperability
 ====
-Functions with reified type parameters cannot be called from Java because it has no mechanism for inlining functions, and only inlining allows Kotlin to capture the generic type. This issue will be discussed in <<chapter-13_java.adoc#reifiedGenerics,Chapter 13>>.
+Functions with reified type parameters cannot be called from Java because it has no mechanism for inlining functions, and only inlining allows Kotlin to capture the generic type. This issue will be discussed in <<chapter-13_java.adoc#reifiedGenericsBridge,Chapter 13>>.
 ====
 
-=== Value Classes (((Value Classes)))
+=== Value Classes (((Value Classes))) (((@JvmInline)))
 
 Value classes are a feature introduced in Kotlin 1.5 that allows developers to create lightweight, efficient classes that represent simple values. Value classes are designed to be used for values that are commonly used and require little to no additional functionality beyond what is already provided by the underlying data type.
 
@@ -662,7 +662,7 @@ One of the main advantages of value classes is that they can be used to create m
 [NOTE]
 .@JvmInline
 ====
-The JVM backend requires a `@JvmInline` annotation, which may be obsolete in the future. Also, the single constructor argument restriction may be dropped. This depends on the introduction of https://openjdk.org/projects/valhalla/[Project Valhalla], which aims to introduce value class functionality to Java.
+The JVM backend requires a `@JvmInline` annotation, which may be obsolete in the future. Also, the single constructor argument restriction may be dropped. This depends on the introduction of https://openjdk.org/projects/valhalla/[Project Valhalla]footnote:[OpenJDK Project Valhalla: https://openjdk.org/projects/valhalla](((Project Valhalla))), which aims to introduce value class functionality to Java.
 ====
 
 [source,kotlin]
@@ -721,7 +721,7 @@ Another useful application for annotations is code generation(((Code Generation)
 
 .Annotation Processors (((Annotation Processors))) (((KSP))) (((kapt))) (((Kotlin Symbol Processing API)))
 ****
-Annotation processors allow custom processor code to be executed during the build process according to the annotations present in the application code. Kotlin provides two annotation processors, the older https://kotlinlang.org/docs/kapt.html[kapt], which is no longer actively developed, and the recommended https://kotlinlang.org/docs/ksp-overview.html[Kotlin Symbol Processing API] (KSP), which will be discussed in <<chapter-12_generation.adoc#annotationProcessor,Chapter 12>>.
+Annotation processors allow custom processor code to be executed during the build process according to the annotations present in the application code. Kotlin provides two annotation processors, the older https://kotlinlang.org/docs/kapt.html[kapt]footnote:[kapt: https://kotlinlang.org/docs/kapt.html], which is no longer actively developed, and the recommended https://kotlinlang.org/docs/ksp-overview.html[Kotlin Symbol Processing API]footnote:[KSP: https://kotlinlang.org/docs/ksp-overview.html] (KSP), which will be discussed in <<chapter-12_generation.adoc#annotationProcessor,Chapter 12>>.
 ****
 
 Finally, Kotlin includes annotations to support Java access. DSL code is often more difficult to call from Java, so we'll discuss this topic in <<chapter-13_java.adoc#javaInteroperability,Chapter 13>>.
@@ -759,7 +759,7 @@ Kotlin allows you to try experimental features (via compiler argument or `@OptIn
 [#contextReceivers]
 ==== Context Receivers (((Context Receivers)))
 
-The basic idea of https://github.com/Kotlin/KEEP/blob/master/proposals/context-receivers.md[Context receivers] is to get a class in scope that provides a certain service:
+The basic idea of https://github.com/Kotlin/KEEP/blob/master/proposals/context-receivers.md[Context receivers]footnote:[Context Receivers: https://github.com/Kotlin/KEEP/blob/master/proposals/context-receivers.md]] is to get a class in scope that provides a certain service:
 
 [source,kotlin]
 ----
@@ -813,7 +813,7 @@ You can opt in to context receivers by specifying the compiler argument `-Xconte
 [#contracts]
 ==== Contracts (((Contracts)))
 
-https://github.com/Kotlin/KEEP/blob/master/proposals/kotlin-contracts.md[Kotlin Contracts] are a way to give the compiler additional information about the result of functions, allowing it to perform smart casts it couldn't do with just static code analysis.
+https://github.com/Kotlin/KEEP/blob/master/proposals/kotlin-contracts.md[Kotlin Contracts]footnote:[Kotlin Contracts: https://github.com/Kotlin/KEEP/blob/master/proposals/kotlin-contracts.md]] are a way to give the compiler additional information about the result of functions, allowing it to perform smart casts it couldn't do with just static code analysis.
 
 Here is an example taken from the documentation:
 

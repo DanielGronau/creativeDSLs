@@ -12,7 +12,7 @@ DSLs often need to model complex state transitions that occur during program exe
 
 === Case Study: DSL for SQL queries (using the Builder Pattern)
 
-To allow a good comparison between the implementations, we will write a DSL for building SQL queries using the different approaches. Since the SQL language is very complex, we have to limit our example to queries using only `SELECT`, `FROM`, `WHERE` and `GROUP BY` clauses and simple string arguments (for a serious SQL DSL implementation, see https://www.jooq.org/[jOOQ]). The following state diagram gives an overview of the allowed transitions:
+To allow a good comparison between the implementations, we will write a DSL for building SQL queries using the different approaches. Since the SQL language is very complex, we have to limit our example to queries using only `SELECT`, `FROM`, `WHERE` and `GROUP BY` clauses and simple string arguments (for a serious SQL DSL implementation, see https://www.jooq.org/[jOOQ]footnote:[https://www.jooq.org](((jOOQ)))). The following state diagram gives an overview of the allowed transitions:
 
 [ditaa,"sql-queries"]
 .Simplified Select SQL Query

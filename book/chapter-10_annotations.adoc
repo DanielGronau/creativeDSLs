@@ -3,13 +3,13 @@
 > I have discovered a truly marvelous proof of this, which however the margin is not large enough to contain.
 -- Pierre de Fermat
 
-Annotations can be used to bind specified actions or behaviors to classes, methods, fields, etc. Typical examples include dependency injection frameworks (such as Spring or Dagger), serializers to formats such as XML or JSON (such as Gson, Jackson, or JAXB), or authorization and access-control (such as Spring Security). In Java, https://projectlombok.org/[Project Lombok] aims to reduce the boilerplate of the language in many ways, and uses annotations to do so.
+Annotations can be used to bind specified actions or behaviors to classes, methods, fields, etc. Typical examples include dependency injection frameworks (such as Spring or Dagger), serializers to formats such as XML or JSON (such as Gson, Jackson, or JAXB), or authorization and access-control (such as Spring Security). In Java, https://projectlombok.org/[Project Lombok]footnote:[https://projectlombok.org](((Project Lombok))) aims to reduce the boilerplate of the language in many ways, and uses annotations to do so.
 
 As mentioned in <<chapter-04_features.adoc#annotations,4.13 Annotations>>, you may want to look into annotation processors if you need to integrate your DSL into the build process in some way.
 
 === Case Study: Mapper DSL
 
-Mapping between similar classes is a common and often tedious task. There are already many solutions, such as the https://mapstruct.org/[MapStruct] library, which is a code generator for mapper classes.
+Mapping between similar classes is a common and often tedious task. There are already many solutions, such as the https://mapstruct.org/[MapStruct]!footnote:mapstruct[MapStruct: https://mapstruct.org](((MapStruct))) library, which is a code generator for mapper classes.
 
 In this case study, we will write a very simple mapper DSL to transform e.g. data classes at runtime. The actual transformation code is not for the faint of heart, it relies on reflection and is very insecure to keep it short. Explaining the details is beyond the scope of this book; the focus of the case study is on how to use annotations to express your intentions.
 
@@ -132,7 +132,7 @@ Since it uses reflection, you need to include a dependency on the `kotlin-reflec
 One design choice in our example deserves attention: If the names and types of the source and target classes match, no `@Mapping` annotation is required. This implicit mapping behavior may seem obvious and trivial, but it highlights the principle of _Convention over Code_, which suggests that common use cases should work seamlessly without requiring explicit instructions or extra configuration. It applies to language design in general, but seems to apply more often to annotation-based DSLs than to other DSL categories. Adherence to this principle can improve the user experience and greatly enhance usability.
 ****
 
-For serious applications, I would suggest checking out https://mapstruct.org[MapStruct]. It is a Java library, but seems to work well with Kotlin, and has much more functionality than our example DSL. A major difference is that MapStruct generates source code, which avoids the performance hit of using reflection, and makes debugging much more convenient.
+For serious applications, I would suggest checking out https://mapstruct.org[MapStruct]footnote:mapstruct[]. It is a Java library, but seems to work well with Kotlin, and has much more functionality than our example DSL. A major difference is that MapStruct generates source code, which avoids the performance hit of using reflection, and makes debugging much more convenient.
 
 === Synergy with String-based DSLs
 

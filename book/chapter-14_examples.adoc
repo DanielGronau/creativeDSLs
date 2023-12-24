@@ -7,7 +7,7 @@ In this chapter we will have a look of some widely used and successful DSLs, cha
 
 === KotlinPoet
 
-https://square.github.io/kotlinpoet/[KotlinPoet] is a source code generator for Kotlin, and the sister-project to JavaPoet.
+https://square.github.io/kotlinpoet/[KotlinPoet]footnote:[KotlinPoet: https://square.github.io/kotlinpoet] is a source code generator for Kotlin, and the sister-project to JavaPoet.
 We used it in chapter 11 to generate sources for operations with physical quantities.
 
 The library follows closely the syntax of JavaPoet, which is written in Java, and I think this was the right decision.
@@ -91,11 +91,11 @@ val file = fileSpec("", "HelloWorld") {
 
 === Gradle .kts
 
-https://gradle.org/[Gradle] is an amazing build system. In contrast to descriptive approaches like the XML-based https://maven.apache.org[Apache Maven], the build process is "programmable", which gives the user a lot of flexibility.
+https://gradle.org/[Gradle]footnote:[Gradle: https://gradle.org](((Gradle))) is an amazing build system. In contrast to descriptive approaches like the XML-based https://maven.apache.org[Apache Maven], the build process is "programmable", which gives the user a lot of flexibility.
 
 However, the original Gradle implementation was written in Groovy - at the time probably the best choice to write an expressive DSL in the Java ecosystem. Alas, the Groovy language comes with its own set of problems. It is a scripted language with a weak type system, and as a result, IDE features like autocompletion, content assistance, source navigation, quick documentation and refactoring support are limited.
 
-To overcome these problems, the Gradle team decided to provide an alternative DSL based on Kotlin Script (.kts). Obviously, the new DSL should look very similar to the old Groovy style, in order to make the transition as smooth as possible. I think, in this regard, the Kotlin DSL was a resounding success. Here is a comparison, taken from the https://docs.gradle.org/current/userguide/migrating_from_groovy_to_kotlin_dsl.html[Gradle Userguide: Migrating build logic from Groovy to Kotlin]:
+To overcome these problems, the Gradle team decided to provide an alternative DSL based on Kotlin Script (.kts). Obviously, the new DSL should look very similar to the old Groovy style, in order to make the transition as smooth as possible. I think, in this regard, the Kotlin DSL was a resounding success. Here is a comparison, taken from the https://docs.gradle.org/current/userguide/migrating_from_groovy_to_kotlin_dsl.html[Gradle Userguide: Migrating build logic from Groovy to Kotlin]footnote:[Gradle Userguide, Migration: https://docs.gradle.org/current/userguide/migrating_from_groovy_to_kotlin_dsl.html]:
 
 [source,groovy]
 .Groovy

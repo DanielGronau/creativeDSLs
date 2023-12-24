@@ -15,9 +15,9 @@ One drawback is that these DSLs are hidden from the scrutiny of the compiler: Th
 Kotlin, like many languages, supports regular expressions, which can be thought of as a kind of mini-parser. For small, isolated use cases, they can be very convenient. However, using them for larger problems can result in code that is very hard to maintain because this approach doesn't scale well. In my opinion, using regular expressions as full-blown "parsers" may be acceptable for prototypes and test environments, but not in production code.
 ====
 
-=== Case Study: Forsyth–Edwards Notation
+=== Case Study: Forsyth–Edwards Notation (((FEN)))
 
-Before we dive into complicated problems requiring parsers, we will start with a simple example where we only need a few string functions. If you don't play chess, you've probably never heard of the https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation[Forsyth–Edwards Notation] (FEN):
+Before we dive into complicated problems requiring parsers, we will start with a simple example where we only need a few string functions. If you don't play chess, you've probably never heard of the https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation[Forsyth–Edwards Notation]footnote:[Wikipedia, FEN: https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation] (FEN):
 
 .Forsyth–Edwards Notation
 ****
@@ -496,7 +496,7 @@ As mentioned in the last chapter, a "real" chemical equation looks more like `3B
 
 As already mentioned, it's not difficult to write such a parser by hand. However, using a library has many advantages: It improves readability and maintainability, the code is easier to debug, you get more information if the parsing fails, and the library is usually better tested than our manual code.
 
-To give you an idea of what using a parser library looks like, I rewrote the example code using the https://github.com/h0tk3y/better-parse[better-parse] project, which is an example of the parser-combinator approach:
+To give you an idea of what using a parser library looks like, I rewrote the example code using the https://github.com/h0tk3y/better-parse[better-parse]footnote:[better-parse: https://github.com/h0tk3y/better-parse] project, which is an example of the parser-combinator approach:
 
 [source,kotlin]
 ----

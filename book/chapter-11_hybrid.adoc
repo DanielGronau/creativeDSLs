@@ -9,7 +9,7 @@ If most of a DSL can be written in a certain style, it is usually a good idea to
 
 === Quasi-Lingual DSLs (((Quasi-Lingual DSLs)))
 
-A common reason for mixing features from different DSL categories is to mimic natural language to some extent. I would call this important subset of hybrid DSLs "quasi-lingual". Although the syntax is usually rigid and contains artifacts such as braces, parentheses, or commas, it is still "readable" in a very literal sense. This snippet from the mocking library https://mockk.io/#dsl-examples[MockK] should give you a good idea:
+A common reason for mixing features from different DSL categories is to mimic natural language to some extent. I would call this important subset of hybrid DSLs "quasi-lingual". Although the syntax is usually rigid and contains artifacts such as braces, parentheses, or commas, it is still "readable" in a very literal sense. This snippet from the mocking library https://mockk.io/#dsl-examples[MockK]footnote:[MockK: https://mockk.io/#dsl-examples](((MockK))) should give you a good idea:
 
 [source,kotlin]
 ----
@@ -348,7 +348,7 @@ val result = match(p) {
 }
 ----
 
-That's not too bad, even if the `+' prefix looks a bit odd at first. The problem is that the choice of overridable operators in Kotlin is quite limited. That's why the unary plus has become something of a standard for such use cases, and is also used that way in the https://kotlinlang.org/docs/type-safe-builders.html[Kotlin documentation].
+That's not too bad, even if the `+' prefix looks a bit odd at first. The problem is that the choice of overridable operators in Kotlin is quite limited. That's why the unary plus has become something of a standard for such use cases, and is also used that way in the https://kotlinlang.org/docs/type-safe-builders.html[Kotlin documentation]footnote:[Kotlin Documentation, Type Safe Builders: https://kotlinlang.org/docs/type-safe-builders.html].
 
 The core of the DSL is quite small. First, we have the pattern type, which is just a test function, so we can use a type alias instead of introducing a new interface. The `MatchResult` is just an interface that wraps a given value. The `Matcher` class provides a context for keeping track of the result, defines the `then` and `otherwise` methods, and introduces the unary plus as an alias for the `eq` pattern (which will be defined later). Finally, the `match()` function ties everything together and acts as an entry point for the DSL:
 

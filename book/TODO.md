@@ -29,10 +29,13 @@ TODO:
   - Constructors in kotest?
   - Token based, e.g. turtle graphics
 - find a good Kotlin reflection book to refer to -> 8.3. TODO
-- Are the conclusion sections okay?
+- Rework conclusion sections
+- Check quotes
 - bibliography
-- create index for ePUB
-- make source code readable for ePub with black background
+- Paper Book version -> links as footnotes
+- Replace ditaa by SVG diagrams 
+- register creativeDsls@protonmail.com
+
 
 ## Research
 

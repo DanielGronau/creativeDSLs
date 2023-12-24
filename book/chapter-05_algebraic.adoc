@@ -13,7 +13,7 @@ Even if your problem domain does not have an inherent algebraic structure, the c
 
 === Case Study: A DSL for Complex Numbers
 
-To keep things realistic, we will use an existing implementation, that you might find in a production environment. We will use the https://github.com/apache/commons-numbers/tree/master/commons-numbers-complex[Apache Commons Numbers: Complex] library, which is written in Java. The implementation behaves pretty much as expected:
+To keep things realistic, we will use an existing implementation, that you might find in a production environment. We will use the https://github.com/apache/commons-numbers/tree/master/commons-numbers-complex[Apache Commons Numbers: Complex]footnote:[Apache Common Numbers: https://github.com/apache/commons-numbers/tree/master/commons-numbers-complex] library, which is written in Java. The implementation behaves pretty much as expected:
 
 [source,kotlin]
 ----

@@ -26,7 +26,7 @@ An edge case are internal DSLs that are realized entirely inside strings, the wa
 
 One challenge in designing a DSL is the risk of combinatorial explosion, where the number of possible combinations of elements or operations in the DSL becomes too large to manage effectively. For example, in a DSL for representing physical quantities, there may be a large number of possible results when multiplying or dividing different quantities. In order to avoid illegal conversions and provide a pleasing syntax, it may be necessary to write a significant amount of boilerplate code to handle all possible combinations. In such cases, code generation can be a useful tool to automate the creation of this boilerplate code, making it easier to manage the complexity of the DSL while keeping the DSL expressive and maintainable.
 
-There are also libraries that create DSLs for you. If you need a well-known style of DSL, all you have to do is describe what you need (e.g., by annotating your business classes accordingly), and the library will generate the DSL code for you. An example of this approach is https://github.com/F43nd1r/autodsl[AutoDSL for Kotlin].
+There are also libraries that create DSLs for you. If you need a well-known style of DSL, all you have to do is describe what you need (e.g., by annotating your business classes accordingly), and the library will generate the DSL code for you. An example of this approach is https://github.com/F43nd1r/autodsl[AutoDSL for Kotlin]footnote:[AutoDSL: https://github.com/F43nd1r/autodsl](((AutoDSL))).
 
 === Common use cases for DSLs (((Use Cases)))
 
