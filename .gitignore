@@ -4,16 +4,7 @@ target/
 !**/src/test/**/target/
 
 ### IntelliJ IDEA ###
-/.idea/modules.xml
-/.idea/jarRepositories.xml
-/.idea/compiler.xml
-/.idea/workspace.xml
-/.idea/uiDesigner.xml
-/.idea/gradle.xml
-/.idea/codeStyles/
-/.idea/libraries/
-/.idea/kotlinc.xml
-/.idea/onlineChatGPT.html
+/.idea/
 *.iws
 *.iml
 *.ipr
