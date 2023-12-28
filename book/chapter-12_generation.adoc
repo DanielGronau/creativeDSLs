@@ -5,7 +5,7 @@
 
 Sometimes you are prototyping a DSL, and you find a nice syntax, but it turns out that it would take a lot of boilerplate code to make it work. A common reason is combinatorial explosion, or you need many classes that follow the same pattern (e.g., tuple classes or fixed-length vectors). In such cases, you might consider using code generation.
 
-A popular library for generating Kotlin code is https://square.github.io/kotlinpoet[KotlinPoet]!footnote:kotlinpoet[KotlinPoet: https://square.github.io/kotlinpoet]. If you are also working with Java, you may also want to check out its sister project https://github.com/square/javapoet[JavaPoet]footnote:[JavaPoet: https://github.com/square/javapoet]. There is even some interoperability between them.
+A popular library for generating Kotlin code is https://square.github.io/kotlinpoet[KotlinPoet]!footnote:kotlinpoet[KotlinPoet: https://square.github.io/kotlinpoet](((KotlinPoet))). If you are also working with Java, you may also want to check out its sister project https://github.com/square/javapoet[JavaPoet]footnote:[JavaPoet: https://github.com/square/javapoet](((JavaPoet))). There is even some interoperability between them.
 
 === Case Study: Physical Quantities
 

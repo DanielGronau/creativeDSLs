@@ -21,6 +21,7 @@ dependencies {
     api("com.squareup:kotlinpoet:1.15.1")
     api("com.github.h0tk3y.betterParse:better-parse-jvm:0.4.4")
     api("com.faendir.kotlin.autodsl:annotations:2.2.15")
+    implementation("io.kotest:kotest-runner-junit5-jvm:5.8.0")
     ksp(project(":unitsKSP"))
     ksp(project(":patternKSP"))
     implementation(project(":unitsAnnotations"))

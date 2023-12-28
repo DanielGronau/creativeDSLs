@@ -5,13 +5,11 @@
 
 In this chapter we will have a look of some interesting and successful DSLs, characterize them, look at interesting details, and maybe even suggest some improvements.
 
-=== KotlinPoet
+=== KotlinPoet (((KotlinPoet)))
 
-https://square.github.io/kotlinpoet/[KotlinPoet]footnote:[KotlinPoet: https://square.github.io/kotlinpoet] is a source code generator for Kotlin, and the sister-project to JavaPoet. We used it in chapter 12 to generate sources for operations with physical quantities.
+https://square.github.io/kotlinpoet/[KotlinPoet]footnote:[KotlinPoet: https://square.github.io/kotlinpoet] is a source code generator for Kotlin, and the sister project to JavaPoet. We used it in Chapter 12 to generate sources for operations on physical quantities, for example.
 
-The library follows closely the syntax of JavaPoet, which is written in Java, and I think this was the right decision.
-The builder pattern works reasonably well for this purpose.
-This is the introductory example on their home page:
+The library closely follows the syntax of JavaPoet, which is written in Java, and I think this was the right decision. The builder pattern works quite well for this purpose. This is the introductory example on the KotlinPoet homepage:
 
 [source,kotlin]
 .https://square.github.io/kotlinpoet Hello World Example
@@ -62,39 +60,39 @@ val file = FileSpec.builder("", "HelloWorld")
 file.writeTo(System.out)
 ----
 
-If KotlinPoet were a stand-alone library, I would rather use a Loan Pattern DSL instead:
+If KotlinPoet were a standalone library, I would rather use a Loan Pattern DSL instead:
 
 [source,kotlin]
 ----
 val greeterClass = ClassName("", "Greeter")
-val file = fileSpec("", "HelloWorld") {
-    +classSpec("Greeter") {
-        primaryConstructor = constructorSpec {
-            +parameter("name", String::class)
+val exampleFile = file("", "HelloWorld") {
+    clazz("Greeter") {
+        primaryConstructor = constructor {
+            parameter("name", String::class)
         }
-        +propertySpec("name", String::class) {
+        property("name", String::class) {
             initializer("name")
         }
-        +functionSpec("greet") {
-            +statement("println(%P)", "Hello, \$name")
+        function("greet") {
+            statement("println(%P)", "Hello, \$name")
         }
     }
-    +functionSpec("main") {
-        +parameter("args", String::class, VARARG)
-        +statement("%T(args[0]).greet()", greeterClass)
+    function("main") {
+        parameter("args", String::class, VARARG)
+        statement("%T(args[0]).greet()", greeterClass)
     }
 }
 ----
 
-
+I think the Loan Pattern style is easier to read because it shows the nested structures more clearly. As mentioned above, there were good reasons to stick with the builder pattern approach, but it would be nice to have the option to use something closer to my suggestion.
 
 === Gradle .kts
 
-https://gradle.org/[Gradle]footnote:[Gradle: https://gradle.org](((Gradle))) is an amazing build system. In contrast to descriptive approaches like the XML-based https://maven.apache.org[Apache Maven], the build process is "programmable", which gives the user a lot of flexibility.
+https://gradle.org/[Gradle]footnote:[Gradle: https://gradle.org](((Gradle))) is an amazing build system. Unlike descriptive approaches like the XML-based https://maven.apache.org[Apache Maven]footnote:[Apache Maven - https://maven.apache.org](((Apache Maven))), the build process is "programmable", which gives the user a lot of flexibility.
 
-However, the original Gradle implementation was written in Groovy - at the time probably the best choice to write an expressive DSL in the Java ecosystem. Alas, the Groovy language comes with its own set of problems. It is a scripted language with a weak type system, and as a result, IDE features like autocompletion, content assistance, source navigation, quick documentation and refactoring support are limited.
+However, the original Gradle implementation was written in Groovy(((Groovy))) - at the time probably the best choice for writing an expressive DSL in the Java ecosystem. Unfortunately, the Groovy language comes with its own set of problems. It is a scripted language with a weak type system, and as a result, IDE features such as autocompletion, content assistance, source navigation, quick documentation, and refactoring support are limited.
 
-To overcome these problems, the Gradle team decided to provide an alternative DSL based on Kotlin Script (.kts). Obviously, the new DSL should look very similar to the old Groovy style, in order to make the transition as smooth as possible. I think, in this regard, the Kotlin DSL was a resounding success. Here is a comparison, taken from the https://docs.gradle.org/current/userguide/migrating_from_groovy_to_kotlin_dsl.html[Gradle Userguide: Migrating build logic from Groovy to Kotlin]footnote:[Gradle Userguide, Migration: https://docs.gradle.org/current/userguide/migrating_from_groovy_to_kotlin_dsl.html]:
+To address these issues, the Gradle team decided to provide an alternative DSL based on Kotlin script (.kts). Obviously, the new DSL should look very similar to the old Groovy style to make the transition as smooth as possible. I think the Kotlin DSL was a resounding success in this regard. Here is a comparison, taken from the https://docs.gradle.org/current/userguide/migrating_from_groovy_to_kotlin_dsl.html[Gradle Userguide: Migrating build logic from Groovy to Kotlin]footnote:[Gradle Userguide, Migration: https://docs.gradle.org/current/userguide/migrating_from_groovy_to_kotlin_dsl.html]:
 
 [source,groovy]
 .Groovy
@@ -128,14 +126,56 @@ dependencies {
 }
 ----
 
-At the first glance, it is hard to tell which is which. There are parts of the DSLs
-which deviate more, but then it looks more like a deliberate decision, in order to clean up and standardize the syntax, than a limitation of the language.
+At first glance, it is hard to tell which is which. There are parts of the DSLs that deviate more, but then it looks more like a conscious decision to clean up and standardize the syntax than a limitation of the language.
 
-The Kotlin Script DSL itself uses mainly the Loan Pattern. For the definition of dependencies, there are two notations: The example shows the "string notation", which is a String-Parsing DSL. Alternatively, the "map notation" can be used, which looks like this: `implementation(group = "com.example", name = "lib", version = "1.1")`
+The Kotlin script DSL itself mainly uses the Loan pattern. There are two notations for defining dependencies: The example shows the "string notation", which is a string parsing DSL. Alternatively, you can use the "map notation", which looks like this: `implementation(group = "com.example", name = "lib", version = "1.1")`.
 
-In my opinion, Gradle is a good example how Kotlin DSLs can help to modernize an already established and successful solution, without causing major disruptions.
+In my opinion, Gradle is a good example of how Kotlin DSLs can help modernize an already established and successful solution without causing major disruptions.
 
-=== kotest
+=== Kotest (((Kotest)))
+
+https://kotest.io/[Kotest]footnote:[Kotest: https://kotest.io] is a widely used testing framework for Kotlin, and it is interesting to compare it with the most popular Java testing framework, which is https://junit.org/junit5/[JUnit]footnote:[JUnit: https://junit.org/junit5](((JUnit))).
+
+First of all, Kotest provides a plethora of different https://kotest.io/docs/framework/testing-styles.html[testing styles]footnote:[Kotest - Testing Styles: https://kotest.io/docs/framework/testing-styles.html] (called "specs"), and is much less opinionated in this regard than JUnit. For the sake of brevity, I'll use `StringSpec` for the following examples:
+
+[source,kotlin]
+.https://kotest.io/docs/framework/testing-styles.html#string-spec
+----
+class MyTests : StringSpec({
+    "strings.length should return size of string" {
+        "hello".length shouldBe 5
+    }
+})
+----
+
+Unlike JUnit, the individual tests are not functions in the body of the test class, but expressions within the lambda argument of the respective `...Spec` superclass. This design makes Kotest very flexible and allows dynamic test creation:
+
+[source,kotlin]
+----
+class LogicTest : StringSpec({
+
+    val xorTable = listOf(
+        Triple(true, true, false),
+        Triple(true, false, true),
+        Triple(false, true, true),
+        Triple(false, false, false)
+    )
+
+    for((x, y, z) in xorTable) {
+       "'$x' xor '$y' should be '$z'" {
+           x xor y shouldBe z
+       }
+    }
+})
+
+// Runs 4 tests successfully:
+// 'true' xor 'true' should be 'false'
+// 'true' xor 'false' should be 'true'
+// 'false' xor 'true' should be 'true'
+// 'false' xor 'false' should be 'false'
+----
+
+Of course, you can do something similar in JUnit by using the `@ParameterizedTest` annotation instead of `@Test`, and if you need even more flexibility, there is a `DynamicTest.dynamicTest()` method that takes a lambda argument. The difference, however, is that Kotest doesn't require such specialized constructs, but allows the user to take advantage of existing language features. Obviously, doing more with less helps to reduce the cognitive load (((Cognitive Load))) when learning to use the framework.
 
 === better-parse
 

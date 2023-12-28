@@ -45,6 +45,20 @@ In this step, it's generally not necessary to specify a formal grammar. Instead,
 
 If possible, it can also be helpful to get feedback from domain experts or potential users of your DSL. This can help you identify important details that you may have overlooked, and can help you create a DSL that meets the needs and expectations of your target audience. Few things are more frustrating than presenting a new implementation only to discover that you have forgotten a crucial detail, so it pays to be thorough and to seek feedback whenever possible.
 
+==== Lowering the Cognitive Load (((Cognitive Load)))
+
+https://en.wikipedia.org/wiki/Cognitive_load[Cognitive Load Theory]footnote:[Wikipedia - Cognitive Load: https://en.wikipedia.org/wiki/Cognitive_load] claims that there are two types of difficulties in learning to use a system: Intrinsic cognitive load, which is caused by the inherent complexity of the system itself, and extraneous cognitive load, which is caused by the way information about the system is presented.
+
+When working on the ideal syntax, thinking about ways to reduce extraneous cognitive load can be a very useful strategy. Of course, consistent and intuitive syntax is an important factor, but there are many other ways to reduce cognitive load, such as:
+
+* *Meaningful Naming*: Descriptive names make it easier for users to understand the purpose and functionality without additional cognitive load.
+* *Natural Language Elements*: These can make the DSL read more like plain language, reducing the cognitive gap between the DSL and the user's everyday vocabulary.
+* *Defaults and Smart Defaults*: Minimize the need for users to explicitly specify redundant information. The DSL should intelligently infer context whenever possible.
+* *Gradual Complexity*: Introduce complexity gradually. Or as Alan Key put it: "Simple things should be simple, complex things should be possible."
+* *Reuse Existing Features*: Don't introduce features that can already be expressed in Kotlin or in widely used libraries.
+
+If you focus too much on syntax alone, you may end up with a DSL that is very pretty, but hard to use. The concept of cognitive load can help broaden your perspective and lead to more user-friendly solutions.
+
 === Prototyping (((Prototype)))
 
 Now that you have defined an ideal syntax, it's time to start coding. Because it's often necessary to experiment and iterate to get the syntax and structure of your DSL just right, it can be very helpful to start with a prototype.
