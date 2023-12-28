@@ -539,13 +539,6 @@ However, when done well, a well-designed hybrid DSL can effectively combine diff
 * Testing
 * Logging
 
-==== Rating
-
-* image:3_sun.png[] - for Simplicity of DSL design
-* image:4_sun.png[] - for Elegance
-* image:4_sun.png[] - for Usability
-* image:5_sun.png[] - for possible Applications
-
 ==== Pros & Cons
 
 [cols="2a,2a"]

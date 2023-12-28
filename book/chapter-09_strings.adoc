@@ -573,13 +573,6 @@ String-based DSLs allow for very idiomatic syntax, and can also give the user so
 * Generating code
 * Testing
 
-==== Rating
-
-* image:2_sun.png[] - for Simplicity of DSL design
-* image:5_sun.png[] - for Elegance
-* image:4_sun.png[] - for Usability
-* image:5_sun.png[] - for possible Applications
-
 ==== Pros & Cons
 
 [cols="2a,2a"]

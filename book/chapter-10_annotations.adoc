@@ -166,13 +166,6 @@ In some cases, it feels very natural to integrate a DSL into the existing user c
 * Testing
 * Logging
 
-==== Rating
-
-* image:2_sun.png[] - for Simplicity of DSL design
-* image:2_sun.png[] - for Elegance
-* image:4_sun.png[] - for Usability
-* image:3_sun.png[] - for possible Applications
-
 ==== Pros & Cons
 
 [cols="2a,2a"]

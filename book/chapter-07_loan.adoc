@@ -294,13 +294,6 @@ The Loan Pattern DSL has several advantages over the classic Builder Pattern sty
 * Generating code
 * Testing
 
-==== Rating
-
-* image:4_sun.png[] - for Simplicity of DSL design
-* image:4_sun.png[] - for Elegance
-* image:4_sun.png[] - for Usability
-* image:5_sun.png[] - for Application Scope
-
 ==== Pros & Cons
 
 [cols="2a,2a"]

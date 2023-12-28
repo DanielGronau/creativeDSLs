@@ -3,12 +3,11 @@
 > Few things are harder to put up with than the annoyance of a good example.
 -- Mark Twain
 
-In this chapter we will have a look of some widely used and successful DSLs, characterize them, look at interesting details, and maybe even suggest some improvements.
+In this chapter we will have a look of some interesting and successful DSLs, characterize them, look at interesting details, and maybe even suggest some improvements.
 
 === KotlinPoet
 
-https://square.github.io/kotlinpoet/[KotlinPoet]footnote:[KotlinPoet: https://square.github.io/kotlinpoet] is a source code generator for Kotlin, and the sister-project to JavaPoet.
-We used it in chapter 11 to generate sources for operations with physical quantities.
+https://square.github.io/kotlinpoet/[KotlinPoet]footnote:[KotlinPoet: https://square.github.io/kotlinpoet] is a source code generator for Kotlin, and the sister-project to JavaPoet. We used it in chapter 12 to generate sources for operations with physical quantities.
 
 The library follows closely the syntax of JavaPoet, which is written in Java, and I think this was the right decision.
 The builder pattern works reasonably well for this purpose.
@@ -142,3 +141,4 @@ In my opinion, Gradle is a good example how Kotlin DSLs can help to modernize an
 
 === konform
 
+=== Conclusion

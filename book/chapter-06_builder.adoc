@@ -572,13 +572,6 @@ The Builder Pattern is quite popular in Java - there are even libraries like htt
 * Testing
 * Logging
 
-==== Rating
-
-* image:4_sun.png[] - for Simplicity of DSL design
-* image:2_sun.png[] - for Elegance
-* image:3_sun.png[] - for Usability
-* image:4_sun.png[] - for possible Applications
-
 ==== Pros & Cons
 
 [cols="2a,2a"]

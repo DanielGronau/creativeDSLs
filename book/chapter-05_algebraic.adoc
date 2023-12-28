@@ -329,13 +329,6 @@ Therefore, it is crucial to exercise good judgment and adhere to the _Principle 
 
 * Define operations
 
-==== Rating
-
-* image:5_sun.png[] - for Simplicity of DSL design
-* image:5_sun.png[] - for Elegance
-* image:5_sun.png[] - for Usability
-* image:2_sun.png[] - for possible Applications
-
 ==== Pros & Cons
 
 [cols="2a,2a"]
