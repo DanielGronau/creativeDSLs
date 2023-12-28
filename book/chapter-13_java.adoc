@@ -8,7 +8,7 @@ Using a Kotlin DSL from Java can be challenging. While some Kotlin features, suc
 
 This chapter discusses Java interoperability from a purely DSL design perspective, presenting the relevant built-in features and useful techniques for solving DSL-specific problems. Note that retrofitting an existing DSL for Java interoperability is more expensive than designing for it from the beginning.
 
-=== Renaming Identifiers (((@JvmName)))
+=== Renaming Identifiers (((@JvmName))) (((@JvmStatic)))
 
 When writing DSLs, it is common to use unusual names that may not be allowed in Java, either because they use forbidden characters or because they match a Java keyword. In this case, the `@JvmName` annotation can help. Of course, sometimes additional annotations may be needed, such as `@JvmStatic` to expose object members as static class members in Java:
 
@@ -38,6 +38,31 @@ public class CallStrangeNames {
     }
 }
 ----
+
+==== Value Classes (((Value Classes))) and Mangling (((Mangling)))
+
+In Kotlin, value classes are represented by their underlying type in JVM bytecode. However, this approach can lead to naming conflicts, such as when there are multiple methods with the same name and value class parameters with the same underlying type. To avoid this problem, Kotlin uses a technique called "name mangling".
+
+During compilation, the compiler renames the affected methods using a hashing algorithm that takes into account the package name, class name, and method name. This creates a unique name for each method, which prevents naming conflicts in the bytecode.
+
+Kotlin users don't need to be aware of this behavior, as calls to the mangled methods are automatically translated correctly. However, if Java users want to call a mangled method, they would have to use the strange mangled name. To avoid this problem, you can explicitly name the method on the JVM using the `@JvmName` annotation:
+
+[source,kotlin]
+----
+@JvmInline
+value class Kilometers(val value: Double)
+
+@JvmInline
+value class Miles(val value: Double)
+
+@JvmName("displayKm")
+fun display(x: Kilometers) { println("${x.value} km") }
+
+@JvmName("displayMiles")
+fun display(x: Miles) { println("${x.value} miles") }
+----
+
+From Java, you can call the example methods by their JVM names and with `double` arguments, e.g. `displayKm(23.0);` and `displayMiles(42.3);`.
 
 === Package Level Definitions of Functions and Variables (((@file:JvmName)))
 
@@ -100,33 +125,25 @@ As you can see, you can either call the method with all arguments, or you can le
 
 You can also annotate constructors with `@JvmOverloads`.
 
-=== Value Classes (((Value Classes))) and Mangling (((Mangling)))
+=== Accessing Fields (((@JvmField)))
 
-In Kotlin, value classes are represented by their underlying type in JVM bytecode. However, this approach can lead to naming conflicts, such as when there are multiple methods with the same name and value class parameters with the same underlying type. To avoid this problem, Kotlin uses a technique called "name mangling".
-
-During compilation, the compiler renames the affected methods using a hashing algorithm that takes into account the package name, class name, and method name. This creates a unique name for each method, which prevents naming conflicts in the bytecode.
-
-Kotlin users don't need to be aware of this behavior, as calls to the mangled methods are automatically translated correctly. However, if Java users want to call a mangled method, they would have to use the strange mangled name. To avoid this problem, you can explicitly name the method on the JVM using the `@JvmName` annotation:
+In Kotlin, fields are exposed as properties, and even if it looks like you are accessing a field with a call like `somePerson.name`, behind the scenes you are accessing a getter or setter of this property. Of course, you can use these getters and setters from Java as well, e.g. by using `somePerson.getName()`, but if you want to allow direct field access, you need to use the `@JvmField` annotation, e.g. like this:
 
 [source,kotlin]
 ----
-@JvmInline
-value class Kilometers(val value: Double)
-
-@JvmInline
-value class Miles(val value: Double)
-
-@JvmName("displayKm")
-fun display(x: Kilometers) { println("${x.value} km") }
-
-@JvmName("displayMiles")
-fun display(x: Miles) { println("${x.value} miles") }
+data class Person(@JvmField val name: String, @JvmField val age: Int)
 ----
 
-From Java, you can call the example methods by their JVM names and with `double` arguments, e.g. `displayKm(23.0);` and `displayMiles(42.3);`.
+Not you can call the fields directly, as in Kotlin.
+
+=== Generics (((@JvmSuppressWildcards))) (((@JvmWildcards)))
+
+A common problem is that due to its declaration-side variance, Kotlin often generates generic signatures with wildcards like `List<? extends String>` on the JVM. Such types can be awkward to use from the Java side, can prevent the use of certain Java libraries (such as https://dagger.dev[Dagger]footnote:[Dagger: https://dagger.dev]]), or even lead to cryptic compile-time errors. The solution is to annotate the offending type with `@JvmSuppressWildcards`, so that you get the type signature like `List<String>` on the JVM.
+
+In some cases, you may have the opposite problem, where it would be more convenient to have wildcards on the JVM when the Kotlin compiler doesn't produce them. In this case, you can use the `@JvmWildcards` annotation instead.
 
 [#reifiedGenericsBridge]
-=== Calling Functions with Reified Type Parameters
+==== Calling Functions with Reified Type Parameters
 
 I am afraid I have some bad news for you: Java has no inlining mechanism, and without inlining, the resolution of reified type parameters simply doesn't work. As a consequence, you can't call such functions from Java, not even via reflection.
 
@@ -152,5 +169,8 @@ This approach will work for many use cases, but it should be noted that a reifie
 
 Kotlin doesn't have the concept of "checked exceptions", but if a function that might throw such an exception is called from Java, the Java compiler expects that the exception is declared in the function signature. In order to avoid problems in such cases, you can give the Kotlin compiler a hint to add a checked exception to the function signature in the byte-code by annotating the function with `Throws(SomeCheckedException::class)`.
 
+=== Conclusion
+
+Writing DSLs often requires the use of advanced language features, so it's no surprise that calling this code from Java can be challenging, and that the Kotlin compiler may need some pointers for good Java interoperability. If calling your DSL from Java is a requirement, you should consider it in your design from the beginning. In particular, writing tests not only in Kotlin but also in Java can help avoid problems down the road. Most interoperability issues are easy to fix, often the hard part is figuring out what's going wrong and knowing what language features you have at your disposal in these situations.
 
 
