@@ -380,6 +380,22 @@ val eurAmount: Amount = 17.11.EUR
 
 With an extension function, the best syntax we could achieve is `22.46.USD()`, but the parentheses are no longer needed when using extension properties.
 
+Extension properties are especially useful when the result of the computation is a function. Consider currying, which is a technique for turning functions that take multiple arguments into a chain of functions that take single arguments. Written as an extension property, it could be implemented like this (for functions with two arguments):
+
+[source,kotlin]
+----
+val <A, B, R> ((A, B) -> R).curry: (A) -> (B) -> R
+    get() = { a -> { b -> this@curry(a, b) } }
+
+fun someFunction(i: Int, s: String): String = s.repeat(i)
+
+val sf3 = ::someFunction.curry(3)
+println(sf3("Abc")) // AbcAbcAbc
+println(sf3("x")) // xxx
+----
+
+If we had written `curry` as a function, we would have to write `val sf3 = ::someFunction.curry()(3)` instead, which looks very confusing.
+
 === Operator Overloading (((Operator Overloading)))
 
 Kotlin allows operator overloading, but is conservative in the sense that it only allows a fixed set of operators.
