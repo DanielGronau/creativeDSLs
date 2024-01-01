@@ -270,8 +270,9 @@ val equationGrammar = object : Grammar<Equation>() {
 }
 ----
 
-Calling `parser(this::part)` allows you to "break the cycle". I suspect that this is one reason - besides performance considerations - why the DSL uses an object as its context, rather than the more common trailing lambda syntax. While there are certainly ways to make a recursive definition work in Loan Pattern DSLs, this is clearly a more straightforward solution. This is a perfect example of why creativity and out-of-the-box thinking are so important when writing DSLs.
+Calling `parser(this::part)` allows you to "break the cycle". I suspect that this is one reason - besides performance considerations - why the DSL uses an object as its context, rather than the more common trailing lambda syntax. While there are certainly ways to make a recursive definition work in Loan Pattern DSLs, this is clearly a more straightforward solution. This is a good example of why creativity and out-of-the-box thinking are so important when writing DSLs.
 
 === konform
 
 === Conclusion
+
