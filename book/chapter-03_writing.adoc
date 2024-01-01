@@ -1,3 +1,5 @@
+:imagesdir: ./images
+
 [#writing_a_dsl]
 == Writing a DSL
 
@@ -13,23 +15,8 @@ The following four-step workflow can be a helpful guide as you begin to design a
 * *Formalize:* Once you are satisfied with the prototype of your DSL, formalize the syntax and semantics of your DSL.
 * *Implementation:* With the syntax and semantics of your DSL formally defined, you can begin implementing your DSL in Kotlin. Use the features and techniques you have learned to create a complete and functional DSL that is ready for use.
 
-[ditaa,"writing-a-dsl"]
 .DSL-Development Workflow
-....
-
-         /-----------------\                  /------------------\
-         |  Clarification  |                  |    Refinement    |
-         v                 |                  v                  |
-   /--------------\  /-----+-------\  /---------------\  /-------+--------\
-   | Ideal Syntax +->| Prototyping +->| Formalization +->| Implementation |
-   \--------------/  \-------------/  \---------------/  \-------+--------/
-                           ^                                     |
-                           |    Chosen Approach isn't viable     |
-                           \-------------------------------------/
-
-....
-
-//image::DevelopmentWorkflow.svg[Static,500]
+image::DevelopmentWorkflow.png[DSL-Development Workflow, pdfwidth=50%, align="center"]
 
 By following this straightforward workflow, you will ensure a well-organized and comprehensive structure for your DSL project.
 

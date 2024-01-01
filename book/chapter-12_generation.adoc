@@ -1,3 +1,5 @@
+:imagesdir: ./images
+
 == Code Generation for DSLs (((Code Generation)))
 
 > Do not cite the Deep Magic to me, witch! I was there when it was written.
@@ -313,22 +315,8 @@ There are two APIs for annotation processors in Kotlin. The older one is called 
 
 Before deciding to write an annotation processor, it's important to understand how it works and what its limitations are. You will need at least two modules: One module containing annotations, related interfaces, etc. that you can use in your client code to specify your requirements to the annotation processor, and one module containing the annotation processor itself that is integrated into the build process to do things like code generation, reporting, or to provide tooling support. Often, a third module is added for testing purposes, because not only do you want to have unit tests for the processor classes, but you also need to verify that the processor works as intended when building client code.
 
-[ditaa,"generating-a-dsl"]
-.Annotation processor using KSP
-....
-
-  /-------------\           /-----------\            /--------------\
-  | Annotations |<----------+ Processor +----------->|   DSL Code   |
-  \-----+-------/ looks for \-----+-----/ generates  \--------------/
-        ^                         |                          ^
-        |uses                     |inspects                  |uses
-        |                         v                          |
- /------+----------------------------------------------------+-------\
- |                       Client Application                          |
- \-------------------------------------------------------------------/
-
-....
-
+.Generating DSL Code with KSP
+image::GeneratingDslCode.png[Generating DSL Code with KSP, pdfwidth=50%, align="center"]
 
 [WARNING]
 .KSP and Reflection
@@ -412,7 +400,7 @@ A KSP implementation consists of three main parts:
 
 - A `SymbolProcessorProvider`: This class allows the KSP library to use Java's https://docs.oracle.com/javase/tutorial/sound/SPI-intro.html[Service Provider Interface]footnote:[Service Provider Interface: https://docs.oracle.com/javase/tutorial/sound/SPI-intro.html] mechanism to discover new processors.
 - A `SymbolProcessor`: This class is the starting point of the annotation processor. Typically, it determines what tasks need to be performed, e.g. by inspecting annotations.
-- KSVisitor` classes: After determining __what__ to do, the processor usually delegates the work to one or more visitor classes that know __how__ to do a particular task. You don't have to follow this pattern, but it helps to clarify responsibilities and is the preferred approach according to the KSP documentation.
+- `KSVisitor` classes: After determining __what__ to do, the processor usually delegates the work to one or more visitor classes that know __how__ to do a particular task. You don't have to follow this pattern, but it helps to clarify responsibilities and is the preferred approach according to the KSP documentation.
 
 The provider class just points to our processor:
 
@@ -435,7 +423,7 @@ class UnitsProcessorProvider : SymbolProcessorProvider {
 
 This provider class must be registered in a text file called `SymbolProcessorProvider` located in the `resources/META-INF/services` folder. In this file you simply add a single line with the qualified name of the provider class.
 
-The processor will find all classes annotated with `@Conversion', `@QuantityOperations' and `@MultiplicationResult' and delegate code generation to the appropriate visitors:
+The processor will find all classes annotated with `@Conversion`, `@QuantityOperations` and `@MultiplicationResult` and delegate code generation to the appropriate visitors:
 
 [source,kotlin]
 ----

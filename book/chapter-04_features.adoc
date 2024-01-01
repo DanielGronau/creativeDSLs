@@ -464,7 +464,7 @@ Again, `a` must be mutable, `B` must be a subtype of `A`. Also, the return type 
 | `a in b` | `fun B.contains(a: A): R` | Defines also `!in`.
 |===
 
-The `..<` operator is new and is intended as a replacement for the `until` infix function.
+The `..<` operator was introduced as a replacement for the `until` infix function.
 
 ==== Index Access (((Index Access Operator))) and Invoke Operators (((Invoke Operator)))
 
