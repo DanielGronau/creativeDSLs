@@ -32,7 +32,6 @@ TODO:
 - Rework conclusion sections
 - Check quotes
 - bibliography
-- Paper Book version -> links as footnotes
 - Replace ditaa by SVG diagrams 
 - register creativeDsls@protonmail.com
 

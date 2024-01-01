@@ -86,7 +86,7 @@ val exampleFile = file("", "HelloWorld") {
 
 I think the Loan Pattern style is easier to read because it shows the nested structures more clearly. As mentioned above, there were good reasons to stick with the builder pattern approach, but it would be nice to have the option to use something closer to my suggestion.
 
-=== Gradle .kts
+=== Gradle .kts (((Gradle)))
 
 https://gradle.org/[Gradle]footnote:[Gradle: https://gradle.org](((Gradle))) is an amazing build system. Unlike descriptive approaches like the XML-based https://maven.apache.org[Apache Maven]footnote:[Apache Maven - https://maven.apache.org](((Apache Maven))), the build process is "programmable", which gives the user a lot of flexibility.
 
@@ -175,9 +175,102 @@ class LogicTest : StringSpec({
 // 'false' xor 'false' should be 'false'
 ----
 
-Of course, you can do something similar in JUnit by using the `@ParameterizedTest` annotation instead of `@Test`, and if you need even more flexibility, there is a `DynamicTest.dynamicTest()` method that takes a lambda argument. The difference, however, is that Kotest doesn't require such specialized constructs, but allows the user to take advantage of existing language features. Obviously, doing more with less helps to reduce the cognitive load (((Cognitive Load))) when learning to use the framework.
+Of course, you can do something similar in JUnit by using the `@ParameterizedTest` annotation instead of `@Test`, and if you need even more flexibility, there is a `DynamicTest.dynamicTest()` method that takes a lambda argument. The difference, however, is that Kotest doesn't require special constructs in such cases, but allows the user to take advantage of existing language features. Obviously, doing more with less helps to reduce the <<chapter-03_writing.adoc#congnitiveLoad,cognitive load>> (((Cognitive Load))) while learning to use the framework.
 
-=== better-parse
+=== better-parse (((better-parse)))
+
+Better-parse is the parser-combinator library we used in <<chapter-09_strings.adoc#parserLibrary,Chapter 9>>. It features a succinct hybrid DSL, which gives you a lot of flexibility. Here is one of the example parsers of the project:
+
+[soure,kotlin]
+.https://github.com/h0tk3y/better-parse/blob/master/demo/demo-jvm/src/main/kotlin/com/example/BooleanExpression.kt
+----
+sealed class BooleanExpression
+
+object TRUE : BooleanExpression()
+object FALSE : BooleanExpression()
+data class Variable(
+    val name: String
+) : BooleanExpression()
+data class Not(
+    val body: BooleanExpression
+) : BooleanExpression()
+data class And(
+    val left: BooleanExpression,
+    val right: BooleanExpression
+) : BooleanExpression()
+data class Or(
+    val left: BooleanExpression,
+    val right: BooleanExpression
+) : BooleanExpression()
+data class Impl(
+    val left: BooleanExpression,
+    val right: BooleanExpression
+) : BooleanExpression()
+
+object BooleanGrammar : Grammar<BooleanExpression>() {
+    val tru by literalToken("true")
+    val fal by literalToken("false")
+    val id by regexToken("\\w+")
+    val lpar by literalToken("(")
+    val rpar by literalToken(")")
+    val not by literalToken("!")
+    val and by literalToken("&")
+    val or by literalToken("|")
+    val impl by literalToken("->")
+    val ws by regexToken("\\s+", ignore = true)
+
+    val negation by -not * parser(this::term) map { Not(it) }
+    val bracedExpression by -lpar * parser(this::implChain) * -rpar
+
+    val term: Parser<BooleanExpression> by
+        (tru asJust TRUE) or
+        (fal asJust FALSE) or
+        (id map { Variable(it.text) }) or
+        negation or
+        bracedExpression
+
+    val andChain by leftAssociative(term, and) {
+        a, _, b -> And(a, b)
+    }
+    val orChain by leftAssociative(andChain, or) {
+        a, _, b -> Or(a, b)
+    }
+    val implChain by rightAssociative(orChain, impl) {
+        a, _, b -> Impl(a, b)
+    }
+
+    override val rootParser by implChain
+}
+
+fun main(args: Array<String>) {
+    val expr = "a & (b1 -> c1) | a1 & !b | !(a1 -> a2) -> a"
+    println(BooleanGrammar.parseToEnd(expr))
+}
+----
+
+The grammar is defined within an object as a sequence of token definitions and parsers that build upon each other. An interesting aspect of this DSL is that variable initialization relies heavily on property delegation, which allows for finer-grained control and performance optimizations. For example, the `literalToken()` function does not return a `LiteralToken` but a specialized `CharToken` if the given text contains only one character, but this optimization is hidden from the user.
+
+An interesting problem is how to handle recursive parser definitions. In the example in Chapter 9, a "part" could be either an "element" or a "group", but a group itself consists of parts. The library solves this in an elegant way by allowing to refer to parsers via their property reference:
+
+[source,kotlin]
+----
+val equationGrammar = object : Grammar<Equation>() {
+    ...
+    val element: Parser<Element> by (symbol and optional(number))
+        .map { (s, n) -> Element(s.text, n ?: 1) }
+
+    val group: Parser<Group> by (skip(leftPar) and
+            oneOrMore(parser(this::part)) and
+            skip(rightPar) and
+            optional(number))
+        .map { (parts, n) -> Group(parts, n ?: 1) }
+
+    val part: Parser<Part> = element or group
+    ...
+}
+----
+
+Calling `parser(this::part)` allows you to "break the cycle". I suspect that this is one reason - besides performance considerations - why the DSL uses an object as its context, rather than the more common trailing lambda syntax. While there are certainly ways to make a recursive definition work in Loan Pattern DSLs, this is clearly a more straightforward solution. This is a perfect example of why creativity and out-of-the-box thinking are so important when writing DSLs.
 
 === konform
 
