@@ -403,7 +403,7 @@ Kotlin allows operator overloading, but is conservative in the sense that it onl
 [NOTE]
 .Overloading Restrictions
 ====
-The boolean operators `&&` and `||`, the access operators `.`, `?.` and `!!`, the unary spread operator `*` and the Elvis operator `?:` cannot be overloaded.
+The boolean operators `&&` and `||`, the access operators `.`, `?.` and `!!`, the unary spread operator `*`, the Elvis operator `?:` and the property delegation operators `provideDelegate`, `getValue` and `setValue` cannot be overloaded.
 ====
 
 Some overloading functions require specific return types. The type `R` is used in the following tables to indicate that there are no such restrictions.
