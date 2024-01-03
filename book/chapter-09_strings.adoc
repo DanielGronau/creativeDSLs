@@ -1,4 +1,7 @@
-== String-Parsing DSLs
+:imagesdir: ./images
+
+[#stringParsingDsls]
+== String-Parsing DSLs (((String Parsing DSLs)))
 
 > Words are, of course, the most powerful drug used by mankind.
 -- Rudyard Kipling
@@ -188,7 +191,7 @@ data class Molecule(
 
 enum class Arrow(val symbol: String) {
     IRREVERSIBLE("->"),
-    REVERSIBLE("<=>")
+    REVERSIBLE("<->")
 }
 
 data class Equation(
@@ -215,40 +218,8 @@ The code overwrites the `toString()` methods in order to give the output in chem
 
 This diagram summarizes the structure of our model classes:
 
-[ditaa,"chemicalEquationAsString"]
 .Model for Chemical Equations
-....
-
-         +--------------+
-         |   Chemical   |
-         |              |
-         |   Equation   |
-         +---+------+---+
-             |1     |1
-        LHS  |      |  RHS
-             vn     vn
-         +--------------+
-         |   Molecule   |
-         |              |
-         | e.g. 2CH3OH  |
-         +------+-------+
-                |1
-                |
-                vn
-         +--------------+
-         |   Molecular  |
-         |              +<--+
-         |     Part     |   |1
-         +-+----------+-+   |
-           |          |     |
-           |is-a  is-a|     |n
-    +------+--+    +--+-----+-+
-    | Element |    |  Group   |
-    |         |    |          |
-    | e.g. H2 |    |e.g. (OH)2|
-    +---------+    +----------+
-
-....
+image::ChemicalEquation.png[Model for Chemical Equations, pdfwidth=50%, align="center"]
 
 The above equation for making barium phosphate could be written as follows:
 
@@ -379,7 +350,7 @@ The first example of this "assembling" is the function for reading the equation 
 [source,kotlin]
 ----
 fun parseArrow(string: String): ParseResult<Arrow> =
-    parsePattern(string, "<=>").map { Arrow.REVERSIBLE } or
+    parsePattern(string, "<->").map { Arrow.REVERSIBLE } or
             { parsePattern(string, "->").map { Arrow.IRREVERSIBLE } }
 ----
 
@@ -511,7 +482,7 @@ val equationGrammar = object : Grammar<Equation>() {
 
     val irreversible by literalToken("->")
 
-    val reversible by literalToken("<=>")
+    val reversible by literalToken("<->")
 
     val plus by literalToken("+")
 

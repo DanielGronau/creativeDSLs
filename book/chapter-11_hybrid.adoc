@@ -1,3 +1,5 @@
+:imagesdir: ./images
+
 == Hybrid DSLs (((Hybrid DSLs)))
 
 > In diversity, there is beauty and strength.
@@ -56,7 +58,7 @@ data class Molecule(
 
 enum class Arrow(val symbol: String) {
     IRREVERSIBLE("->"),
-    REVERSIBLE("<=>")
+    REVERSIBLE("<->")
 }
 
 data class Equation(
@@ -77,40 +79,8 @@ private fun Int.oneAsEmpty(): String =
 
 As a refresher, here is the corresponding structure diagram:
 
-[ditaa,"chemicalEquationAsHybrid"]
 .Model for Chemical Equations
-....
-
-         +--------------+
-         |   Chemical   |
-         |              |
-         |   Equation   |
-         +---+------+---+
-             |1     |1
-        LHS  |      |  RHS
-             vn     vn
-         +--------------+
-         |   Molecule   |
-         |              |
-         | e.g. 2CH3OH  |
-         +------+-------+
-                |1
-                |
-                vn
-         +--------------+
-         |   Molecular  |
-         |              +<--+
-         |     Part     |   |1
-         +-+----------+-+   |
-           |          |     |
-           |is-a  is-a|     |n
-    +------+--+    +--+-----+-+
-    | Element |    |  Group   |
-    |         |    |          |
-    | e.g. H2 |    |e.g. (OH)2|
-    +---------+    +----------+
-
-....
+image::ChemicalEquation.png[Model for Chemical Equations, pdfwidth=50%, align="center"]
 
 As a first step, we define the elements as `val`{nbsp}s:
 
@@ -192,7 +162,7 @@ In case you wonder why there is no `List<Molecule>.plus(that: Molecule)` functio
 
 The last part of the DSL is collecting everything into an equation. This is not complicated, but tedious, because we may have not only lists of molecules, but also single molecules or parts of molecules on both sides of the equation. To simplify this, we use some helper functions. We also need to consider the two different types of equations, reversible and irreversible.
 
-For the arrows we can use the backtick notation(((Backtick Notation))). Since `{backtick}-{zwsp}>{backtick}` and `{backtick}<{zwsp}={zwsp}>{backtick}` contain characters that are not valid on the JVM, we have to rename the functions there using `@JvmName`, and unfortunately we also have to suppress the corresponding compiler warnings.
+For the arrows we can use the backtick notation(((Backtick Notation))). Since `{backtick}-{zwsp}>{backtick}` and `{backtick}<{zwsp}-{zwsp}>{backtick}` contain characters that are not valid on the JVM, we have to rename the functions there using `@JvmName`, and unfortunately we also have to suppress the corresponding compiler warnings.
 
 [source,kotlin]
 ----
@@ -232,7 +202,7 @@ infix fun Part.`->`(that: Molecule) =
 infix fun Molecule.`->`(that: Part) =
     Equation(side(this), Arrow.IRREVERSIBLE, side(that))
 
-// same functions with `<=>`, for equations with Arrow.REVERSIBLE
+// same functions with `<->`, for equations with Arrow.REVERSIBLE
 ----
 
 So, how does our DSL look in action? Here are a few examples:
@@ -250,7 +220,7 @@ val makingBariumPhosphate =
 
 //H2SO4 + 8HI <-> H2S + 4I2 + 4H2O
 val sulfuricAcidAndHydrogenIodide =
-    H[2]-S-O[4] + 8*(H-I) `<=>`
+    H[2]-S-O[4] + 8*(H-I) `<->`
         (H[2]-S) + 4*I[2] + 4*(H[2]-O)
 
 //CuSO4 + 4H2O -> [Cu(H2O)4]SO4
