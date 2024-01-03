@@ -536,6 +536,22 @@ infix fun Double.`^`(exponent: Int) = this.pow(exponent)
 val result = 1.2 `^` 3
 ----
 
+Infix functions can also help make the trailing lambda syntax more readable. For example, we can write a function that takes a pair of lists and combines them using a given lambda:
+
+[source,kotlin]
+----
+infix fun <P, Q, R> Pair<List<P>, List<Q>>.zipWith(
+    body: (P, Q) -> R
+): List<R> = first.zip(second).map { (p, q) -> body(p, q) }
+
+val numbers = listOf(1, 2, 3, 4)
+val strings = listOf("x", "y", "z")
+val result = numbers to strings zipWith { i, c -> "$i -> $c" }
+println(result) // [1 -> x, 2 -> y, 3 -> z]
+----
+
+Without `infix`, we would have to write `(numbers to strings).zipWith { i, c -> "$i -> $c" }` instead, which looks quite cluttered.
+
 [#functionalInterfaces]
 === Functional Interfaces (((Functional Interfaces))) (((SAM))) (((Single Abstract Method)))
 
@@ -564,7 +580,7 @@ fun interface StringCheck {
 val shortStringCheck = StringCheck { s -> s.length < 10 }
 ----
 
-The lambda is automatically translated back into an implementation as shown in the first example (this process is called "SAM conversion"). I think you will agree that this syntax looks much better, making it useful for DSLs.
+I think you will agree that this syntax looks much better, making it useful for DSLs. The lambda-like syntax is automatically translated back into an implementation as shown in the first example (this process is called "SAM conversion").
 
 === Generics (((Generics)))
 
