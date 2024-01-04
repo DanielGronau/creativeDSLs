@@ -1,5 +1,7 @@
 = Creative DSLs in Kotlin
 :imagesdir: ./images
+:pdf-themesdir: {docdir}/theme
+:pdf-theme: pdf-theme.yml
 :front-cover-image: image:cover.jpg[]
 :doctype: book
 :encoding: utf-8
