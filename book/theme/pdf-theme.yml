@@ -31,7 +31,7 @@ base:
   # The Noto font family has a built-in line height of 1.36
   # With this line_height, a line of text will occupy a height of 15.78pt
   line_height: $base_line_height_length / 10.5
-  font_size_large: round($base_font_size * 1.25)
+  font_size_large: round($base_font_size * 1.15) #1.25
   font_size_small: round($base_font_size * 0.85)
   font_size_min: $base_font_size * 0.75
   font_style: normal

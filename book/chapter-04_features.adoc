@@ -270,7 +270,7 @@ On the JVM where Kotlin is typically compiled, extension functions are implement
 List<Integer> digits = IntUtilsKt.digits(1729, 10); // [1, 7, 2, 9]
 ----
 
-.History of Extension Functions
+.Extension Functions in Different Languages
 ****
 Extension methods, originally introduced in C#, found their way into Kotlin as "extension functions", specifically with the goal of seamlessly integrating Java classes into the Kotlin ecosystem. This approach was chosen over Scala's _implicit conversion_ approach, which, while more powerful, was considered more complex to understand and manage. The benefits of extension methods became so apparent that they were also introduced in Scala 3. Plain Java doesn't provide support for extension methods, but there are Java libraries that do, such as http://manifold.systems/docs.html#the-extension-manifold[Manifold]footnote:[Manifold Extension Methods: http://manifold.systems/docs.html#the-extension-manifold](((Manifold))), https://projectlombok.org/features/experimental/ExtensionMethod[Project Lombok]footnote:[Project Lombok Extension Methods: https://projectlombok.org/features/experimental/ExtensionMethod](((Project Lombok))), or https://github.com/rogerkeays/fluent[Fluent]footnote:[Fluent: https://github.com/rogerkeays/fluent](((Fluent))). It is safe to say that extension methods are an important and successful advancement in modern object-oriented programming.
 ****
@@ -440,7 +440,7 @@ If these operators are defined, `a` is mutable, and the left and right sides hav
 
 If you don't want the normal binary form, but only the assignment, you can define it explicitly:
 
-[cols="1a,2a,3a"]
+[cols="1a,2a,2a"]
 |===
 |Operator |Overwriting Function | Remarks
 
@@ -455,7 +455,7 @@ Again, `a` must be mutable, `B` must be a subtype of `A`. Also, the return type 
 
 ==== Range (((Range Operator))) and In Operators (((In Operator)))
 
-[cols="1a,2a,3a"]
+[cols="1a,2a,2a"]
 |===
 |Operator |Overwriting Function | Remarks
 
@@ -468,7 +468,7 @@ The `..<` operator was introduced as a replacement for the `until` infix functio
 
 ==== Index Access (((Index Access Operator))) and Invoke Operators (((Invoke Operator)))
 
-[cols="1a,2a,3a"]
+[cols="1a,2a,2a"]
 |===
 |Operator |Overwriting Function | Remarks
 
@@ -485,7 +485,7 @@ Note that the index access operator `[]` requires at least one element, while th
 
 ==== Equality (((Equality Operator))) and Comparison Operators (((Comparison Operator)))
 
-[cols="1a,2a,3a"]
+[cols="1a,2a,2a"]
 |===
 |Operator |Overwriting Function | Remarks
 
@@ -580,7 +580,7 @@ fun interface StringCheck {
 val shortStringCheck = StringCheck { s -> s.length < 10 }
 ----
 
-I think you will agree that this syntax looks much better, making it useful for DSLs. The lambda-like syntax is automatically translated back into an implementation as shown in the first example (this process is called "SAM conversion").
+I think you will agree that this syntax looks much better, making it useful for DSLs. However, the lambda-like syntax is just syntactic sugar: Under the hood, the compiler translates it into an implementation equivalent to the first example.
 
 === Generics (((Generics)))
 
@@ -636,7 +636,7 @@ fun average(list: List<Double>): Double =
     list.sum() / list.size
 ----
 
-The compiler complains "The following declarations have the same JVM signature (average(Ljava/util/List;)D)". In Java, the only solution is to rename the functions. In Kotlin, we can keep the same names in the code, and just rename them in the JVM:
+The compiler complains `The following declarations have the same JVM signature (average(Ljava/util/List;)D)`. In Java, the only solution is to rename the functions. In Kotlin, we can keep the same names in the code, and just rename them in the JVM:
 
 [source,kotlin]
 ----
@@ -687,7 +687,7 @@ Value classes are a feature introduced in Kotlin 1.5 that allows developers to c
 
 In Kotlin, a value class is defined using the "value" modifier and must have a single primary constructor with exactly one parameter. The parameter must be of a non-nullable type, such as `Int`, `Long`, or `String`. Value classes cannot extend other classes, and they cannot be extended by other classes.
 
-Value classes are optimized for performance, as they are designed to avoid the overhead of creating a full object instance whenever possible. Like generics, which exist only at compile time but are "erased" in byte code, value classes are replaced by their values in byte code whenever possible.
+Value classes are optimized for performance, as they are designed to avoid the overhead of creating a full object instance whenever possible, very similar to the handling of primitive types such as `Int`, which are generally used in their "unboxed" state on the JVM, unless a "boxed" instance is really required.
 
 One of the main advantages of value classes is that they can be used to create more expressive and type-safe APIs. For example, a value class representing a particular unit of measurement can help ensure that only valid unit conversions are performed, and can help catch errors at compile time rather than at runtime.
 
@@ -767,7 +767,7 @@ Sometimes you need to inspect or deconstruct classes, call unknown methods, reac
 .Gradle (.kts)
 ----
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.10")
+    implementation(kotlin("reflect"))
 }
 ----
 
@@ -845,7 +845,7 @@ You can opt in to context receivers by specifying the compiler argument `-Xconte
 [#contracts]
 ==== Contracts (((Contracts)))
 
-https://github.com/Kotlin/KEEP/blob/master/proposals/kotlin-contracts.md[Kotlin Contracts]footnote:[Kotlin Contracts: https://github.com/Kotlin/KEEP/blob/master/proposals/kotlin-contracts.md]] are a way to give the compiler additional information about the result of functions, allowing it to perform smart casts it couldn't do with just static code analysis.
+https://github.com/Kotlin/KEEP/blob/master/proposals/kotlin-contracts.md[Kotlin Contracts]footnote:[Kotlin Contracts: https://github.com/Kotlin/KEEP/blob/master/proposals/kotlin-contracts.md] are a way to give the compiler additional information about the result of functions, allowing it to perform smart casts it couldn't do with just static code analysis.
 
 Here is an example taken from the documentation:
 

@@ -6,7 +6,7 @@
 > Words are, of course, the most powerful drug used by mankind.
 -- Rudyard Kipling
 
-In some cases, the host language doesn't allow you to create the DSL syntax you want. A string parsing DSL gives you the freedom to write basically anything. One area where other DSL categories are particularly bad is in giving the user some leeway, for example regarding upper- and lower-case syntax, the order of operations, or the use of special characters such as symbols. String-based DSLs can easily incorporate such leniency.
+In some cases, the host language doesn't allow you to create the DSL syntax you want. A string parsing DSL gives you the freedom to write basically anything. One area where other DSL categories are particularly bad is in giving the user some leeway, for example with respect to uppercase and lowercase syntax, the order of operations, or the use of special characters such as symbols. String-based DSLs can easily incorporate such leniency. In addition, Kotlin's support for multiline (or "raw") strings makes it convenient to write larger string-based DSLs, and allows for "graphical" DSLs, such as 2D representations of game levels.
 
 One drawback is that these DSLs are hidden from the scrutiny of the compiler: There are no compile-time checks, no auto-completion hints, etc., so the user has to rely on the documentation. Another issue is writing the parser, which is usually more involved than collecting the data in other DSL types, although I hope this chapter convinces you that it is nothing to be afraid of either.
 
@@ -26,7 +26,7 @@ Before we dive into complicated problems requiring parsers, we will start with a
 ****
 The Forsyth-Edwards Notation is a standard notation for describing the current position of pieces on a chessboard. It consists of a string of characters representing the placement of pieces, organized by rank. In FEN, uppercase letters are used to represent white pieces and lowercase letters are used to represent black pieces. The numbers 1 through 8 are used to represent successive empty squares, and a slash is used to separate ranks. FEN also contains information about:
 
-* which player has the next move
+* which player moves next
 * castling availability
 * en passant capture availability
 * number of half-moves without check or pawn moves (for the 50- or 75-move rule)
@@ -52,7 +52,6 @@ RNBQKB.R
 This is the `Position` class we want to create using a FEN string:
 
 [source,kotlin]
-
 ----
 enum class Piece(val symbol: String) {
     WhitePawn("P"), WhiteRook("R"), WhiteKnight("N"),
