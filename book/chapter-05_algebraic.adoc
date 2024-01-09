@@ -36,8 +36,12 @@ Next, the arithmetic operations can be written using operator overloading. We no
 ----
 operator fun Complex.plus(that: Complex): Complex = this.add(that)
 operator fun Complex.plus(that: Double): Complex = this.add(that)
-operator fun Double.plus(that: Complex): Complex =
-    Complex.ofCartesian(this, 0.0).add(that)
+operator fun Double.plus(that: Complex): Complex = that.add(this)
+
+operator fun Complex.minus(that: Complex) = subtract(that)
+operator fun Complex.minus(that: Double) = subtract(that)
+operator fun Double.minus(that: Complex) =
+    Complex.ofCartesian(this, 0.0).subtract(that)
 ----
 
 The other operations are basically the same. We could also support interoperability with `Int` in addition to `Double`, but for the sake of brevity it was omitted. A small improvement would be a helper method for converting double to complex, instead of relying on the clumsy `Complex.ofCartesian()` factory.
@@ -55,8 +59,8 @@ TIP: Note that the infix extension function can have the same name and arguments
 
 [source,kotlin]
 ----
-infix fun Complex.pow(that: Complex): Complex = pow(that)
-infix fun Complex.pow(that: Double): Complex = pow(that)
+infix fun Complex.pow(that: Complex): Complex = this.pow(that)
+infix fun Complex.pow(that: Double): Complex = this.pow(that)
 ----
 
 Alternatively, we could have used `{backtick}^{backtick}` in <<chapter-04_features.adoc#backtickIdentifiers, backtick notation>>(((Backtick Notation))), which may be more readable than `pow`, but is harder to type.
@@ -73,24 +77,24 @@ operator fun Complex.unaryPlus() = this
 
 operator fun Complex.unaryMinus() = this.negate()
 
-operator fun Complex.plus(that: Complex) = add(that)
-operator fun Complex.plus(that: Double) = add(that)
-operator fun Double.plus(that: Complex) = fromDouble(this).add(that)
+operator fun Complex.plus(that: Complex) = this.add(that)
+operator fun Complex.plus(that: Double) = this.add(that)
+operator fun Double.plus(that: Complex) = that.add(this)
 
-operator fun Complex.minus(that: Complex) = subtract(that)
-operator fun Complex.minus(that: Double) = subtract(that)
+operator fun Complex.minus(that: Complex) = this.subtract(that)
+operator fun Complex.minus(that: Double) = this.subtract(that)
 operator fun Double.minus(that: Complex) = fromDouble(this).subtract(that)
 
-operator fun Complex.times(that: Complex) = multiply(that)
-operator fun Complex.times(that: Double) = multiply(that)
-operator fun Double.times(that: Complex) = fromDouble(this).multiply(that)
+operator fun Complex.times(that: Complex) = this.multiply(that)
+operator fun Complex.times(that: Double) = this.multiply(that)
+operator fun Double.times(that: Complex) = that.multiply(this)
 
-operator fun Complex.div(that: Complex) = divide(that)
-operator fun Complex.div(that: Double) = divide(that)
+operator fun Complex.div(that: Complex) = this.divide(that)
+operator fun Complex.div(that: Double) = this.divide(that)
 operator fun Double.div(that: Complex) = fromDouble(this).divide(that)
 
-infix fun Complex.pow(that: Complex) = pow(that)
-infix fun Complex.pow(that: Double) = pow(that)
+infix fun Complex.pow(that: Complex) = this.pow(that)
+infix fun Complex.pow(that: Double) = this.pow(that)
 
 private fun fromDouble(d: Double) = Complex.ofCartesian(d, 0.0)
 ----
@@ -215,7 +219,7 @@ val x = modulus(7) {
     val d = 3.m / 5.m // Modular(n=2)
     a + b + c + d
 }
-println(x) // Modular(n=2)}
+println(x) // Modular(n=2)
 ----
 
 While this solution works, its scalability is limited because the entire DSL is contained within a class. Although you could alleviate this by converting some functions to extension functions to streamline the class, the operators must remain within the class. This limitation is due to the fact that the operators are already extension functions and can only have one receiver, namely their first operand. Another challenge arises when the DSL requires several unrelated sources of information, forcing them to be combined into a single class. Essentially, these problems occur because the DSL is tightly coupled to its enclosing class.
@@ -294,7 +298,7 @@ fun <R> modulus(m: Long, body: context(Modulus) () -> R) =
     }
 ----
 
-The usage pattern hasn't changed, you can use `with()` in exactly the same way to provide the `Modulus` instance, or you can use the `modulus()` helper function. Furthermore, you can easily write new functions that "inherit" an existing scope:
+The usage pattern hasn't changed, you can use `with()` in exactly the same way to provide the `Modulus` instance, or you can use the `modulus()` helper function. You can easily write new functions that use the context, and within those functions all existing operations will work as expected:
 
 [source,kotlin]
 ----

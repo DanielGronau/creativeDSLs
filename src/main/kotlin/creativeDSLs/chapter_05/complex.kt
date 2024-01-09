@@ -10,7 +10,7 @@ operator fun Complex.unaryMinus() = this.negate()
 
 operator fun Complex.plus(that: Complex) = add(that)
 operator fun Complex.plus(that: Double) = add(that)
-operator fun Double.plus(that: Complex) = fromDouble(this).add(that)
+operator fun Double.plus(that: Complex) = that.add(this)
 
 operator fun Complex.minus(that: Complex) = subtract(that)
 operator fun Complex.minus(that: Double) = subtract(that)
@@ -18,7 +18,7 @@ operator fun Double.minus(that: Complex) = fromDouble(this).subtract(that)
 
 operator fun Complex.times(that: Complex) = multiply(that)
 operator fun Complex.times(that: Double) = multiply(that)
-operator fun Double.times(that: Complex) = fromDouble(this).multiply(that)
+operator fun Double.times(that: Complex) = that.multiply(this)
 
 operator fun Complex.div(that: Complex) = divide(that)
 operator fun Complex.div(that: Double) = divide(that)
