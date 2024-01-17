@@ -113,7 +113,7 @@ val c = Color(
 )
 ----
 
-The syntax is different, but the functionality of this code is very similar to a builder. Of course, like a builder, the arguments can be listed in any order. A notable difference between named arguments is that each argument can only be set once, while a builder allows you to set (and possibly overwrite) an argument value multiple times.
+The syntax is different, but the functionality of this code is very similar to a builder. Of course, as with builders, the arguments can be listed in any order. One notable difference is that for named arguments, each value can only be set once, while a builder allows you to overwrite already set values, which can be confusing. Unlike builders, omitting mandatory values for named arguments will result in compile-time errors.
 
 The `Color` class is immutable, but if you want to get modified copies, you can use the `copy()` method:
 
@@ -260,7 +260,8 @@ sealed interface Validation {
     data class Failure(val reasons: List<String>) : Validation
 
     operator fun Validation.plus(that: Validation): Validation = when {
-        this is Failure && that is Failure -> this.copy(reasons = this.reasons + that.reasons)
+        this is Failure && that is Failure ->
+            this.copy(reasons = this.reasons + that.reasons)
         this is Success -> that
         else -> this
     }
@@ -281,9 +282,10 @@ fun interface Validator<T> {
 
 fun <T> T.validate(
     vararg validators: Validator<T>
-): Validation = validators.fold<_, Validation>(Validation.Success) { result, validator ->
-    result + validator.validate(this)
-}
+): Validation = validators
+    .fold<_, Validation>(Validation.Success) { result, validator ->
+        result + validator.validate(this)
+    }
 
 private infix fun Boolean.then(reason: String) = when {
     this -> Validation.Failure(listOf(reason))
