@@ -427,7 +427,7 @@ data class ProductBuilder<
     val images: List<URI>) {
 
         companion object {
-                inline fun invoke() = ProductBuilder(
+                operator fun invoke() = ProductBuilder(
                 id = Without(),
                 name = Without(),
                 price = Without(),
