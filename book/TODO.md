@@ -22,17 +22,30 @@ Chapters
 13. Java Interoperability
 14. Dissecting common DSLs (kotest, gradle .kts, Kotlin Poet, better-parse)
 
+# DSL applications
+Code Generation
+Library Customization
+Testing
+Configuration Management
+Workflow Orchestration
+Data Creation and Initialization
+Data Transformation
+Data Validation
+Defining Operations
+Execute Actions
+Logging
+Monitoring
+Reporting and Analytics
+Natural Language Processing
+Simulation and Modeling
+
 TODO:
-- chapter 13 and 14
 - make the index
 - other kinds of DSLs / techniques? 
-  - Constructors in kotest?
-  - Token based, e.g. turtle graphics
+  - Token based, e.g. turtle graphics ?
 - find a good Kotlin reflection book to refer to -> 8.3. TODO
-- Rework conclusion sections
 - Check quotes
 - bibliography
-- Replace ditaa by SVG diagrams 
 - register creativeDsls@protonmail.com
 
 

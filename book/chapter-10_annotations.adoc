@@ -156,31 +156,30 @@ The `@Query` annotation has no fields for the `FROM` and `WHERE` clauses, it all
 
 In some cases, it feels very natural to integrate a DSL into the existing user code and use it to influence how certain structures are processed or translated. In these cases, annotation-based DSLs are a good choice. While these DSLs are often easy to use, the implementation overhead can be significant. Another problem can be overuse of annotations to the point of unreadability, and the use of annotations from different frameworks on the same class, method, or property, which can be very confusing.
 
-==== Preferable Use Cases
+*Common applications*
 
-* Creating data
-* Transforming data
+* Data creation and initialization
+* Data transformation
+* Data validation
 * Execute actions
-* Generating code
+* Code generation
 * Configuring systems
 * Testing
 * Logging
+* Monitoring
+* Reporting and analytics
 
-==== Pros & Cons
+*Pros*
 
-[cols="2a,2a"]
-|===
-|Pros |Cons
+* Can feel very natural and intuitive to use
+* Uses a common, dedicated syntax
+* Can support "convention over code" by marking only the special cases
 
-|* usage can feel very natural and intuitive
-* uses a dedicated syntax
-* can be a good way to mark exceptions (e.g. "don't serialize this field")
+*Cons*
 
-|* pollutes the host code
-* can't be used for external code
-* can clash with other annotation-based DSLs
-* relies often heavily on reflection
-* hard to debug
-|===
-
+* May pollute host code
+* Can't be used for external code
+* May conflict with other annotation-based DSLs
+* Often relies heavily on reflection
+* Hard to debug
 

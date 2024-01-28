@@ -329,21 +329,19 @@ For example, the use of algebraic notation in a type-constructing DSL to denote 
 
 Therefore, it is crucial to exercise good judgment and adhere to the _Principle of Least Surprise_ (((Principle of Least Surprise))) when designing algebraic DSLs, rather than blindly adopting them because of their ease of implementation.
 
-==== Preferable Use Cases
+*Common Applications*
 
-* Define operations
+* Defining operations
+* Data transformation
 
-==== Pros & Cons
+*Pros*
 
-[cols="2a,2a"]
-|===
-|Pros |Cons
+* Easy to write
+* Intuitive to use
+* Can use infix functions as operator replacement
 
-|* easy to write
-* intuitive to use
-* can use infix functions as operator replacement
+*Cons*
 
-|* possible name collisions with other DSLs
-* operator precedence can't be changed
-* difficult to use from Java client code
-|===
+* Possible name collisions with other DSLs
+* Operator precedence can't be changed
+* Difficult to use from Java client code

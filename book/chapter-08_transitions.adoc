@@ -705,24 +705,23 @@ private fun QueryDTO<CanBuild>.build(): String = with(StringBuilder()) {
 
 In this chapter we discussed how state transitions can be expressed using different techniques. The DSLs can use either an underlying builder pattern or a loan pattern syntax, and there are different approaches to implementing them. When in doubt, I would recommend starting with the separate classes approach, especially when prototyping. If you use a DTO (as recommended), the code can easily be converted to the Chameleon or Phantom Type style later.
 
-==== Preferable Use Cases
+*Common Applications*
 
-* Creating data
-* Configuring systems
+* Data creation and initialization
+* Data transformation
 * Testing
+* Workflow orchestration
+* Simulation and modeling
 
-==== Pros & Cons
+*Pros*
 
-[cols="2a,2a"]
-|===
-|Pros |Cons
+* Enforces correct state transitions
+* Intuitive way to write code that generates data incrementally
+* Ideal for modeling finite state machines
 
-|* enforces the correct state transitions
-* natural way to write code that creates data in stages
-* natural way to write DSLs for Finite State Machines
+*Cons*
 
-|* hard to read code
-* boilerplate code
-* the "separate classes" approach requires to copy data over
-* the "Phantom Type" approach is hard to use from Java client code
-|===
+* DSL code can be difficult to read
+* Can lead to boilerplate code
+* The "separate classes" approach requires data to be copied over
+* The "phantom type" approach is difficult to use from Java client code

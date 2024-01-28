@@ -499,30 +499,29 @@ Writing high-quality hybrid DSLs can be a complex task, requiring careful consid
 
 However, when done well, a well-designed hybrid DSL can effectively combine different techniques in a way that feels intuitive and organic. By exploiting the strengths of different language features and carefully designing their integration, you can create very powerful and expressive DSLs.
 
-==== Preferable Use Cases
+*Common applications*
 
-* Creating data
-* Transforming data
-* Define operations
+* Data creation and initialization
+* Data transformation
+* Defining operations
 * Execute actions
-* Generating code
-* Configuring systems
+* Code generation
+* Configuration management
 * Testing
 * Logging
+* Monitoring
+* Reporting and analytics
 
-==== Pros & Cons
+*Pros*
 
-[cols="2a,2a"]
-|===
-|Pros |Cons
+* Can support a wide range of problems
+* Allows you to get creative with different techniques
+* Can be very concise due to many implementation options
 
-|* can support a wide range of problems
-* allows to get creative with different techniques
-* can get very concise by having many implementation options
+*Cons*
 
-|* might look incoherent
-* high perceptual complexity -> steeper learning curve
-* difficult to control and predict the outcome
-* higher maintenance effort needed
-* Java interoperability can be very challenging
-|===
+* Can look messy
+* Higher perceptual complexity can lead to steeper learning curve
+* Can be difficult to control edge cases
+* Higher maintenance effort required
+* Java interoperability can be a challenge

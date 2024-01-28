@@ -535,30 +535,28 @@ Going into the details of this particular library is beyond the scope of this bo
 
 String-based DSLs allow for very idiomatic syntax, and can also give the user some leeway by being more forgiving than other DSL types. The drawbacks are a lack of compile-time checks, less tooling support (e.g. autocomplete features), and on the implementation side, the complexity and overhead of parsing, and the difficulty of extending them later.
 
-==== Preferable Use Cases
+*Common Applications*
 
-* Creating data
-* Transforming data
-* Define operations
+* Data creation and initialization
+* Data transformation
+* Defining operations
 * Execute actions
-* Generating code
+* Code generation
 * Testing
+* Natural Language Processing
+* Configuration management
 
-==== Pros & Cons
+*Pros*
 
-[cols="2a,2a"]
-|===
-|Pros |Cons
+* Allows almost any syntax
+* It is easy to allow for some leniency
+* Very flexible and extensible
+* Parser libraries help to write readable parser code
 
-|* allows almost any syntax
-* it is easy to allow for some leniency
-* very flexible and extendable
-* parser libraries help to write readable parser code
+*Cons*
 
-|* no compile time checks
-* no tooling support like code suggestions or autocomplete when using the DSL
-* writing parsers must be learned
-* having a dependency on a parser library
-* difficult to extend at a later point in time
-* hard to combine with other DSL types
-|===
+* No compile time checks
+* No tooling support like code suggestions or autocomplete when using the DSL
+* Learning curve for using parser libraries
+* Dependence on a parser library
+* Can be difficult to extend at a later point in time

@@ -845,26 +845,27 @@ Using code generation in conjunction with annotation processors like KSP can pro
 
 ==== Preferable Use Cases
 
-* Creating data
-* Transforming data
-* Define operations
+* Data creation and initialization
+* Data transformation
+* Data validation
+* Defining operations
+* Execute actions
 * Testing
+* Reporting and analytics
+* Simulation and modeling
 
-==== Pros & Cons
+*Pros*
 
-[cols="2a,2a"]
-|===
-|Pros |Cons
+* Automates the process of writing boilerplate code
+* Very flexible and customizable
+* Often the only practical way to handle combinatorial explosion
+* Intuitive libraries such as https://square.github.io/kotlinpoet[Kotlin-Poet] are available
 
-|* automatize writing of boilerplate code
-* very flexible and adaptable
-* intuitive libraries like https://square.github.io/kotlinpoet[Kotlin-Poet] are available
-* if the generator function is correct, so are all the outputs, e.g. no typos or copy-paste errors
+*Cons*
 
-|* requires some up-front effort and setup
-* strong dependency on the used library
-* longer build times when generation is done for every build
-* code can get out of sync when generation is done only on request
-|===
-
+* Requires some up-front effort and setup
+* Strong dependency on the library used
+* Longer build times if generation is done for every build
+* Code can get out of sync if built on demand only
+* Bug fixing can be challenging
 
