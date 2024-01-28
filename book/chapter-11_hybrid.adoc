@@ -1,5 +1,6 @@
 :imagesdir: ./images
 
+[#hybrid_dsls]
 == Hybrid DSLs (((Hybrid DSLs)))
 
 > In diversity, there is beauty and strength.

@@ -5,9 +5,9 @@ For loan oft loses both itself and friend, +
 And borrowing dulls the edge of husbandry.
 -- Shakespeare, Hamlet, Act 1, Scene 3
 
-This pattern is known by several different names, one of which is "builder pattern". This can be particularly confusing because it is similar to, and often used in place of, the classic builder pattern discussed in the last chapter. Another commonly used term is "lambdas with receivers"(((Lambda with Receiver))), but I would argue that this describes an implementation detail rather than the underlying idea. To avoid confusion, and to provide a more accurate description of the underlying mechanism, it will be referred to here as the "Loan Pattern DSL".
+This pattern is known by several different names, one of which is "builder pattern". This can be particularly confusing because it is similar to, and often used instead of, the classic builder pattern discussed in the last chapter. Another commonly used term is "lambdas with receivers"(((Lambda with Receiver))), but I would argue that this describes an implementation detail rather than the underlying idea. To avoid confusion, and to provide a more accurate description of the underlying mechanism, it will be referred to here as the "Loan Pattern DSL".
 
-The Loan Pattern DSL uses a mutable builder class that exposes its members through the Loan Pattern. This approach leverages the power of extension methods and the trailing lambda syntax in Kotlin. It is especially useful for creating deeply nested structures. In such cases, the code can quickly become cluttered and hard to read when using the classic builder pattern. Also, it can be easier to enforce constraints and ensure type safety with this approach compared to using builders. Sometimes the greater flexibility of Loan Pattern DSLs allows other DSL techniques, such as operator overloading, to be incorporated, while the builder approach is often too rigid for such improvements.
+The Loan Pattern DSL uses a mutable builder class that exposes its members through the Loan Pattern. This approach leverages the power of extension methods and trailing lambda syntax in Kotlin. It is particularly useful for creating deeply nested structures. In such cases, the code can quickly become cluttered and hard to read when using the classic builder pattern. It can also be easier to enforce constraints and ensure type safety with this approach compared to using builders. Sometimes the greater flexibility of Loan Pattern DSLs allows other DSL techniques to be incorporated, while the builder approach is often too rigid for such improvements. That's why it's often used as a scaffolding for hybrid DSLs, as will be discussed in <<chapter-11_hybrid.adoc#hybrid_dsls,Chapter 11>>.
 
 In this chapter, we will first write a more convenient replacement for the `HttpRequest.Builder` introduced in the last chapter. If you have control over the business classes you want to construct, you can use libraries like AutoDSL to generate a DSL for you. We will explore this in the second part of this chapter.
 
@@ -17,7 +17,8 @@ As discussed in the last chapter, `HttpRequest` already comes with a builder tha
 
 [source,kotlin]
 ----
-val request = HttpRequest.newBuilder(URI.create("https://acme.com:9876/products"))
+val request = HttpRequest
+    .newBuilder(URI.create("https://acme.com:9876/products"))
     .GET()
     .header("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8")
     .header("Accept-Encoding", "gzip, deflate")
@@ -41,7 +42,7 @@ val request = httpRequest("https://acme.com:9876/products") {
 
 There are no more `newBuilder()` and `build()` calls, the assignments are really assignments, headers have their own subsection, and durations can be calculated. For convenience, you can choose to specify the web address as either a string or a URI (the example shows the `String` version).
 
-As you might have guessed, `httpRequest` is a method that uses the Loan pattern: It initializes a builder class, exposes it as a receiver, and takes care of the final `build()` call. Also note how it takes care of a mandatory field (in our case, the address) by requiring it as an explicit argument. We have two versions of the function, depending on how the address is specified:
+As you might have guessed, `httpRequest` is a method that uses the loan pattern: It initializes a builder class, exposes it as a receiver, and takes care of the final `build()` call. Also note how it takes care of a mandatory field (in our case, the address) by requiring it as an explicit argument. We have two versions of the function, depending on how the address is specified:
 
 [source,kotlin]
 ----
@@ -79,7 +80,7 @@ class HttpRequestBuilder(var uri: URI) {
 }
 ----
 
-The `headers` field can't be set directly, because we want to use a nested structure here. The `headers()` method works analogous to the `httpRequest()` method, and exposes the inner `Headers` class, which in turn allows the `headers` field to be populated. The `..` range operator was chosen to collect the key-value pairs because it looks a bit like `:`. As discussed in the <<chapter-04_features.adoc#dslMarker,4th Chapter>>, we don't want to expose all the `HttpRequestBuilder` fields in its inner class `Headers`, so we use the `@DslMarker` (((@DslMarker))) mechanism to limit the scope within `Headers`.
+The `headers` field can't be set directly, because we want to use a nested structure here. The `headers()` method works analogous to the `httpRequest()` method, and exposes the inner `Headers` class, which in turn allows the `headers` field to be populated. The `..` range operator was chosen to collect the key-value pairs because it looks a bit like `:`. We don't want to expose all of the `HttpRequestBuilder` fields in its inner `Headers` class, so we use the `@DslMarker` (((@DslMarker))) mechanism that we had discussed in <<chapter-04_features.adoc#dslMarker,Chapter 4>> to limit the scope within `Headers`.
 
 [source,kotlin]
 ----
@@ -201,7 +202,7 @@ class HttpRequestBuilder(var uri: URI) {
 }
 ----
 
-Retrofitting HttpRequestBuilder with a Loan Pattern DSL proved to be a relatively simple task, but the resulting DSL is comfortable and idiomatic. By customizing existing libraries in this way, especially those written in Java, it becomes possible to better meet the needs of users and integrate them more seamlessly into the Kotlin ecosystem.
+Retrofitting HttpRequestBuilder with a Loan Pattern DSL proved to be a relatively simple task, but the resulting DSL is convenient and idiomatic. By customizing existing libraries in this way, especially those written in Java, it becomes easier to meet user needs and integrate them more seamlessly into the Kotlin ecosystem.
 
 === Case Study: HttpRequest with AutoDSL (((AutoDSL)))
 
