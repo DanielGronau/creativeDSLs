@@ -12,9 +12,9 @@ DSLs often need to model complex state transitions that occur during program exe
 * *Chameleon Class*: The different states are represented by interfaces with their respective methods. A single class implements all interfaces, but the return type of its methods is always one of the interfaces, never the class itself.
 * *Phantom Type*: A single class has a generic type parameter representing the different states, and extension methods can only be called for a particular state by specifying the appropriate type parameter for their receiver.
 
-=== Case Study: DSL for SQL queries (using the Builder Pattern)
+=== Case Study: DSL for SQL queries using the Builder Pattern
 
-To allow a good comparison between the implementations, we will write a DSL for building SQL queries using the different approaches. Since the SQL language is very complex, we have to limit our example to queries using only `SELECT`, `FROM`, `JOIN`, `WHERE` and `GROUP BY` clauses and simple string arguments (for a serious SQL DSL implementation, see https://www.jooq.org/[jOOQ]footnote:[https://www.jooq.org](((jOOQ)))). The following state diagram gives an overview of the allowed transitions:
+To allow a good comparison between the implementations, we will write a DSL for building SQL queries using the different approaches. Since the SQL language is very complex, we have to limit our example to queries using only `SELECT`, `FROM`, `JOIN`, `WHERE` and `GROUP BY` clauses and simple string arguments (for a serious SQL DSL implementation, see https://www.jooq.org/[jOOQ]footnote:[https://www.jooq.org](((jOOQ))){nbsp}). The following state diagram gives an overview of the allowed transitions:
 
 .Simplified Select SQL Query
 image::SqlQueries.png[Simplified Select SQL Query, pdfwidth=50%, align="center"]
@@ -44,7 +44,7 @@ val queryGroupBy = SELECT("p.age", "min(p.income)", "max(p.income)")
 
 While this example code uses a Builder Pattern syntax, we will also discuss what a Loan Pattern implementation of the same functionality might look like.
 
-==== The 'Separate Classes' Approach (Builder Pattern)
+==== The 'Separate Classes' Approach
 
 The first approach is straightforward: Each state is represented by a separate class that is independent of all other classes. While this is conceptually very simple, the main drawback is that all collected data must be transferred between the classes representing the states. Often it is more convenient and readable to pass a dedicated Data Transfer Object (DTO) (((Data Transfer Object))) instead of using multiple parameters.
 
@@ -200,7 +200,7 @@ private fun build(queryDTO: QueryDTO): String = with(StringBuilder()) {
 
 Bundling all data into a DTO instance, as shown here, can significantly reduce the overhead of moving all data around, especially by taking advantage of the power of the `copy()` method. In the next section, we will explore an alternative implementation of the same DSL.
 
-==== The Chameleon Class Approach (Builder Pattern) (((Chameleon Class)))
+==== The Chameleon Class Approach (((Chameleon Class)))
 
 While using a separate DTO class makes the separate class approach more convenient, it would be nicer if we didn't have to copy data in the first place. But what about all the guarantees the first solution provides, e.g. that you can't call `build()` or `JOIN()` in a `SELECT` clause? One way to do this is to use a technique I call the "chameleon class". The basic idea is to adapt the type of this class to the current state it represents, and change it accordingly when the state changes.
 
@@ -274,7 +274,9 @@ class QueryBuilder private constructor(val columns: List<String>):
 
     // JoinClause
     override fun ON(firstColumn: String, secondColumn: String): FromClause =
-        this.apply { joinClauses += TableJoin(joinTableName, firstColumn, secondColumn) }
+        this.apply { joinClauses +=
+            TableJoin(joinTableName, firstColumn, secondColumn)
+        }
 
     // WhereClause
     override fun AND(condition: String): WhereClause =
@@ -310,7 +312,7 @@ It doesn't matter to the compiler that you return the same object over and over 
 
 The chameleon class concept may look a bit strange at first, but usually results in compact and readable code. Be aware, however, that this approach is prone to name conflicts when two interfaces contain methods with the same name and parameters, but different return types.
 
-==== The Phantom Type Approach (Builder Pattern)
+==== The Phantom Type Approach
 
 The third approach uses <<chapter-04_features.adoc#typeLevelProgramming,phantom types>>(((Phantom Type))). The implementation is based on a DTO class with a generic parameter. This type parameter is not used as a type for any data within the class - that's why it's called a "phantom type". Instead, this parameter is used by extension functions that require their receiver to have the correct state
 
@@ -338,7 +340,8 @@ data class QueryDTO<out State>(
 )
 
 @Suppress("UNCHECKED_CAST")
-private fun <S : State> QueryDTO<*>.cast(): QueryDTO<S> = this as QueryDTO<S>
+private fun <S : State> QueryDTO<*>.cast(): QueryDTO<S> =
+    this as QueryDTO<S>
 ----
 
 The extension functions for the state transitions are straightforward:
@@ -409,7 +412,7 @@ Declaration-site variance is a way of specifying the variance of a generic type 
 
 Chameleon classes and the phantom type implementation are conceptually similar, and it depends on the problem at hand whether a class with all methods or a DTO with extension methods is preferable. If the DSL needs to be called from Java, keep in mind that only the chameleon approach preserves the DSL syntax. On the other hand, the phantom type approach doesn't have fixed APIs for the different states, only extension functions that operate on them, which means that new functionality can be added more easily than with the other techniques.
 
-=== Case Study: DSL for SQL queries (using the Loan Pattern) (((Loan Pattern)))
+=== Case Study: DSL for SQL queries using the Loan Pattern (((Loan Pattern)))
 
 So far, all examples have used a Builder Pattern syntax. This doesn't have to be the case. A DSL that uses the Loan Pattern style might look like this:
 
@@ -458,7 +461,7 @@ One difference from the builder example is that `JOIN` is now nested, which seem
 
 Note that for a serious implementation, the <<chapter-04_features.adoc#dslMarker,@DslMarker mechanism>> (((@DslMarker))) should be used, since the join clause is nested, but for the sake of brevity it won't be used in the following use cases.
 
-==== The 'Separate Classes' Approach (Loan Pattern)
+==== The 'Separate Classes' Approach
 
 Here is what an implementation using separate classes might look like. We start as usual with the DTO, using the same helper classes `NameWithAlias` and `TableJoin` as before:
 
@@ -501,6 +504,7 @@ The `FromBody` is a little more complex, as it contains the nested `JOIN` clause
 [source,kotlin]
 ----
 class FromBody {
+
     var tableName = NameWithAlias("")
     val joinClauses  = mutableListOf<TableJoin>()
 
@@ -509,8 +513,8 @@ class FromBody {
     infix fun String.AS(alias: String) { tableName = NameWithAlias(this, alias) }
 
     fun JOIN(body: JoinBody.() -> Unit) {
-        JoinBody().apply(body).also {
-            joinClauses += TableJoin(it.tableName, it.firstColumn, it.secondColumn)
+        JoinBody().apply(body).also { joinClauses +=
+            TableJoin(it.tableName, it.firstColumn, it.secondColumn)
         }
     }
 }
@@ -518,10 +522,12 @@ class FromBody {
 data class FromClause(val queryDTO: QueryDTO) {
 
     fun WHERE(body: WhereBody.() -> Unit) =
-        WhereClause(queryDTO.copy(whereConditions = WhereBody().apply(body).conditions))
+        WhereClause(queryDTO.copy(whereConditions =
+            WhereBody().apply(body).conditions))
 
     fun GROUP_BY(body: GroupByBody.() -> Unit) =
-        GroupByClause(queryDTO.copy(groupByColumns = GroupByBody().apply(body).columns))
+        GroupByClause(queryDTO.copy(groupByColumns =
+            GroupByBody().apply(body).columns))
 
     fun build() = build(queryDTO)
 }
@@ -542,10 +548,13 @@ This scheme continues in the same style for the other clauses:
 ----
 data class WhereClause(val queryDTO: QueryDTO) {
 
-    fun AND(condition: String) = copy(queryDTO = queryDTO.copy(whereConditions = queryDTO.whereConditions + condition))
+    fun AND(condition: String) =
+        copy(queryDTO = queryDTO.copy(whereConditions =
+            queryDTO.whereConditions + condition))
 
     fun GROUP_BY(vararg groupByColumns: String) =
-        GroupByClause(queryDTO.copy(groupByColumns = groupByColumns.toList()))
+        GroupByClause(queryDTO.copy(groupByColumns =
+            groupByColumns.toList()))
 
     fun build() = build(queryDTO)
 }
@@ -560,7 +569,7 @@ The `build(queryDTO)` function is identical to the Builder-style version of the 
 
 Admittedly, the code is more difficult to read and write, but it allows for more flexible syntax within the trailing lambda blocks, which feels more natural and structured compared to the Builder Pattern syntax for a wide range of problems. Using the same techniques as before, we can improve the code.
 
-==== The Chameleon Class Approach (Loan Pattern) (((Chameleon Class)))
+==== The Chameleon Class Approach (((Chameleon Class)))
 
 To use a chameleon class, we must first turn the clause data classes into interfaces:
 
@@ -592,6 +601,7 @@ All the `...Body` classes remain unchanged, so we will skip them. The only thing
 ----
 data class QueryBuilder private constructor(val columns: List<String>) :
     SelectClause, FromClause, WhereClause, GroupByClause {
+
     var tableName = NameWithAlias("")
     val joinClauses = mutableListOf<TableJoin>()
     val whereConditions = mutableListOf<String>()
@@ -640,7 +650,7 @@ data class QueryBuilder private constructor(val columns: List<String>) :
 }
 ----
 
-==== The Phantom Type Approach (Loan Pattern)
+==== The Phantom Type Approach
 
 Implementing the DSL using phantom types is very similar to the corresponding Builder Pattern code. Again, the `...Body` classes are unchanged, and are omitted.
 
@@ -665,20 +675,30 @@ data class QueryDTO<out State>(
 )
 
 @Suppress("UNCHECKED_CAST")
-private fun <S: State> QueryDTO<*>.cast(): QueryDTO<S> = this as QueryDTO<S>
+private fun <S: State> QueryDTO<*>.cast(): QueryDTO<S> =
+    this as QueryDTO<S>
 
 fun SELECT(body: SelectBody.() -> Unit): QueryDTO<SelectClause> =
     QueryDTO(columns = SelectBody().apply(body).columns)
 
-fun QueryDTO<SelectClause>.FROM(body: FromBody.() -> Unit): QueryDTO<FromClause> =
-        FromBody().apply(body).let {
-            this@FROM.copy(tableName = it.tableName, joinClauses = it.joinClauses)
-        }.cast()
+fun QueryDTO<SelectClause>.FROM(
+    body: FromBody.() -> Unit
+): QueryDTO<FromClause> =
+    FromBody().apply(body).let {
+        this@FROM.copy(
+            tableName = it.tableName,
+            joinClauses = it.joinClauses
+        )
+    }.cast()
 
-fun QueryDTO<FromClause>.WHERE(body: WhereBody.() -> Unit): QueryDTO<WhereClause> =
+fun QueryDTO<FromClause>.WHERE(
+    body: WhereBody.() -> Unit
+): QueryDTO<WhereClause> =
     copy(whereConditions = WhereBody().apply(body).conditions).cast()
 
-fun QueryDTO<CanGroupBy>.GROUP_BY(body: GroupByBody.() -> Unit): QueryDTO<GroupByClause> =
+fun QueryDTO<CanGroupBy>.GROUP_BY(
+    body: GroupByBody.() -> Unit
+): QueryDTO<GroupByClause> =
     copy(groupByColumns = GroupByBody().apply(body).columns).cast()
 
 private fun QueryDTO<CanBuild>.build(): String = with(StringBuilder()) {
