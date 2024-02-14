@@ -9,7 +9,7 @@ As mentioned in <<chapter-04_features.adoc#annotations,4.13 Annotations>>, you m
 
 === Case Study: Mapper DSL
 
-Mapping between similar classes is a common and often tedious task. There are already many solutions, such as the https://mapstruct.org/[MapStruct]!footnote:mapstruct[MapStruct: https://mapstruct.org](((MapStruct))) library, which is a code generator for mapper classes.
+Mapping between similar classes is a common and often tedious task. There are already many solutions, such as the https://mapstruct.org/[MapStruct]footnote:mapstruct[MapStruct: https://mapstruct.org](((MapStruct))) library, which is a code generator for mapper classes.
 
 In this case study, we will write a very simple mapper DSL to transform e.g. data classes at runtime. The actual transformation code is not for the faint of heart, it relies on reflection and is very insecure to keep it short. Explaining the details is beyond the scope of this book; the focus of the case study is on how to use annotations to express your intentions.
 

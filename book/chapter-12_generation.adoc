@@ -7,7 +7,7 @@
 
 Sometimes you are prototyping a DSL, and you find a nice syntax, but it turns out that it would take a lot of boilerplate code to make it work. A common reason is combinatorial explosion, or you need many classes that follow the same pattern (e.g., tuple classes or fixed-length vectors). In such cases, you might consider using code generation.
 
-A popular library for generating Kotlin code is https://square.github.io/kotlinpoet[KotlinPoet]!footnote:kotlinpoet[KotlinPoet: https://square.github.io/kotlinpoet](((KotlinPoet))). If you are also working with Java, you may also want to check out its sister project https://github.com/square/javapoet[JavaPoet]footnote:[JavaPoet: https://github.com/square/javapoet](((JavaPoet))). There is even some interoperability between them.
+A popular library for generating Kotlin code is https://square.github.io/kotlinpoet[KotlinPoet]footnote:kotlinpoet[KotlinPoet: https://square.github.io/kotlinpoet](((KotlinPoet))). If you are also working with Java, you may also want to check out its sister project https://github.com/square/javapoet[JavaPoet]footnote:[JavaPoet: https://github.com/square/javapoet](((JavaPoet))). There is even some interoperability between them.
 
 === Case Study: Physical Quantities
 
@@ -143,8 +143,11 @@ To make the DSL a bit more readable, we will generate extension properties inste
 
 [source,kotlin]
 ----
-private fun makeDoubleToQuantity(unit: String, kClass: KClass<out Quantity>, factor: Double) =
-    PropertySpec.builder(unit, kClass)
+private fun makeDoubleToQuantity(
+    unit: String,
+    kClass: KClass<out Quantity>,
+    factor: Double
+) = PropertySpec.builder(unit, kClass)
         .receiver(Double::class)
         .getter(
             FunSpec.getterBuilder()
@@ -153,8 +156,11 @@ private fun makeDoubleToQuantity(unit: String, kClass: KClass<out Quantity>, fac
         )
         .build()
 
-private fun makeQuantityToDouble(unit: String, kClass: KClass<out Quantity>, factor: Double) =
-    PropertySpec.builder(unit, Double::class)
+private fun makeQuantityToDouble(
+    unit: String,
+    kClass: KClass<out Quantity>,
+    factor: Double
+) = PropertySpec.builder(unit, Double::class)
         .receiver(kClass)
         .getter(
             FunSpec.getterBuilder()
@@ -483,8 +489,10 @@ class ConversionVisitor(
 ) : KSVisitorVoid() {
 
     @OptIn(KspExperimental::class)
-    override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
-
+    override fun visitClassDeclaration(
+        classDeclaration: KSClassDeclaration,
+        data: Unit
+    ) {
         val shortName = classDeclaration.simpleName.getShortName()
 
         val annotations: List<Conversion> = classDeclaration
@@ -517,8 +525,11 @@ class ConversionVisitor(
         fileSpec.writeTo(codeGenerator, false)
     }
 
-    fun makeDoubleToQuantity(unit: String, className: ClassName, factor: Double) =
-        PropertySpec.builder(unit, className)
+    fun makeDoubleToQuantity(
+        unit: String,
+        className: ClassName,
+        factor: Double
+    ) = PropertySpec.builder(unit, className)
             .receiver(Double::class)
             .getter(
                 FunSpec.getterBuilder()
@@ -527,8 +538,11 @@ class ConversionVisitor(
             )
             .build()
 
-    fun makeQuantityToDouble(unit: String, className: ClassName, factor: Double) =
-        PropertySpec.builder(unit, Double::class)
+    fun makeQuantityToDouble(
+        unit: String,
+        className: ClassName,
+        factor: Double
+    ) = PropertySpec.builder(unit, Double::class)
             .receiver(className)
             .getter(
                 FunSpec.getterBuilder()
@@ -552,12 +566,15 @@ class OperationsVisitor(
     private val logger: KSPLogger
 ) : KSVisitorVoid() {
 
-    override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
+    override fun visitClassDeclaration(
+        classDeclaration: KSClassDeclaration,
+        data: Unit) {
 
         val shortName = classDeclaration.simpleName.getShortName()
 
         if (Modifier.SEALED !in classDeclaration.modifiers) {
-            logger.error("Can't generator operations, <$shortName> is not a sealed class.")
+            logger.error("Can't generator operations, " +
+                "<$shortName> is not a sealed class.")
         }
 
         val subclasses: Sequence<ClassName> =
@@ -628,16 +645,22 @@ class MultiplicationVisitor(
     private val logger: KSPLogger
 ) : KSVisitorVoid() {
 
-    override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
-
+    override fun visitClassDeclaration(
+        classDeclaration: KSClassDeclaration,
+        data: Unit
+    ) {
         val shortName = classDeclaration.simpleName.getShortName()
 
         val factorPairs: List<Pair<ClassName, ClassName>> = classDeclaration
             .getAnnotations(MultiplicationResult::class)
             .map(KSAnnotation::arguments)
             .map { args ->
-                val factor1 = args.first { arg -> arg.name?.getShortName() == "factor1" }.value as KSType
-                val factor2 = args.first { arg -> arg.name?.getShortName() == "factor2" }.value as KSType
+                val factor1 = args.first { arg ->
+                    arg.name?.getShortName() == "factor1"
+                }.value as KSType
+                val factor2 = args.first { arg ->
+                    arg.name?.getShortName() == "factor2"
+                }.value as KSType
                 factor1.toClassName() to factor2.toClassName()
             }
 
@@ -647,9 +670,17 @@ class MultiplicationVisitor(
                 fileName = shortName.lowercase() + "Multiplications"
             ).run {
                 factorPairs.forEach { (factor1, factor2) ->
-                    addFunctions(factor1, factor2, classDeclaration.toClassName())
+                    addFunctions(
+                        factor1 = factor1,
+                        factor2 = factor2,
+                        result = classDeclaration.toClassName()
+                    )
                     if (factor1.toString() != factor2.toString()) {
-                        addFunctions(factor2, factor1, classDeclaration.toClassName())
+                        addFunctions(
+                            factor1 = factor2,
+                            factor2 = factor1,
+                            result = classDeclaration.toClassName()
+                        )
                     }
                 }
                 build()
@@ -691,7 +722,9 @@ class MultiplicationVisitor(
         .addStatement("return %T(this.component1() / that.component1())", out)
         .build()
 
-    private fun KSClassDeclaration.getAnnotations(annotationClass: KClass<*>): List<KSAnnotation> =
+    private fun KSClassDeclaration.getAnnotations(
+        annotationClass: KClass<*>
+    ): List<KSAnnotation> =
         annotations.filter { it.shortName.getShortName() == annotationClass.simpleName }.toList()
 }
 ----
@@ -749,7 +782,8 @@ class PatternVisitor(
         logger.warn("found $shortName")
 
         if (Modifier.DATA !in classDeclaration.modifiers) {
-            logger.error("Can't generate pattern, <$shortName> isn't a data class")
+            logger.error("Can't generate pattern, " +
+                "<$shortName> isn't a data class")
         }
 
         val parameters = classDeclaration.primaryConstructor!!.parameters
@@ -775,12 +809,15 @@ class PatternVisitor(
             ).defaultValue("any()")
                 .build()
         })
-        .returns(patternClassName.parameterizedBy(classDeclaration.toClassName().copy(nullable = true)))
+        .returns(patternClassName.parameterizedBy(
+            classDeclaration.toClassName().copy(nullable = true)))
         .beginControlFlow("return")
         .beginControlFlow("when(it)")
         .addCode("null -> false\n")
-        .addCode("else -> %L", parameters.joinToString(" &&\n        ", "", "\n") { param ->
-            "${param.name!!.getShortName()}(it.${param.name!!.getShortName()})"
+        .addCode("else -> %L", parameters
+            .joinToString(" &&\n        ", "", "\n") { param ->
+                "${param.name!!.getShortName()}" +
+                "(it.${param.name!!.getShortName()})"
         })
         .endControlFlow()
         .endControlFlow()

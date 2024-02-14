@@ -88,11 +88,11 @@ I think the Loan Pattern style is easier to read because it shows the nested str
 
 === Gradle .kts (((Gradle)))
 
-https://gradle.org/[Gradle]footnote:[Gradle: https://gradle.org](((Gradle))) is an amazing build system. Unlike descriptive approaches like the XML-based https://maven.apache.org[Apache Maven]footnote:[Apache Maven - https://maven.apache.org](((Apache Maven))), the build process is "programmable", which gives the user a lot of flexibility.
+https://gradle.org/[Gradle]footnote:[Gradle: https://gradle.org](((Gradle))) is an amazing build system. Unlike descriptive approaches like the XML-based https://maven.apache.org[Apache Maven]footnote:[Apache Maven: https://maven.apache.org](((Apache Maven))), the build process is "programmable", which gives the user a lot of flexibility.
 
 However, the original Gradle implementation was written in Groovy(((Groovy))) - at the time probably the best choice for writing an expressive DSL in the Java ecosystem. Unfortunately, the Groovy language comes with its own set of problems. It is a scripted language with a weak type system, and as a result, IDE features such as autocompletion, content assistance, source navigation, quick documentation, and refactoring support are limited.
 
-To address these issues, the Gradle team decided to provide an alternative DSL based on Kotlin script (.kts). Obviously, the new DSL should look very similar to the old Groovy style to make the transition as smooth as possible. I think the Kotlin DSL was a resounding success in this regard. Here is a comparison, taken from the https://docs.gradle.org/current/userguide/migrating_from_groovy_to_kotlin_dsl.html[Gradle Userguide: Migrating build logic from Groovy to Kotlin]footnote:[Gradle Userguide, Migration: https://docs.gradle.org/current/userguide/migrating_from_groovy_to_kotlin_dsl.html]:
+To address these issues, the Gradle team decided to provide an alternative DSL based on Kotlin script (.kts). Obviously, the new DSL should look very similar to the old Groovy style to make the transition as smooth as possible. I think the Kotlin DSL was a resounding success in this regard. Here is a comparison, taken from the https://docs.gradle.org/current/userguide/migrating_from_groovy_to_kotlin_dsl.html[Gradle Userguide: Migrating build logic from Groovy to Kotlin]footnote:[Gradle Migration: https://docs.gradle.org/current/userguide/migrating_from_groovy_to_kotlin_dsl.html]:
 
 [source,groovy]
 .Groovy
@@ -187,21 +187,27 @@ Better-parse is the parser-combinator library we used in <<chapter-09_strings.ad
 sealed class BooleanExpression
 
 object TRUE : BooleanExpression()
+
 object FALSE : BooleanExpression()
+
 data class Variable(
     val name: String
 ) : BooleanExpression()
+
 data class Not(
     val body: BooleanExpression
 ) : BooleanExpression()
+
 data class And(
     val left: BooleanExpression,
     val right: BooleanExpression
 ) : BooleanExpression()
+
 data class Or(
     val left: BooleanExpression,
     val right: BooleanExpression
 ) : BooleanExpression()
+
 data class Impl(
     val left: BooleanExpression,
     val right: BooleanExpression
@@ -291,9 +297,11 @@ data class Event(
 
 val validateEvent = Validation<Event> {
     Event::organizer {
-        // even though the email is nullable you can force it to be set in the validation
+        // even though the email is nullable
+        // you can force it to be set in the validation
         Person::email required {
-            pattern(".+@bigcorp.com") hint "Organizers must have a BigCorp email address"
+            pattern(".+@bigcorp.com") hint
+                "Organizers must have a BigCorp email address"
         }
     }
 
@@ -312,7 +320,8 @@ val validateEvent = Validation<Event> {
         }
         // Email is optional but if it is set it must be valid
         Person::email ifPresent {
-            pattern(".+@.+\..+") hint "Please provide a valid email address (optional)"
+            pattern(".+@.+\..+") hint
+                "Please provide a valid email address (optional)"
         }
     }
 

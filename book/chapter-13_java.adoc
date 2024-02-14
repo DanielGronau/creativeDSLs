@@ -66,7 +66,7 @@ From Java, you can call the example methods by their JVM names and with `double`
 
 === Package Level Definitions of Functions and Variables (((@file:JvmName)))
 
-Java does not allow you to define functions and variables outside of classes, so Kotlin puts them as static functions and variables in an artificial class. The default name of this class is derived from the filename, including the `kt' ending, and follows the upper-camel-case naming convention for classes. Consider the following example:
+Java does not allow you to define functions and variables outside of classes, so Kotlin puts them as static functions and variables in an artificial class. The default name of this class is derived from the filename, including the `kt` ending, and follows the upper-camel-case naming convention for classes. Consider the following example:
 
 [source,kotlin]
 .utils.kt
@@ -134,11 +134,11 @@ In Kotlin, fields are exposed as properties, and even if it looks like you are a
 data class Person(@JvmField val name: String, @JvmField val age: Int)
 ----
 
-Not you can call the fields directly, as in Kotlin.
+Now you can call the fields directly, as in Kotlin.
 
 === Generics (((@JvmSuppressWildcards))) (((@JvmWildcards)))
 
-A common problem is that due to its declaration-side variance, Kotlin often generates generic signatures with wildcards like `List<? extends String>` on the JVM. Such types can be awkward to use from the Java side, can prevent the use of certain Java libraries (such as https://dagger.dev[Dagger]footnote:[Dagger: https://dagger.dev]]), or even lead to cryptic compile-time errors. The solution is to annotate the offending type with `@JvmSuppressWildcards`, so that you get the type signature like `List<String>` on the JVM.
+A common problem is that due to its declaration-side variance, Kotlin often generates generic signatures with wildcards like `List<? extends String>` on the JVM. Such types can be awkward to use from the Java side, can prevent the use of certain Java libraries (such as https://dagger.dev[Dagger]footnote:[Dagger: https://dagger.dev]), or even lead to cryptic compile-time errors. The solution is to annotate the offending type with `@JvmSuppressWildcards`, so that you get the type signature like `List<String>` on the JVM.
 
 In some cases, you may have the opposite problem, where it would be more convenient to have wildcards on the JVM when the Kotlin compiler doesn't produce them. In this case, you can use the `@JvmWildcards` annotation instead.
 

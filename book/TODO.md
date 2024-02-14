@@ -89,12 +89,11 @@ https://www.deepl.com/write#en
 
 ## Pre-Launch Check List
 
-- replace ditaa diagrams by pics
 - check all quotes
 - check code is running
-- check code formatting is okay in PDF and EPUB
+- check code formatting is okay in PDF
 - add links from inlined code to the sample project
-- check external and internal links are working
+- check external and internal links are working --> FIX INTERNAL LINKS
 - check internal links are labeled correctly
 - check index has unique spelling
 - check for different spellings of the same term   
