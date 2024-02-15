@@ -3,9 +3,9 @@
 > I have discovered a truly marvelous proof of this, which however the margin is not large enough to contain.
 -- Pierre de Fermat
 
-Annotations can be used to bind specified actions or behaviors to classes, methods, fields, etc. Typical examples include dependency injection frameworks (such as Spring or Dagger), serializers to formats such as XML or JSON (such as Gson, Jackson, or JAXB), or authorization and access-control (such as Spring Security). In Java, https://projectlombok.org/[Project Lombok]footnote:[https://projectlombok.org](((Project Lombok))) aims to reduce the boilerplate of the language in many ways, and uses annotations to do so.
+Annotations can be used to bind specified actions or behaviors to classes, methods, fields, etc. Typical examples include dependency injection frameworks (such as Spring or Dagger), serializers to formats such as XML or JSON (such as Gson, Jackson, or JAXB), or authorization and access-control (such as Spring Security). In Java, https://projectlombok.org[Project Lombok]footnote:[](((Project Lombok))) aims to reduce the boilerplate of the language in many ways, and uses annotations to do so.
 
-As mentioned in <<chapter-04_features.adoc#annotations,4.13 Annotations>>, you may want to look into annotation processors if you need to integrate your DSL into the build process in some way.
+As mentioned in <<#annotations,4.13 Annotations>>, you may want to look into annotation processors if you need to integrate your DSL into the build process in some way.
 
 === Case Study: Mapper DSL
 
@@ -125,7 +125,7 @@ abstract class Mapper<S : Any, T : Any> {
 }
 ----
 
-Since it uses reflection, you need to include a dependency on the `kotlin-reflect` library, as described in <<chapter-04_features.adoc#reflection,4.14 Reflection>>. Of course, the example could be improved in many ways, e.g. sometimes you need multiple source fields to calculate a target field.
+Since it uses reflection, you need to include a dependency on the `kotlin-reflect` library, as described in <<#reflection,4.14 Reflection>>. Of course, the example could be improved in many ways, e.g. sometimes you need multiple source fields to calculate a target field.
 
 .Convention over Code (((Convention over Code)))
 ****

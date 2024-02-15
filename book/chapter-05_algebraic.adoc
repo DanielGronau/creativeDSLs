@@ -26,7 +26,7 @@ val e = a.pow(b) // -1.860 + 11.837i
 
 There are some static factory methods to create `Complex` objects, like `Complex.ofCartesian()` or `Complex.ofPolar()`, and then you can use some methods like `add()` and `times()` on these objects.
 
-If we follow the steps from <<chapter-03_writing.adoc#writing_a_dsl, Chapter 3>>, we should now come up with an ideal syntax. This is easy, since in mathematics we would simply write `3.0 + 4.0i` instead of `Complex.ofCartesian(3.0, 4.0)`. I think it is acceptable to have no special syntax for other ways of initializing complex numbers, such as the polar definition. If we consider that `4.0i` is actually a multiplication, we are already there: A syntax like `3.0 + 4.0*i` can be implemented in Kotlin.
+If we follow the steps from <<#writing_a_dsl, Chapter 3>>, we should now come up with an ideal syntax. This is easy, since in mathematics we would simply write `3.0 + 4.0i` instead of `Complex.ofCartesian(3.0, 4.0)`. I think it is acceptable to have no special syntax for other ways of initializing complex numbers, such as the polar definition. If we consider that `4.0i` is actually a multiplication, we are already there: A syntax like `3.0 + 4.0*i` can be implemented in Kotlin.
 
 First, we need to define the imaginary unit `i` with `val i = Complex.I`. This is a bit risky because of possible name conflicts, so it would also be an option to import `Complex.I` instead.
 
@@ -63,7 +63,7 @@ infix fun Complex.pow(that: Complex): Complex = this.pow(that)
 infix fun Complex.pow(that: Double): Complex = this.pow(that)
 ----
 
-Alternatively, we could have used `{backtick}^{backtick}` in <<chapter-04_features.adoc#backtickIdentifiers, backtick notation>>(((Backtick Notation))), which may be more readable than `pow`, but is harder to type.
+Alternatively, we could have used `{backtick}^{backtick}` in <<#backtickIdentifiers, backtick notation>>(((Backtick Notation))), which may be more readable than `pow`, but is harder to type.
 
 And that's already it, we have a basic DSL for complex numbers. Here is the complete code:
 
@@ -224,7 +224,7 @@ println(x) // Modular(n=2)
 
 While this solution works, its scalability is limited because the entire DSL is contained within a class. Although you could alleviate this by converting some functions to extension functions to streamline the class, the operators must remain within the class. This limitation is due to the fact that the operators are already extension functions and can only have one receiver, namely their first operand. Another challenge arises when the DSL requires several unrelated sources of information, forcing them to be combined into a single class. Essentially, these problems occur because the DSL is tightly coupled to its enclosing class.
 
-For those daring enough to delve into an experimental language feature, <<chapter-04_features.adoc#contextReceivers, Context Receivers>>(((Context Receivers))) were specifically designed to address scenarios like these by enabling a more flexible separation between the context scope and its consumers. Here is a rewritten version of the DSL above:
+For those daring enough to delve into an experimental language feature, <<#contextReceivers, Context Receivers>>(((Context Receivers))) were specifically designed to address scenarios like these by enabling a more flexible separation between the context scope and its consumers. Here is a rewritten version of the DSL above:
 
 [source,kotlin]
 ----

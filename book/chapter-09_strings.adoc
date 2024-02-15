@@ -156,7 +156,7 @@ The `readFEN()` function calls some helper functions for the different parts, an
 [#chemicalEquationsAsString]
 === Case Study: Chemical Equations as Strings
 
-Writing a DSL for chemical equations is challenging because the concise notation isn't easily portable into the more involved syntax of a host language, even one as flexible as Kotlin. That's why the string parsing approach seems like a good fit. If you are curious about what a hybrid DSL for chemical equations might look like, you can skip ahead to <<chapter-11_hybrid.adoc#chemicalEquationsAsHybrid,Chapter 11 - Hybrid DSLs>>.
+Writing a DSL for chemical equations is challenging because the concise notation isn't easily portable into the more involved syntax of a host language, even one as flexible as Kotlin. That's why the string parsing approach seems like a good fit. If you are curious about what a hybrid DSL for chemical equations might look like, you can skip ahead to <<#chemicalEquationsAsHybrid,Chapter 11 - Hybrid DSLs>>.
 
 For our case study, we won't cover the full notation, e.g. we won't support writing ions or bonds. An example of a simple chemical equation in standard notation would be `3Ba(OH)~2~ + 2H~3~PO~4~ -> 6H~2~O + Ba~3~(PO~4~)~2~`. Of course, in the context of a DSL subscripts and special symbols are not very practical, so the target syntax would look more like `3Ba(OH)2 + 2H3PO4 -{zwsp}> 6H2O + Ba3(PO4)2`. To express such an equation, we use the following code:
 

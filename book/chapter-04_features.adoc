@@ -678,7 +678,7 @@ Note the expression `T::class`, which shouldn't work, considering that type eras
 [WARNING]
 .Java Interoperability
 ====
-Functions with reified type parameters cannot be called from Java because it has no mechanism for inlining functions, and only inlining allows Kotlin to capture the generic type. This issue will be discussed in <<chapter-13_java.adoc#reifiedGenericsBridge,Chapter 13>>.
+Functions with reified type parameters cannot be called from Java because it has no mechanism for inlining functions, and only inlining allows Kotlin to capture the generic type. This issue will be discussed in <<#reifiedGenericsBridge,Chapter 13>>.
 ====
 
 === Value Classes (((Value Classes))) (((@JvmInline)))
@@ -753,10 +753,10 @@ Another useful application for annotations is code generation(((Code Generation)
 
 .Annotation Processors (((Annotation Processors))) (((KSP))) (((kapt))) (((Kotlin Symbol Processing API)))
 ****
-Annotation processors allow custom processor code to be executed during the build process according to the annotations present in the application code. Kotlin provides two annotation processors, the older https://kotlinlang.org/docs/kapt.html[kapt]footnote:[kapt: https://kotlinlang.org/docs/kapt.html], which is no longer actively developed, and the recommended https://kotlinlang.org/docs/ksp-overview.html[Kotlin Symbol Processing API]footnote:[KSP: https://kotlinlang.org/docs/ksp-overview.html] (KSP), which will be discussed in <<chapter-12_generation.adoc#annotationProcessor,Chapter 12>>.
+Annotation processors allow custom processor code to be executed during the build process according to the annotations present in the application code. Kotlin provides two annotation processors, the older https://kotlinlang.org/docs/kapt.html[kapt]footnote:[kapt: https://kotlinlang.org/docs/kapt.html], which is no longer actively developed, and the recommended https://kotlinlang.org/docs/ksp-overview.html[Kotlin Symbol Processing API]footnote:[KSP: https://kotlinlang.org/docs/ksp-overview.html] (KSP), which will be discussed in <<#annotationProcessor,Chapter 12>>.
 ****
 
-Finally, Kotlin includes annotations to support Java access. DSL code is often more difficult to call from Java, so we'll discuss this topic in <<chapter-13_java.adoc#javaInteroperability,Chapter 13>>.
+Finally, Kotlin includes annotations to support Java access. DSL code is often more difficult to call from Java, so we'll discuss this topic in <<#javaInteroperability,Chapter 13>>.
 
 [#reflection]
 === Reflection (((Reflection))) (((Kotlin-Reflect)))

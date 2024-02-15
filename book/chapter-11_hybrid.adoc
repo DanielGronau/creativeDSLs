@@ -24,7 +24,7 @@ Technically, writing a quasi-lingual DSL is not very different from writing othe
 [#chemicalEquationsAsHybrid]
 === Case Study: Chemical Equations
 
-Writing a DSL for chemical equations is not an easy task because the notation is very concise and cannot be easily mimicked using Kotlin syntax. For our case study, we will try to recreate the <<chapter-09_strings.adoc#chemicalEquationsAsString,string-based DSL>> from chapter 9 using a hybrid approach. We will use the same underlying model classes:
+Writing a DSL for chemical equations is not an easy task because the notation is very concise and cannot be easily mimicked using Kotlin syntax. For our case study, we will try to recreate the <<#chemicalEquationsAsString,string-based DSL>> from chapter 9 using a hybrid approach. We will use the same underlying model classes:
 
 [source,kotlin]
 ----

@@ -77,7 +77,7 @@ Often, performance considerations don't get much attention. However, in most cas
 
 This is a Kotlin specific question: There are many environments that use a mix of Java and Kotlin, so it may be necessary to use a DSL written in Kotlin from Java code. Usually this direction is more challenging than using Java from Kotlin code, and depending on the language features, a Kotlin DSL might be practically unusable from Java. However, in many cases, some "glue code" can help bridge the gap, and the Kotlin language itself includes some features to increase interoperability with Java.
 
-If Java interoperability is required, it should be considered at the design stage. The challenges and possible solutions are discussed in more detail in <<chapter-13_java.adoc#javaInteroperability, Chapter 13>>.
+If Java interoperability is required, it should be considered at the design stage. The challenges and possible solutions are discussed in more detail in <<#javaInteroperability, Chapter 13>>.
 
 === Closed or Open Source (((Closed Source))) (((Open Source)))
 

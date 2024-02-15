@@ -175,11 +175,11 @@ class LogicTest : StringSpec({
 // 'false' xor 'false' should be 'false'
 ----
 
-Of course, you can do something similar in JUnit by using the `@ParameterizedTest` annotation instead of `@Test`, and if you need even more flexibility, there is a `DynamicTest.dynamicTest()` method that takes a lambda argument. The difference, however, is that Kotest doesn't require special constructs in such cases, but allows the user to take advantage of existing language features. Obviously, doing more with less helps to reduce the <<chapter-03_writing.adoc#congnitiveLoad,cognitive load>> (((Cognitive Load))) while learning to use the framework.
+Of course, you can do something similar in JUnit by using the `@ParameterizedTest` annotation instead of `@Test`, and if you need even more flexibility, there is a `DynamicTest.dynamicTest()` method that takes a lambda argument. The difference, however, is that Kotest doesn't require special constructs in such cases, but allows the user to take advantage of existing language features. Obviously, doing more with less helps to reduce the <<#congnitiveLoad,cognitive load>> (((Cognitive Load))) while learning to use the framework.
 
 === better-parse (((better-parse)))
 
-Better-parse is the parser-combinator library we used in <<chapter-09_strings.adoc#parserLibrary,Chapter 9>>. It features a succinct hybrid DSL, which gives you a lot of flexibility. Here is one of the example parsers of the project:
+Better-parse is the parser-combinator library we used in <<#parserLibrary,Chapter 9>>. It features a succinct hybrid DSL, which gives you a lot of flexibility. Here is one of the example parsers of the project:
 
 [source,kotlin]
 .https://github.com/h0tk3y/better-parse/blob/master/demo/demo-jvm/src/main/kotlin/com/example/BooleanExpression.kt
