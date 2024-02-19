@@ -116,4 +116,4 @@ I used https://www.deepl.com/write[DeepL Write]footnote:[DeepL Write: https://ww
 
 Please do not hesitate to contact me if you find any errors or have any suggestions for improvement. Your feedback is very valuable to me and will help me improve this book for future readers. Thank you in advance for taking the time to share your thoughts with me.
 
-To give feedback, e-mail me at creativeDsls@protonmail.com.
+To give feedback, e-mail me at creativeDSLs@proton.me

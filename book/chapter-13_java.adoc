@@ -169,6 +169,29 @@ This approach will work for many use cases, but it should be noted that a reifie
 
 Kotlin doesn't have the concept of "checked exceptions", but if a function that might throw such an exception is called from Java, the Java compiler expects that the exception is declared in the function signature. In order to avoid problems in such cases, you can give the Kotlin compiler a hint to add a checked exception to the function signature in the byte-code by annotating the function with `Throws(SomeCheckedException::class)`.
 
+=== Prevent Java Access
+
+Using some parts of your DSL from Java can be cumbersome, unintuitive, or even lead to unsafe behavior. If you find yourself in a situation where certain parts of your DSL should only be accessible from Kotlin, you can use the `@JvmSynthetic` annotation on files, functions, fields, and property getters and setters.
+
+For example, handling coroutine calls from Java is possible, but requires knowledge of the underlying architectural concepts, such as continuations. It's usually a better solution to provide dedicated functions for Java access, e.g. by wrapping the coroutine in a `CompletableFuture`, which is much easier to handle in Java:
+
+[source,kotlin]
+----
+// hidden from Java
+@JvmSynthetic
+suspend fun getStuff(): String {
+    ...
+}
+
+private val scope = CoroutineScope(EmptyCoroutineContext)
+
+// dedicated Java API
+fun getStuffForJava(): CompletableFuture<String> =
+    scope.future { getStuff() }
+----
+
+
+
 === Conclusion
 
 Writing DSLs often requires the use of advanced language features, so it's no surprise that calling this code from Java can be challenging, and that the Kotlin compiler may need some pointers for good Java interoperability. If calling your DSL from Java is a requirement, you should consider it in your design from the beginning. In particular, writing tests not only in Kotlin but also in Java can help avoid problems down the road. Most interoperability issues are easy to fix, often the hard part is figuring out what's going wrong and knowing what language features you have at your disposal in these situations.

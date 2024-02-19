@@ -46,7 +46,7 @@ TODO:
 - find a good Kotlin reflection book to refer to -> 8.3. TODO
 - Check quotes
 - bibliography
-- register creativeDsls@protonmail.com
+- register creativeDsls@proton.me
 
 
 ## Research
