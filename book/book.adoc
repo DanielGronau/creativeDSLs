@@ -2,27 +2,28 @@
 :imagesdir: ./images
 :pdf-themesdir: {docdir}/theme
 :pdf-theme: pdf-theme.yml
-:front-cover-image: image:cover.jpg[]
 :doctype: book
 :encoding: utf-8
 :lang: en
-:toc:
+:toc: macro
 :toclevels: 3
 :numbered:
 :showtitle: Creative DSLs in Kotlin
-:revyear: 2023
-:revnumber: 0.1
-:source-highlighter: rouge
+:revyear: 2024
+:revnumber: 1.0
 :icons: font
 :author: Daniel Gronau
 :srcdir: ../src/main/kotlin/creativeDsls
 :pdf-page-size: [17cm, 22cm]
+:source-highlighter: none
+
+include::bastard_title.adoc[]
 
 include::colophon.adoc[]
 
-include::dedication.adoc[]
+toc::[]
 
-include::acknowledgements.adoc[]
+include::dedication.adoc[]
 
 include::preface.adoc[]
 

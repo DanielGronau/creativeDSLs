@@ -1,22 +1,56 @@
 [colophon]
 
-== Creative DSLs in Kotlin
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} 
+
+Bibliographic Information of the German National Library: +
+The Deutsche Nationalbibliothek records this
+publication in the German National Bibliography; +
+Detailed bibliographical data are available on the Internet
+at http://dnb.dnb.de.
+
+Automated analysis of the work in order to information about patterns, trends and
+correlations in accordance with §44b UrhG ("text and data mining") is
+is prohibited.
 
 [%hardbreaks]
-Text (C) {revyear} by {author}
-Cover Design (C) {revyear} by {author}
-
-Published by:
+(C) 2024 Daniel Gronau
+Feedback: creativeDsls@proton.me
 
 [%hardbreaks]
-Daniel Gronau
-Ramsiner Str. 35
-06792 Sandersdorf-Brehna
-Germany
+Production and publisher:
+BoD - Books on Demand, Norderstedt
 
-Email: creativeDSLs@protonmail.com
-
-[%hardbreaks]
-Distribution: XXX
-eBook ISBN: XXX-X-XXX-XXXXX-X
-Paperback ISBN: XXX-X-XXX-XXXXX-X
+ISBN: 978-3-XXXX-XXXX-X

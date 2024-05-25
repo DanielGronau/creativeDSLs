@@ -786,12 +786,14 @@ Depending on your use case, you might also consider alternatives like https://gi
 
 === Experimental Features (((Experimental Features)))
 
-Kotlin allows you to try experimental features (via compiler argument or `@OptIn` annotation). Some of the older of these features are quite stable and may be useful for DSL design, so it may be worth taking the risk of using them before they become an official part of the language.
+Kotlin allows you to try experimental features (via compiler argument or `@OptIn` annotation). Some of these features are quite stable and may be useful for DSL design, so it may be worth taking the risk of using them before they become an official part of the language.
 
-[#contextReceivers]
-==== Context Receivers (((Context Receivers)))
+[#contextParameters]
+==== Context Parameters (((Context Parameters))) (((Context Receivers)))
 
-The basic idea of https://github.com/Kotlin/KEEP/blob/master/proposals/context-receivers.md[Context receivers]footnote:[Context Receivers: https://github.com/Kotlin/KEEP/blob/master/proposals/context-receivers.md]] is to get a class in scope that provides a certain service:
+https://github.com/Kotlin/KEEP/blob/context-parameters/proposals/context-parameters.md[Context Parameters]footnote:[Context Parameters: https://github.com/Kotlin/KEEP/blob/context-parameters/proposals/context-parameters.md]] - formerly known as "Context Receivers" - are an experimental feature introduced in Kotlin 1.6.2, and at the writing of this book, its beta phase is planned for Kotlin 2.2.
+
+The basic idea of Context Parameters is to get a class in scope that provides a certain service:
 
 [source,kotlin]
 ----
@@ -822,7 +824,7 @@ fun test() {
 
 [TIP]
 ====
-Using multiple context receivers is a great way to decouple unrelated aspects of the environment while maintaining a high degree of flexibility. Unfortunately, with multiple receivers, the `with()` calls must be nested, although this may change in the future. For now, if you find this impractical, you can use this function presented in the Kotlin Discussions forum:
+Using multiple context parameters is a great way to decouple unrelated aspects of the environment while maintaining a high degree of flexibility. Unfortunately, with multiple receivers, the `with()` calls must be nested, although this may change in the future. For now, if you find this impractical, you can use this function presented in the Kotlin Discussions forum:
 
 [source,kotlin]
 .https://discuss.kotlinlang.org/t/using-with-function-with-multiple-receivers/2062/6
@@ -838,9 +840,9 @@ inline fun <A, B, R> with(a: A, b: B, block: context(A, B) () -> R): R {
 ----
 ====
 
-Context receivers come into play when there's a need to include global information within a specific scope while maintaining the flexibility to accommodate different versions. By using a context receiver to provide DSL functionality, you gain control over the scope, you can influence the overall behavior of the DSL, and you can avoid potential naming conflicts.
+Context parameters come into play when there's a need to include global information within a specific scope while maintaining the flexibility to accommodate different versions. By using a context parameter to provide DSL functionality, you gain control over the scope, you can influence the overall behavior of the DSL, and you can avoid potential naming conflicts.
 
-You can opt in to context receivers by specifying the compiler argument `-Xcontext-receivers`.
+You can opt in to context parameters by specifying the compiler argument `-Xcontext-receivers`.F
 
 [#contracts]
 ==== Contracts (((Contracts)))

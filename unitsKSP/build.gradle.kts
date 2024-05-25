@@ -11,10 +11,10 @@ repositories {
 
 dependencies {
     implementation(project(":unitsAnnotations"))
-    implementation("com.google.devtools.ksp:symbol-processing-api:1.9.20-1.0.14")
-    implementation("com.squareup:kotlinpoet-ksp:1.15.1")
+    implementation("com.google.devtools.ksp:symbol-processing-api:2.0.0-1.0.21")
+    implementation("com.squareup:kotlinpoet-ksp:1.17.0")
 
-    testImplementation(platform("org.junit:junit-bom:5.9.1"))
+    testImplementation(platform("org.junit:junit-bom:5.10.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
 }
 

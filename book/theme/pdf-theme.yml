@@ -21,6 +21,9 @@ page:
   margin_inner: 0.75in
   margin_outer: 0.59in
   size: A4
+  numbering_start_at: 5
+running-content:
+  start-at: 5
 base:
   text_align: justify
   font_color: 333333

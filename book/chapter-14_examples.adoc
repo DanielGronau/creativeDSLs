@@ -3,7 +3,7 @@
 > Few things are harder to put up with than the annoyance of a good example.
 -- Mark Twain
 
-In this chapter we will have a look of some interesting and successful DSLs, characterize them, look at interesting details, and maybe even suggest some improvements.
+In this chapter, we will look at some interesting and successful DSLs, characterize them, look at interesting details, and maybe even suggest some improvements. I encourage you to take a closer look at these projects and learn how they build coherent DSLs with sometimes seemingly "impossible" features.
 
 === KotlinPoet (((KotlinPoet)))
 
@@ -176,6 +176,28 @@ class LogicTest : StringSpec({
 ----
 
 Of course, you can do something similar in JUnit by using the `@ParameterizedTest` annotation instead of `@Test`, and if you need even more flexibility, there is a `DynamicTest.dynamicTest()` method that takes a lambda argument. The difference, however, is that Kotest doesn't require special constructs in such cases, but allows the user to take advantage of existing language features. Obviously, doing more with less helps to reduce the <<#congnitiveLoad,cognitive load>> (((Cognitive Load))) while learning to use the framework.
+
+=== MockK (((MockK)))
+
+Mocking, spying, stubbing, and argument capture are essential for writing concise and expressive unit tests. In Java, libraries such as https://site.mockito.org/[Mockito]footnote:[Mockito: https://site.mockito.org/] are very popular, but face some challenges when dealing with Kotlin code, including unfamiliar language features such as objects, top-level functions, and coroutines.
+
+https://mockk.io/[MockK] is an amazing mocking framework for Kotlin, and features a very intuitive hybrid DSL. Here is a very simple example from the documentation:
+
+[source,kotlin]
+.https://mockk.io/
+----
+val car = mockk<Car>()
+
+every { car.drive(Direction.NORTH) } returns Outcome.OK
+
+car.drive(Direction.NORTH) // returns OK
+
+verify { car.drive(Direction.NORTH) }
+
+confirmVerified(car)
+----
+
+
 
 === better-parse (((better-parse)))
 

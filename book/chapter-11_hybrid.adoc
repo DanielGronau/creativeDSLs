@@ -19,7 +19,7 @@ A common reason for mixing features from different DSL categories is to mimic na
 every { car.door(DoorType.FRONT_LEFT).windowState() } returns WindowState.UP
 ----
 
-Technically, writing a quasi-lingual DSL is not very different from writing other hybrid DSLs, although it may be harder to model grammatical structures correctly. Also, naming conflicts with keywords like `is`, `as`, etc. are more of a problem. A good rule of thumb is to keep the DSL grammar simple and well-structured, and to compromise when it helps to reduce complexity. For example, instead of trying to model words like `should` `be` separately, it might be advisable to use `shouldBe` instead if it helps to keep the grammar simple.
+Technically, writing a quasi-lingual DSL is not very different from writing other hybrid DSLs, although it may be harder to model grammatical structures correctly. Also, naming conflicts with keywords like `is`, `as`, etc. are more of a problem. A good rule of thumb is to keep the DSL grammar simple and well-structured, and to compromise when it helps to reduce complexity. For example, instead of trying to model words like `should` and `be` separately, it might be advisable to use `shouldBe` instead if it helps to keep the grammar simple.
 
 [#chemicalEquationsAsHybrid]
 === Case Study: Chemical Equations

@@ -1,0 +1,19 @@
+[%always]
+<<<
+
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty} +
+{empty}
+
+[discrete]
+= Creative DSLs in Kotlin
+
+[discrete]
+== Daniel Gronau
+
+<<<

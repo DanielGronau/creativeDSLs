@@ -1,7 +1,0 @@
-[acknowledgements]
-
-== Acknowledgements
-
-Writing a book is no walk in the park, but it's a lot easier when you're passionate about it. That's why I'm grateful to all the people who helped me develop and nurture that passion: the excellent teachers throughout my life, both formal instructors at university and informal mentors among my colleagues and friends. They fostered my curiosity, helped me understand new concepts, and encouraged me to develop new skills. Without their guidance and support, this book would not have been possible.
-
-One of the benefits of being part of the IT community is experiencing firsthand the curiosity, ingenuity, inclusiveness, and enthusiasm of like-minded people. Perhaps the greatest achievement of this community, and the most exemplary expression of its spirit, is the rise of open source technology. So I'd like to thank all the heroes who share their knowledge for free and contribute outstanding open source tools - like the Kotlin language itself - that make the world a better place.
