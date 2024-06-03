@@ -20,7 +20,7 @@ dependencies {
     api("org.jetbrains.kotlin:kotlin-reflect:2.0.0")
     api("com.squareup:kotlinpoet:1.17.0")
     api("com.github.h0tk3y.betterParse:better-parse-jvm:0.4.4")
-    api("com.faendir.kotlin.autodsl:annotations:2.3.1")
+    api("com.faendir.kotlin.autodsl:annotations:2.2.15")
     implementation("io.kotest:kotest-runner-junit5-jvm:5.9.0")
     ksp(project(":unitsKSP"))
     ksp(project(":patternKSP"))

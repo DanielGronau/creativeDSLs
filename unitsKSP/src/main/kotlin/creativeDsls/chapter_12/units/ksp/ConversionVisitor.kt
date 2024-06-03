@@ -54,22 +54,24 @@ class ConversionVisitor(
         fileSpec.writeTo(codeGenerator, false)
     }
 
+    // don't use %L until https://github.com/square/kotlinpoet/issues/1919 is solved
     fun makeDoubleToQuantity(unit: String, className: ClassName, factor: Double) =
         PropertySpec.builder(unit, className)
             .receiver(Double::class)
             .getter(
                 FunSpec.getterBuilder()
-                    .addStatement("return %T(this * %L)", className, factor)
+                    .addStatement("return %T(this * $factor)", className)
                     .build()
             )
             .build()
 
+    // don't use %L until https://github.com/square/kotlinpoet/issues/1919 is solved
     fun makeQuantityToDouble(unit: String, className: ClassName, factor: Double) =
         PropertySpec.builder(unit, Double::class)
             .receiver(className)
             .getter(
                 FunSpec.getterBuilder()
-                    .addStatement("return this.component1() / %L", factor)
+                    .addStatement("return this.component1() / $factor")
                     .build()
             )
             .build()

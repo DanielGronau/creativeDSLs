@@ -63,7 +63,7 @@ data class MeterPerSecondSquared(override val amount: Double) : Quantity
 @MultiplicationResult(Pascal::class, SquareMeter::class)
 data class Newton(override val amount: Double) : Quantity
 
-@Conversion("mJ",  0.0001)
+@Conversion("mJ",  0.001)
 @Conversion("J",  1.0)
 @Conversion("kJ",  1000.0)
 @Conversion("MegaJ",  1_000_000.0)

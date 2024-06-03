@@ -41,16 +41,16 @@ private val fromToDouble = listOf(
     Triple("km", Meter::class, 1000.0),
     Triple("mi", Meter::class, 1609.344),
 
-    Triple("mg", Kilogram::class, 0.000_001),
+    Triple("mg", Kilogram::class, 0.000001),
     Triple("g", Kilogram::class, 0.001),
     Triple("kg", Kilogram::class, 1.0),
     Triple("tons", Kilogram::class, 1000.0),
 
-    Triple("mm2", SquareMeter::class, 0.000_001),
+    Triple("mm2", SquareMeter::class, 0.000001),
     Triple("m2", SquareMeter::class, 1.0),
     Triple("km2", SquareMeter::class, 1_000_000.0),
 
-    Triple("mm3", CubicMeter::class, 0.000_000_001),
+    Triple("mm3", CubicMeter::class, 0.000000001),
     Triple("l", CubicMeter::class, 0.001),
     Triple("m3", CubicMeter::class, 1.0),
     Triple("km3", CubicMeter::class, 1_000_000_000.0),
@@ -63,7 +63,7 @@ private val fromToDouble = listOf(
     Triple("N", Newton::class, 1.0),
     Triple("kN", Newton::class, 1000.0),
 
-    Triple("mJ", Joule::class, 0.0001),
+    Triple("mJ", Joule::class, 0.001),
     Triple("J", Joule::class, 1.0),
     Triple("kJ", Joule::class, 1000.0),
     Triple("MegaJ", Joule::class, 1_000_000.0),
@@ -91,22 +91,24 @@ private val multiply = listOf(
     Triple(Watt::class, Second::class, Joule::class)
 )
 
+// don't use %L until https://github.com/square/kotlinpoet/issues/1919 is solved
 private fun makeDoubleToQuantity(unit: String, kClass: KClass<out Quantity>, factor: Double) =
     PropertySpec.builder(unit, kClass)
         .receiver(Double::class)
         .getter(
             FunSpec.getterBuilder()
-                .addStatement("return %T(this * %L)", kClass, factor)
+                .addStatement("return %T(this * $factor)", kClass)
                 .build()
         )
         .build()
 
+// don't use %L until https://github.com/square/kotlinpoet/issues/1919 is solved
 private fun makeQuantityToDouble(unit: String, kClass: KClass<out Quantity>, factor: Double) =
     PropertySpec.builder(unit, Double::class)
         .receiver(kClass)
         .getter(
             FunSpec.getterBuilder()
-                .addStatement("return this.amount / %L", factor)
+                .addStatement("return this.amount / $factor")
                 .build()
         )
         .build()

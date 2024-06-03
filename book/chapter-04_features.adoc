@@ -842,7 +842,7 @@ inline fun <A, B, R> with(a: A, b: B, block: context(A, B) () -> R): R {
 
 Context parameters come into play when there's a need to include global information within a specific scope while maintaining the flexibility to accommodate different versions. By using a context parameter to provide DSL functionality, you gain control over the scope, you can influence the overall behavior of the DSL, and you can avoid potential naming conflicts.
 
-You can opt in to context parameters by specifying the compiler argument `-Xcontext-receivers`.F
+You can opt in to context parameters by specifying the compiler argument `-Xcontext-receivers`.
 
 [#contracts]
 ==== Contracts (((Contracts)))
