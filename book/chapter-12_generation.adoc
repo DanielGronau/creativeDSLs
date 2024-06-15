@@ -48,7 +48,7 @@ Instead, we will use https://square.github.io/kotlinpoet[KotlinPoet]footnote:kot
 [source,kotlin]
 .Gradle (.kts)
 ----
-implementation("com.squareup:kotlinpoet:1.15.1")
+implementation("com.squareup:kotlinpoet:1.18.0")
 ----
 
 First, we will generate some extension functions for the missing addition:

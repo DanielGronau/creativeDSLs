@@ -177,9 +177,21 @@ class LogicTest : StringSpec({
 
 Of course, you can do something similar in JUnit by using the `@ParameterizedTest` annotation instead of `@Test`, and if you need even more flexibility, there is a `DynamicTest.dynamicTest()` method that takes a lambda argument. The difference, however, is that Kotest doesn't require special constructs in such cases, but allows the user to take advantage of existing language features. Obviously, doing more with less helps to reduce the <<#congnitiveLoad,cognitive load>> (((Cognitive Load))) while learning to use the framework.
 
+Kotest can be categorized as <<#quasi_lingual_dsls,quasi-lingual DSL>>(((Quasi-Lingual DSLs))), where many parts mimic natural language:
+
+[source,kotlin]
+.https://kotest.io/docs/framework/exceptions.html
+----
+val exception = shouldThrow<IllegalAccessException> {
+   // code in here that you expect to throw an IllegalAccessException
+}
+
+exception.message should startWith("Something went wrong")
+----
+
 === MockK (((MockK)))
 
-Mocking, spying, stubbing, and argument capture are essential for writing concise and expressive unit tests. In Java, libraries such as https://site.mockito.org/[Mockito]footnote:[Mockito: https://site.mockito.org/] are very popular, but face some challenges when dealing with Kotlin code, including unfamiliar language features such as objects, top-level functions, and coroutines.
+Mocking, spying, stubbing, and argument capture are essential for writing concise and expressive unit tests. In Java, libraries such as https://site.mockito.org/[Mockito]footnote:[Mockito: https://site.mockito.org/] are very popular, but face some challenges when dealing with Kotlin language features such as objects, top-level functions, and coroutines.
 
 https://mockk.io/[MockK] is an amazing mocking framework for Kotlin, and features a very intuitive hybrid DSL. Here is a very simple example from the documentation:
 
@@ -197,7 +209,7 @@ verify { car.drive(Direction.NORTH) }
 confirmVerified(car)
 ----
 
-
+The library has already been mentioned in <<#quasi_lingual_dsls,Chapter 12>> as an example of a quasi-lingual DSL(((Quasi-Lingual DSLs))), and blends well with quasi-lingual testing frameworks such as Kotest.
 
 === better-parse (((better-parse)))
 

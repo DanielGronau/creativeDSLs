@@ -10,6 +10,7 @@ In many cases, it is difficult to categorize a DSL because it uses a mix of diff
 
 If most of a DSL can be written in a certain style, it is usually a good idea to stick to that style to ensure a consistent look and feel. So I wouldn't advocate mixing Builder and Loan Pattern styles, but sticking to one. But there is nothing wrong with designing a DSL that combines different approaches, if it gets the job done and manages to provide a coherent language.
 
+[#quasi_lingual_dsls]
 === Quasi-Lingual DSLs (((Quasi-Lingual DSLs)))
 
 A common reason for mixing features from different DSL categories is to mimic natural language to some extent. I would call this important subset of hybrid DSLs "quasi-lingual". Although the syntax is usually rigid and contains artifacts such as braces, parentheses, or commas, it is still "readable" in a very literal sense. This snippet from the mocking library https://mockk.io/#dsl-examples[MockK]footnote:[MockK: https://mockk.io/#dsl-examples](((MockK))) should give you a good idea:
