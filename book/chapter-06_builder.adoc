@@ -527,7 +527,7 @@ fun <N : Nat> PolygonBuilder<S<S<S<N>>>>.build() = Polygon(points)
 
 First, we create a sealed interface `Nat` to represent the natural numbers, and two sub-interfaces, `Z` representing zero and `S<N>` representing the successor of a natural number `N`. For example, the number 3 would be written as `S<S<S<Z>>>`. This is called the "Peano Representation" of the natural numbers. Note that even if we don't know the innermost part of `S<S<S<...>>>`, we can still deduce that the given number is greater than or equal to 3, which is exactly what we need to check our condition. These recursively constructed numbers are used by the builder class as a generic "counter" parameter, holding the number of items in the list.
 
-.The Peano Axioms
+.The Peano Axioms(((Peano Axioms)))
 ****
 When asked to count, the usual answer is "one, two, three...", not "zero, successor of zero, successor of successor of zero...", so you might wonder where the strange _Peano Representation_ comes from. In 1889 Giuseppe Peano published his famous nine axioms to define natural numbers and their properties in a formal way, and the Peano Representation follows directly from these axioms.
 
@@ -538,7 +538,7 @@ The first axiom states the existence of zero, the next four axioms cover basic p
 * Zero is not a successor of a natural number.
 * Any natural number can be reached from zero by repeatedly applying the successor function (this is also known as "induction").
 
-That's why, from a mathematical point of view, the Peano Representation is the most fundamental way to write natural numbers, and our usual number systems (decimal, binary, hexadecimal...) could be considered as convenient abbreviations.
+That's why, from a mathematical point of view, the Peano Representation can be seen as a more fundamental way of writing natural numbers, and our usual number systems (decimal, binary, hexadecimal...) can be regarded as convenient abbreviations.
 ****
 
 Similar to the Typesafe Builder Pattern, the builder class must hide its constructor, because a call like `PolygonBuilder<S<S<Z>>>()` would initialize the builder with a wrong counter. That's why we simulate a constructor using the `invoke()` operator in the companion object, which only returns builders with a counter correctly initialized to 0. The `add()` method appends a point to the list, but also casts the instance to one with an incremented counter. This is safe because the counter is a phantom type(((Phantom Type))). Alternatively, we could have constructed a new Builder object on each `add()` call.
