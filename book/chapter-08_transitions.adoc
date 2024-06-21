@@ -459,7 +459,7 @@ This looks quite different from the Builder pattern syntax, and it is debatable 
 
 One difference from the builder example is that `JOIN` is now nested, which seems more natural here. The lambda bodies give more freedom to use other DSL techniques, such as infix functions like `AS`. Also, we still need `build()` methods, as it is not clear when we are done constructing the query. In cases with only one exit state, the construction can be done behind the scenes, as usual in Loan Pattern implementations.
 
-Note that for a serious implementation, the <<#dslMarker,@DslMarker mechanism>> (((@DslMarker))) should be used, since the join clause is nested, but for the sake of brevity it won't be used in the following use cases.
+Note that for a serious implementation, the <<#dsl_marker,@DslMarker mechanism>> (((@DslMarker))) should be used, since the join clause is nested, but for the sake of brevity it won't be used in the following use cases.
 
 ==== The 'Separate Classes' Approach
 

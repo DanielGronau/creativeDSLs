@@ -36,7 +36,7 @@ class HttpRequestBuilder(var uri: URI) {
         Headers().apply(block)
     }
 
-    fun build(): HttpRequest =
+    internal fun build(): HttpRequest =
         with(HttpRequest.newBuilder(uri)) {
             headers.forEach { (key, value) -> header(key, value) }
             timeout?.let { timeout(it) }

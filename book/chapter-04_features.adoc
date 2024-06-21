@@ -289,6 +289,7 @@ val p = listOf(1.0, 2.0, 3.0).product()  // p == 6.0
 
 The call to `Double::times` is only possible because the receiver is not just any list, but specifically a `List<Double>`, and this additional type information is also passed to the function body. This feature of extension methods can be used in DSLs to perform compile-time checks.
 
+[#loan_pattern]
 ==== Loan Pattern (((Loan Pattern)))
 
 .What is the Loan Pattern?
@@ -327,7 +328,7 @@ val usingTheLoanPattern: String = sb {
 
 Building DSLs using this pattern is very common, as it has several advantages over the classic builder pattern.
 
-[#dslMarker]
+[#dsl_marker]
 ==== The @DslMarker annotation (((@DslMarker)))
 
 When you nest multiple extension functions, overlapping scopes can be a problem: things visible in the outer code blocks are also visible in the inner ones. For example, in a DSL for HTML generation, you might write:
