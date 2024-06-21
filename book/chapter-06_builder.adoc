@@ -370,7 +370,7 @@ As mentioned above, this style isn't always feasible, but when it can be used, i
 
 === The Typesafe Builder Pattern (((Typesafe Builder Pattern)))
 
-A common problem with builders is the inability to enforce the setting of mandatory fields. While it's possible to check for these conditions in the build method, it would be better if the compiler could prevent incomplete objects from being built. To achieve this, we can use <<#typeLevelProgramming, Type-Level Programming>>(((Type-Level Programming))), although it requires some boilerplate code.
+A common problem with builders is the inability to enforce the setting of mandatory fields. While it's possible to check for these conditions in the build method, it would be better if the compiler could prevent incomplete objects from being built. To achieve this, we can use <<#type_level_programming, Type-Level Programming>>(((Type-Level Programming))), although it requires some boilerplate code.
 
 By using generics to track the state of mandatory fields, the build method can be adapted to accept only builders with all mandatory values set. For example, consider the following class for a product that requires a product id, name, and price, while the other attributes are optional:
 
@@ -455,7 +455,7 @@ data class ProductBuilder<
 
 The inferred return type of this `invoke()` operation is `ProductBuilder<Without<UUID>, Without<String>, Without<BigDecimal>>`, which fortunately we don't have to write out. When an optional field is set, these type parameters don't change, but when a mandatory field is set, the signature changes from `Without` to `With` for that particular field. Since the mandatory field setters return a builder with a changed signature, we can't use the `copy()` method in these cases (at least if we don't want to use casts).
 
-Of course, a crucial part is missing: The `build()` method. But we can't write it as part of the builder class, because it needs to check the generic signature. It _must_ be an extension method, because only there can you "fix" the type parameters to concrete types, which is known as <<#typeNarrowing, type narrowing>>(((Type Narrowing))):
+Of course, a crucial part is missing: The `build()` method. But we can't write it as part of the builder class, because it needs to check the generic signature. It _must_ be an extension method, because only there can you "fix" the type parameters to concrete types, which is known as <<#type_narrowing, type narrowing>>(((Type Narrowing))):
 
 [source,kotlin]
 ----
@@ -498,7 +498,7 @@ data class Polygon(val points: List<Point2D>)
 
 However, a problem arises when we want to ensure that polygons are constructed with at least three points. To solve this problem, we could create a builder that counts the number of points added and only allows the construction of polygons with three or more points.
 
-While the obvious solution is to check the number of points at runtime, we can be more secure by preventing an invalid builder from being created at compile time. This can be achieved by using a recursive type parameter to keep track of the number of points, again using <<#typeLevelProgramming, Type-Level Programming>>(((Type-Level Programming))). While this may seem odd at first, the implementation is quite simple:
+While the obvious solution is to check the number of points at runtime, we can be more secure by preventing an invalid builder from being created at compile time. This can be achieved by using a recursive type parameter to keep track of the number of points, again using <<#type_level_programming, Type-Level Programming>>(((Type-Level Programming))). While this may seem odd at first, the implementation is quite simple:
 
 [source,kotlin]
 ----

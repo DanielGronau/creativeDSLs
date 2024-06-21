@@ -1,6 +1,6 @@
 :imagesdir: ./images
 
-[#stringParsingDsls]
+[#string_parsing_dsls]
 == String-Parsing DSLs (((String Parsing DSLs)))
 
 > Words are, of course, the most powerful drug used by mankind.
@@ -153,10 +153,10 @@ private fun getCastling(castlingStr: String) = castlingStr
 
 The `readFEN()` function calls some helper functions for the different parts, and assembles the `Position` class. Most of the sanity checks have been omitted for better readability. In simple cases like this, it is probably overkill to write a parser or use a parser library. The hardest part was to read the piece positions correctly, and that took only a few lines.
 
-[#chemicalEquationsAsString]
+[#chemical_equations_as_string]
 === Case Study: Chemical Equations as Strings
 
-Writing a DSL for chemical equations is challenging because the concise notation isn't easily portable into the more involved syntax of a host language, even one as flexible as Kotlin. That's why the string parsing approach seems like a good fit. If you are curious about what a hybrid DSL for chemical equations might look like, you can skip ahead to <<#chemicalEquationsAsHybrid,Chapter 11 - Hybrid DSLs>>.
+Writing a DSL for chemical equations is challenging because the concise notation isn't easily portable into the more involved syntax of a host language, even one as flexible as Kotlin. That's why the string parsing approach seems like a good fit. If you are curious about what a hybrid DSL for chemical equations might look like, you can skip ahead to <<#chemical_equations_as_hybrid,Chapter 11 - Hybrid DSLs>>.
 
 For our case study, we won't cover the full notation, e.g. we won't support writing ions or bonds. An example of a simple chemical equation in standard notation would be `3Ba(OH)~2~ + 2H~3~PO~4~ -> 6H~2~O + Ba~3~(PO~4~)~2~`. Of course, in the context of a DSL subscripts and special symbols are not very practical, so the target syntax would look more like `3Ba(OH)2 + 2H3PO4 -{zwsp}> 6H2O + Ba3(PO4)2`. To express such an equation, we use the following code:
 
@@ -462,7 +462,7 @@ This function removes all spaces from the input string, calls the parser, checks
 
 As mentioned in the last chapter, a "real" chemical equation looks more like `3Ba(OH)~2~ + 2H~3~PO~4~ -> 6H~2~O + Ba~3~(PO~4~)~2~`, and with some simple modifications we could allow this syntax as well. In general, it is relatively easy to make the syntax of a string-based DSL more lenient, while other DSL categories often struggle with this kind of flexibility.
 
-[#parserLibrary]
+[#parser_library]
 ==== Using a Parser Library
 
 As already mentioned, it's not difficult to write such a parser by hand. However, using a library has many advantages: It improves readability and maintainability, the code is easier to debug, you get more information if the parsing fails, and the library is usually better tested than our manual code.

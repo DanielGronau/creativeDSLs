@@ -385,7 +385,7 @@ annotation class MultiplicationResult(
 
 Since the annotation processor needs to know about these annotations as well, it would be tied to your specific client code if you put the annotations there. That's why it's almost always a good idea to put the annotations in a separate module that allows the annotation processor to be used in other environments.
 
-[#annotationProcessor]
+[#annotation_processor]
 ==== Writing the Annotation Processor
 
 This book can only give a very high level overview of KSP. This means that the general structure of the KSP module is explained, but not the specifics of the KSP API. Please refer to https://kotlinlang.org/docs/ksp-quickstart.html[KSP Documentation]footnote:[KSP - Documentation: https://kotlinlang.org/docs/ksp-quickstart.html] for a more detailed discussion.

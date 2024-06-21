@@ -244,7 +244,7 @@ interface GroupByClause {
 }
 ----
 
-All that remains is to implement these interfaces in a single Chameleon class and keep track of the data. It's important to make the constructor private, because the initial type should not be the type of the class itself, but `SelectClause`.  That's why the `SELECT()` method in the companion object is used as a starting point for the DSL:
+All that remains is to implement these interfaces in a single chameleon class and keep track of the data. It's important to make the constructor private, because the initial type should not be the type of the class itself, but `SelectClause`.  That's why the `SELECT()` method in the companion object is used as a starting point for the DSL:
 
 [source,kotlin]
 ----
@@ -314,7 +314,7 @@ The chameleon class concept may look a bit strange at first, but usually results
 
 ==== The Phantom Type Approach
 
-The third approach uses <<#typeLevelProgramming,phantom types>>(((Phantom Type))). The implementation is based on a DTO class with a generic parameter. This type parameter is not used as a type for any data within the class - that's why it's called a "phantom type". Instead, this parameter is used by extension functions that require their receiver to have the correct state
+The third approach uses <<#type_level_programming,phantom types>>(((Phantom Type))). The implementation is based on a DTO class with a generic parameter. This type parameter is not used as a type for any data within the class - that's why it's called a "phantom type". Instead, this parameter is used by extension functions that require their receiver to have the correct state
 
 For the SQL query DSL, we need a type hierarchy containing the different clauses. As a slight complication, we also need two additional interfaces for methods that are present in multiple clauses. Then we need the DTO class itself. The `cast()` extension function allows us to easily switch between states. Since the generic parameter doesn't refer to any real data, the cast itself is safe. Of course, the `cast()` function must be private to prevent misuse:
 

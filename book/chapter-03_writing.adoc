@@ -32,7 +32,7 @@ In this step, it's generally not necessary to specify a formal grammar. Instead,
 
 If possible, it can also be helpful to get feedback from domain experts or potential users of your DSL. This can help you identify important details that you may have overlooked, and can help you create a DSL that meets the needs and expectations of your target audience. Few things are more frustrating than presenting a new implementation only to discover that you have forgotten a crucial detail, so it pays to be thorough and to seek feedback whenever possible.
 
-[#congnitiveLoad]
+[#congnitive_load]
 ==== Lowering the Cognitive Load (((Cognitive Load)))
 
 https://en.wikipedia.org/wiki/Cognitive_load[Cognitive Load Theory]footnote:[Wikipedia - Cognitive Load: https://en.wikipedia.org/wiki/Cognitive_load] claims that there are two types of difficulties in learning to use a system: Intrinsic cognitive load, which is caused by the inherent complexity of the system itself, and extraneous cognitive load, which is caused by the way information about the system is presented. A good analogy would be a book on a very challenging topic (intrinsic load) versus a book written in a small, hard-to-read font or in a language less familiar to the reader (extrinsic load).

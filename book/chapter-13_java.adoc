@@ -1,4 +1,4 @@
-[#javaInteroperability]
+[#java_interoperability]
 == Java Interoperability (((Java Interoperability)))
 
 > Translation is the art of failure.
@@ -142,7 +142,7 @@ A common problem is that due to its declaration-side variance, Kotlin often gene
 
 In some cases, you may have the opposite problem, where it would be more convenient to have wildcards on the JVM when the Kotlin compiler doesn't produce them. In this case, you can use the `@JvmWildcards` annotation instead.
 
-[#reifiedGenericsBridge]
+[#reified_generics_bridge]
 ==== Calling Functions with Reified Type Parameters
 
 I am afraid I have some bad news for you: Java has no inlining mechanism, and without inlining, the resolution of reified type parameters simply doesn't work. As a consequence, you can't call such functions from Java, not even via reflection.

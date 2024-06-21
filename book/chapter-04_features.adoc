@@ -18,7 +18,7 @@ As mentioned in the preface, this book assumes that the reader has a basic knowl
 
 This chapter gives a brief overview of language features that may be relevant to writing DSLs. After reading this chapter, you should have a better understanding of how some common DSL "tricks" work.
 
-[#backtickIdentifiers]
+[#backtick_identifiers]
 === Backtick Identifiers (((Backtick Notation)))
 
 Kotlin allows almost arbitrary identifiers as long as they are enclosed in backticks. The main reason for introducing this feature was to allow the use of identifiers that are keywords in Kotlin but not in Java, such as `fun` or `when`. For DSLs, we can use them when we need descriptive identifiers that don't follow the usual syntactic rules.
@@ -275,7 +275,7 @@ List<Integer> digits = IntUtilsKt.digits(1729, 10); // [1, 7, 2, 9]
 Extension methods, originally introduced in C#, found their way into Kotlin as "extension functions", specifically with the goal of seamlessly integrating Java classes into the Kotlin ecosystem. This approach was chosen over Scala's _implicit conversion_ approach, which, while more powerful, was considered more complex to understand and manage. The benefits of extension methods became so apparent that they were also introduced in Scala 3. Plain Java doesn't provide support for extension methods, but there are Java libraries that do, such as http://manifold.systems/docs.html#the-extension-manifold[Manifold]footnote:[Manifold Extension Methods: http://manifold.systems/docs.html#the-extension-manifold](((Manifold))), https://projectlombok.org/features/experimental/ExtensionMethod[Project Lombok]footnote:[Project Lombok Extension Methods: https://projectlombok.org/features/experimental/ExtensionMethod](((Project Lombok))), or https://github.com/rogerkeays/fluent[Fluent]footnote:[Fluent: https://github.com/rogerkeays/fluent](((Fluent))). It is safe to say that extension methods are an important and successful advancement in modern object-oriented programming.
 ****
 
-[#typeNarrowing]
+[#type_narrowing]
 ==== Type Narrowing (((Type Narrowing)))
 
 Interestingly, generic extension functions have a feature that normal instance methods don't have: They can bind generic parameters to a particular type, thus limiting the range of possible recipients. Here is an example for calculating the product of numbers as an extension function for a list:
@@ -553,7 +553,7 @@ println(result) // [1 -> x, 2 -> y, 3 -> z]
 
 Without `infix`, we would have to write `(numbers to strings).zipWith { i, c -> "$i -> $c" }` instead, which looks quite cluttered.
 
-[#functionalInterfaces]
+[#functional_interfaces]
 === Functional Interfaces (((Functional Interfaces))) (((SAM))) (((Single Abstract Method)))
 
 Imagine you have an interface for checking strings, with a single abstract function, and you need an anonymous implementation:
@@ -614,7 +614,7 @@ val worksToo = 2.1.GBP + 4.2.GBP // 6.3 £
 
 You can't add amounts of different currencies together, because the definition of `+` ensures that both amounts belong to the same currency. The generic type parameter `T` is called a "phantom type", and this code is a very simple example of type-level programming.
 
-[#typeLevelProgramming]
+[#type_level_programming]
 .Type-Level Programming (((Type-Level Programming))) and Phantom Types (((Phantom Type)))
 ****
 *Type-Level Programming* is a programming paradigm in which types themselves are used as values that can be manipulated and computed at compile time, rather than being used only to check the correctness of program syntax and logic. In other words, type-level programming involves using types to encode complex computations and algorithms that are evaluated by the compiler at compile time rather than at runtime. Type-level programming can be used to achieve a variety of goals, such as improving program performance and enforcing stronger type constraints.
@@ -653,7 +653,7 @@ println(average(listOf(1, 2, 3))) // 2.0
 println(average(listOf(7.0, 8.0, 9.0))) // 8.0
 ----
 
-[#reifiedGenerics]
+[#reified_generics]
 ==== Reified Generics (((Generics))) (((Reified Generics)))
 
 Kotlin offers an interesting feature called "reified generics" that helps to overcome Java's type erasure for generics on the JVM in some situations. Type erasure is a JVM technique that allows Java to check generics at compile time, while discarding type information at runtime. In contrast, reified generics in Kotlin allow type information to be preserved at runtime. This means that developers can perform type-safe operations at runtime without having to resort to workarounds or unsafe casts.
@@ -679,7 +679,7 @@ Note the expression `T::class`, which shouldn't work, considering that type eras
 [WARNING]
 .Java Interoperability
 ====
-Functions with reified type parameters cannot be called from Java because it has no mechanism for inlining functions, and only inlining allows Kotlin to capture the generic type. This issue will be discussed in <<#reifiedGenericsBridge,Chapter 13>>.
+Functions with reified type parameters cannot be called from Java because it has no mechanism for inlining functions, and only inlining allows Kotlin to capture the generic type. This issue will be discussed in <<#reified_generics_bridge,Chapter 13>>.
 ====
 
 === Value Classes (((Value Classes))) (((@JvmInline)))
@@ -754,10 +754,10 @@ Another useful application for annotations is code generation(((Code Generation)
 
 .Annotation Processors (((Annotation Processors))) (((KSP))) (((kapt))) (((Kotlin Symbol Processing API)))
 ****
-Annotation processors allow custom processor code to be executed during the build process according to the annotations present in the application code. Kotlin provides two annotation processors, the older https://kotlinlang.org/docs/kapt.html[kapt]footnote:[kapt: https://kotlinlang.org/docs/kapt.html], which is no longer actively developed, and the recommended https://kotlinlang.org/docs/ksp-overview.html[Kotlin Symbol Processing API]footnote:[KSP: https://kotlinlang.org/docs/ksp-overview.html] (KSP), which will be discussed in <<#annotationProcessor,Chapter 12>>.
+Annotation processors allow custom processor code to be executed during the build process according to the annotations present in the application code. Kotlin provides two annotation processors, the older https://kotlinlang.org/docs/kapt.html[kapt]footnote:[kapt: https://kotlinlang.org/docs/kapt.html], which is no longer actively developed, and the recommended https://kotlinlang.org/docs/ksp-overview.html[Kotlin Symbol Processing API]footnote:[KSP: https://kotlinlang.org/docs/ksp-overview.html] (KSP), which will be discussed in <<#annotation_processor,Chapter 12>>.
 ****
 
-Finally, Kotlin includes annotations to support Java access. DSL code is often more difficult to call from Java, so we'll discuss this topic in <<#javaInteroperability,Chapter 13>>.
+Finally, Kotlin includes annotations to support Java access. DSL code is often more difficult to call from Java, so we'll discuss this topic in <<#java_interoperability,Chapter 13>>.
 
 [#reflection]
 === Reflection (((Reflection))) (((Kotlin-Reflect)))
@@ -789,7 +789,7 @@ Depending on your use case, you might also consider alternatives like https://gi
 
 Kotlin allows you to try experimental features (via compiler argument or `@OptIn` annotation). Some of these features are quite stable and may be useful for DSL design, so it may be worth taking the risk of using them before they become an official part of the language.
 
-[#contextParameters]
+[#context_parameters]
 ==== Context Parameters (((Context Parameters))) (((Context Receivers)))
 
 https://github.com/Kotlin/KEEP/blob/context-parameters/proposals/context-parameters.md[Context Parameters]footnote:[Context Parameters: https://github.com/Kotlin/KEEP/blob/context-parameters/proposals/context-parameters.md]] - formerly known as "Context Receivers" - are an experimental feature introduced in Kotlin 1.6.2, and at the writing of this book, its beta phase is planned for Kotlin 2.2.
