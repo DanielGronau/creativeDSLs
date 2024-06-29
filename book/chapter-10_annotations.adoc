@@ -3,17 +3,17 @@
 > I have discovered a truly marvelous proof of this, which however the margin is not large enough to contain.
 -- Pierre de Fermat
 
-Annotations can be used to bind specified actions or behaviors to classes, methods, fields, etc. Typical examples include dependency injection frameworks (such as Spring or Dagger), serializers to formats such as XML or JSON (such as Gson, Jackson, or JAXB), or authorization and access-control (such as Spring Security). In Java, https://projectlombok.org[Project Lombok]footnote:[](((Project Lombok))) aims to reduce the boilerplate of the language in many ways, and uses annotations to do so.
+Annotations can be used to bind specified actions or behaviors to classes, methods, fields, etc. Typical examples include dependency injection frameworks (such as Spring or Dagger), serializers to formats such as XML or JSON (such as Gson, Jackson, or JAXB), or authorization and access-control (such as Spring Security). In Java, https://projectlombok.org[Project Lombok]footnote:lombok[Project Lombok: https://projectlombok.org](((Project Lombok))) aims to reduce the boilerplate of the language in many ways, and uses annotations to do so.
 
-As mentioned in <<#annotations,4.13 Annotations>>, you may want to look into annotation processors if you need to integrate your DSL into the build process in some way.
+As mentioned in <<#annotations,Chapter 4.13>>, you may want to look into annotation processors if you need to integrate your DSL into the build process in some way.
 
 === Case Study: Mapper DSL
 
 Mapping between similar classes is a common and often tedious task. There are already many solutions, such as the https://mapstruct.org/[MapStruct]footnote:mapstruct[MapStruct: https://mapstruct.org](((MapStruct))) library, which is a code generator for mapper classes.
 
-In this case study, we will write a very simple mapper DSL to transform e.g. data classes at runtime. The actual transformation code is not for the faint of heart, it relies on reflection and is very insecure to keep it short. Explaining the details is beyond the scope of this book; the focus of the case study is on how to use annotations to express your intentions.
+In this case study, we will write a very simple mapper DSL to transform e.g. data classes at runtime. For simplicity, we will only allow one-to-one relations between the properties. The actual transformation code is not for the faint of heart, it relies on reflection and is very insecure to keep it short. Explaining the details is beyond the scope of this book; the focus of the case study is on how to use annotations to express your intentions.
 
-Let's start with an example. Suppose we have a `User' class and a `Person' class, and we want to convert users to persons:
+Let's start with an example. Suppose we have a `User` class and a `Person` class, and we want to convert users to persons:
 
 [source,kotlin]
 ----
@@ -29,7 +29,7 @@ data class Person(
     val age: Int)
 ----
 
-We must consider the following cases:
+We have to consider the following cases:
 
 1. If the source and target parameters have the same name and type, like `firstName`, the mapper should just pass the values.
 2. If the source and target parameters have the same type but different names, like `familyName` and `lastName`, we need to specify a mapping between source and target.
@@ -125,7 +125,7 @@ abstract class Mapper<S : Any, T : Any> {
 }
 ----
 
-Since it uses reflection, you need to include a dependency on the `kotlin-reflect` library, as described in <<#reflection,4.14 Reflection>>. Of course, the example could be improved in many ways, e.g. sometimes you need multiple source fields to calculate a target field.
+Since it uses reflection, you need to include a dependency on the `kotlin-reflect` library, as described in <<#reflection,Chapter 4.14>>. Of course, the example could be improved in many ways, for example, sometimes you need multiple source fields to calculate a target field, and converting fields with generic types won't work.
 
 .Convention over Code (((Convention over Code)))
 ****
@@ -154,7 +154,7 @@ The `@Query` annotation has no fields for the `FROM` and `WHERE` clauses, it all
 
 === Conclusion
 
-In some cases, it feels very natural to integrate a DSL into the existing user code and use it to influence how certain structures are processed or translated. In these cases, annotation-based DSLs are a good choice. While these DSLs are often easy to use, the implementation overhead can be significant. Another problem can be overuse of annotations to the point of unreadability, and the use of annotations from different frameworks on the same class, method, or property, which can be very confusing.
+In some cases, it feels very natural to integrate a DSL into the existing user code and use it to influence how certain structures are processed or translated. In these cases, annotation-based DSLs are a good choice. While these DSLs are often easy to use, the implementation overhead can be significant. Another problem can be the overuse of annotations to the point of unreadability, and the mixing of annotations from different frameworks on the same class, method, or property, which can be very confusing.
 
 *Common applications*
 

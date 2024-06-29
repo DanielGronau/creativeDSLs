@@ -24,7 +24,7 @@ Before we dive into complicated problems requiring parsers, we will start with a
 
 .Forsyth–Edwards Notation
 ****
-The Forsyth-Edwards Notation is a standard notation for describing the current position of pieces on a chessboard. It consists of a string of characters representing the placement of pieces, organized by rank. In FEN, uppercase letters are used to represent white pieces and lowercase letters are used to represent black pieces. The numbers 1 through 8 are used to represent successive empty squares, and a slash is used to separate ranks. FEN also contains information about:
+The Forsyth-Edwards Notation is a standard notation for describing the current position of pieces on a chessboard (as opposed to Portable Game Notation, which is used to document entire games). It consists of a string of characters representing the placement of pieces, organized by rank. In FEN, uppercase letters are used to represent white pieces and lowercase letters are used to represent black pieces. The numbers 1 through 8 are used to represent successive empty squares, and a slash is used to separate ranks. FEN also contains information about:
 
 * which player moves next
 * castling availability
@@ -54,9 +54,9 @@ This is the `Position` class we want to create using a FEN string:
 [source,kotlin]
 ----
 enum class Piece(val symbol: String) {
-    WhitePawn("P"), WhiteRook("R"), WhiteKnight("N"),
+    WhitePawn("P"),   WhiteRook("R"),  WhiteKnight("N"),
     WhiteBishop("B"), WhiteQueen("Q"), WhiteKing("K"),
-    BlackPawn("p"), BlackRook("r"), BlackKnight("n"),
+    BlackPawn("p"),   BlackRook("r"),  BlackKnight("n"),
     BlackBishop("b"), BlackQueen("q"), BlackKing("k"),
 }
 
@@ -458,7 +458,7 @@ fun equation(string: String): Equation? =
         }
 ----
 
-This function removes all spaces from the input string, calls the parser, checks that no "unparsed" string is left, and returns the result or null. Now we can write e.g. `equation("3Ba(OH)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2")`, which is as concise as possible for an internal DSL.
+This function removes all spaces from the input string, calls the parser, checks that no "unparsed" string is left, and returns the result or null. Now we can write e.g. `equation("3Ba(OH)2 + 2H3PO4 -{zwsp}> 6H2O + Ba3(PO4)2")`, which is as concise as possible for an internal DSL.
 
 As mentioned in the last chapter, a "real" chemical equation looks more like `3Ba(OH)~2~ + 2H~3~PO~4~ -> 6H~2~O + Ba~3~(PO~4~)~2~`, and with some simple modifications we could allow this syntax as well. In general, it is relatively easy to make the syntax of a string-based DSL more lenient, while other DSL categories often struggle with this kind of flexibility.
 
