@@ -25,7 +25,7 @@ Technically, writing a quasi-lingual DSL is not very different from writing othe
 [#chemical_equations_as_hybrid]
 === Case Study: Chemical Equations
 
-Writing a DSL for chemical equations is not an easy task because the notation is very concise and cannot be easily mimicked using Kotlin syntax. For our case study, we will try to recreate the <<#chemical_equations_as_string,string-based DSL>> from chapter 9 using a hybrid approach. We will use the same underlying model classes:
+Writing a DSL for chemical equations is not an easy task because the notation is very concise and cannot be easily mimicked using Kotlin syntax. For our case study, we will try to recreate the string-based DSL from <<#chemical_equations_as_string,Chapter 9>> using a hybrid approach. We can use the same underlying model classes:
 
 [source,kotlin]
 ----
@@ -126,7 +126,7 @@ operator fun Group.minus(that: Part) =
     copy(parts = parts + that)
 ----
 
-In general, we have to put groups and sometimes molecules in parentheses because of the precedence rules. A molecule can have an optional coefficient in front of it. Also, the same multiplication operation should "promote" an element or group to a molecule, allowing for example to write `2*O[2]` for an oxygen molecule with coefficient two. For the promotion we introduce the extension function `Part.toMolecule()`. Again, we need sanity checks to invalidate calls like `-2*H[2]` or `3*(2*O[2])`:
+In general, we have to put groups and sometimes molecules in parentheses because of the precedence rules. A molecule can have an optional coefficient in front of it. Also, the same multiplication operation should "promote" an element or group to a molecule, allowing for example to write `2*O[2]` for an oxygen molecule with coefficient two. For the promotion we introduce the extension function `Part.toMolecule()`. Again, we need sanity checks to prevent calls like `-2*H[2]` or `3*(2*O[2])`:
 
 [source,kotlin]
 ----
@@ -277,7 +277,7 @@ data class Person(
 
 val p = Person("Andy", "Smith", 43)
 
-// this is not Kotlin, but a suggestion for the ideal syntax
+// this is not valid Kotlin, but a suggestion for the ideal syntax
 val result = match(p) {
 
     Person("Andy", "Miller", _) ->
@@ -303,7 +303,7 @@ However, we have to make some compromises to make it work in Kotlin:
 * `_` isn't a valid identifier, so we use `any()`
 * In some cases, we need to provide generic type information
 
-That's a pretty long list, so let's see how our example looks now, using a reachable syntax:
+That's a pretty long list, so let's see what our example looks like now, using an achievable syntax:
 
 [source,kotlin]
 ----
@@ -442,7 +442,7 @@ fun <P> none(p: Pattern<P>) : Pattern<Iterable<P>> =
     { it.none(p) }
 ----
 
-To capture values, we need a class that implements `Pattern<T>', which can also hold a value:
+To capture values, we need a class that implements `Pattern<T>`, which can also hold a value:
 
 [source,kotlin]
 ----
@@ -457,7 +457,7 @@ class Capture<P : Any> : Pattern<P> {
 inline fun <reified P : Any> capture() = Capture<P>()
 ----
 
-To capture values, you first define a value with the `capture<T>()` method. Then you can use it as a pattern on the left side of `then`, which always succeeds, but also stores the value. On the right side you can read the value from val. The first syntax example demonstrates the usage:
+To capture values, you first define a value with the `capture<T>()` method. Then you can use it as a pattern on the left side of `then`, which always succeeds, but also stores the value. On the right side you can read the value from the predefined `val`. The first syntax example demonstrates the usage:
 
 [source,kotlin]
 ----
@@ -496,9 +496,9 @@ Of course, you can write many more patterns, but the DSL is already functional a
 
 === Conclusion
 
-Writing high-quality hybrid DSLs can be a complex task, requiring careful consideration and integration of different language features. It's important to recognize that not all language features will work together seamlessly, and in such cases it's often better to stick to a consistent style throughout the DSL.
+Writing good hybrid DSLs can be a complex task, requiring careful consideration and integration of different language features, as well as careful testing. Sometimes all the language features you need won't work together seamlessly, and in such cases it may be better to stick to a single DSL type instead, which may feel a bit boring but ensures that the DSL works reliably and predictably.
 
-However, when done well, a well-designed hybrid DSL can effectively combine different techniques in a way that feels intuitive and organic. By exploiting the strengths of different language features and carefully designing their integration, you can create very powerful and expressive DSLs.
+However, a well-designed hybrid DSL can combine different language features in a way that feels intuitive and organic. By exploiting the strengths of various DSL types and carefully designing their integration, you can create very powerful and expressive DSLs. Because there are so many degrees of freedom, it is hard to get this right, so hybrid DSLs usually require extensive testing to cover all edge cases.
 
 *Common applications*
 
@@ -523,6 +523,6 @@ However, when done well, a well-designed hybrid DSL can effectively combine diff
 
 * Can look messy
 * Higher perceptual complexity can lead to steeper learning curve
-* Can be difficult to control edge cases
+* It can be difficult to control edge cases
 * Higher maintenance effort required
-* Java interoperability can be a challenge
+* Java interoperability can be challenging
