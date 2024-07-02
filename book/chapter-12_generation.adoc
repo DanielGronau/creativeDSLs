@@ -5,7 +5,7 @@
 > Do not cite the Deep Magic to me, witch! I was there when it was written.
 -- C. S. Lewis, The Lion, the Witch and the Wardrobe
 
-Sometimes you are prototyping a DSL, and you find a nice syntax, but it turns out that it would take a lot of boilerplate code to make it work. A common reason is combinatorial explosion, or you need many classes that follow the same pattern (e.g., tuple classes or fixed-length vectors). In such cases, you might consider using code generation.
+Sometimes you are prototyping a DSL, and you find a nice, expressive syntax, but it turns out that it would take a lot of boilerplate code to make it work. A common reason is combinatorial explosion, or you need many classes that follow the same pattern (e.g., tuple classes or fixed-length vectors). In such cases, you might consider using code generation.
 
 A popular library for generating Kotlin code is https://square.github.io/kotlinpoet[KotlinPoet]footnote:kotlinpoet[KotlinPoet: https://square.github.io/kotlinpoet](((KotlinPoet))). If you are also working with Java, you may also want to check out its sister project https://github.com/square/javapoet[JavaPoet]footnote:[JavaPoet: https://github.com/square/javapoet](((JavaPoet))). There is even some interoperability between them.
 
@@ -68,7 +68,7 @@ fun makeAdditions() =
     Quantity::class.sealedSubclasses.map { makeAddition(it) }
 ----
 
-As you can see, KotlinPoet relies heavily on the builder pattern. In the `makeAdditions()` method, we take advantage of the fact that a sealed class - here `Quantity` - knows about its subclasses. As a result, we get a list of `FunSpec` instances representing functions, constructors, getters or setters. You can just print the contents to the console to see what the code would look like. Later we will add these instances to a `FileSpec' that can be written to the file system. The generated functions will look like this:
+As you can see, KotlinPoet relies heavily on the builder pattern. In the `makeAdditions()` method, we take advantage of the fact that a sealed class - here `Quantity` - knows about its subclasses. As a result, we get a list of `FunSpec` instances representing functions, constructors, getters or setters. You can just print the contents to the console to see what the code would look like. Later we will add these instances to a `FileSpec` that can be written to the file system. The generated functions will look like this:
 
 [source,kotlin]
 ----
@@ -313,7 +313,7 @@ val energy = force * 5.0.m
 println("${energy.kJ} kiloJoule")
 ----
 
-The example code is written in such a way that you manually generate the code via the `main()` method when the DSL has changed. This is a simple approach if you know that code changes won't happen very often, but it can quickly become cumbersome if changes become more frequent. In the next section, we will discuss using an annotation processor instead.
+The example code is written in such a way that you manually generate the code via the `main()` method when the DSL has changed. This is a simple approach if you know that code changes won't happen very often, but it can quickly become cumbersome if changes become more frequent, and is not feasible if you don't know in advance what code needs to be generated. In the next section, we will discuss using an annotation processor instead.
 
 === Writing an annotation processor using KSP (((Annotation Processor))) (((KSP))) (((Kotlin Symbol Processing API)))
 
@@ -334,7 +334,7 @@ The lack of reflection support means that KSP may not be the right tool if you n
 
 ==== Designing the DSL and writing the annotations module
 
-What would an annotation-based DSL for defining the relationship between physical quantities look like? We don't want to hardcode the annotation processor to use our specific quantity hierarchy, but to be more flexible. Therefore, we will assume that the there is a sealed interface, that all quantities implement, and that the quantities are data classes with a single `Double` argument.
+What would an annotation-based DSL for defining the relationship between physical quantities look like? We don't want to hardcode the annotation processor to use our specific quantity hierarchy, but to be more flexible. Therefore, we will assume that the there is a sealed interface that all quantities implement, and that the quantities are data classes with a single `Double` argument.
 
 We have three types of operations:
 
@@ -408,7 +408,7 @@ A KSP implementation consists of three main parts:
 - A `SymbolProcessor`: This class is the starting point of the annotation processor. Typically, it determines what tasks need to be performed, e.g. by inspecting annotations.
 - `KSVisitor` classes: After determining __what__ to do, the processor usually delegates the work to one or more visitor classes that know __how__ to do a particular task. You don't have to follow this pattern, but it helps to clarify responsibilities and is the preferred approach according to the KSP documentation.
 
-The provider class just points to our processor:
+The provider class contains a `create()` method that can instantiate a particular processor:
 
 [source,kotlin]
 ----
@@ -740,7 +740,7 @@ This is all we need to generate the necessary functions. To call our KSP module 
 ----
 plugins {
     ...
-    id("com.google.devtools.ksp") version "1.9.20-1.0.14"
+    id("com.google.devtools.ksp") version "2.0.0-1.0.21"
 }
 ...
 dependencies {
