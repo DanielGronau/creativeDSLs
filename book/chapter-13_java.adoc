@@ -163,11 +163,11 @@ fun <T: Any> tellTypeJava(list: List<T>, clazz: Class<T>) {
 
 You can call the second function as usual from Java, e.g. `tellTypeJava(List.of(1,2,3), Integer.class);`.
 
-This approach will work for many use cases, but it should be noted that a reified type contains information about its own type parameters, while a class parameter just denotes a raw type. If this type information is needed, our simplistic approach won't work. It is difficult to give a general solution for the more complicated cases, but replacing the class parameter with e.g. `TypeToken` (from either https://github.com/google/guava[Guava]footnote:[Guava: https://github.com/google/guava](((Guava))) or https://github.com/google/gson[Gson]footnote:[Gson: https://github.com/google/gson](((Gson))) ) might help.
+This approach will work for many use cases, but it should be noted that a reified type contains information about its own type parameters, while a class parameter just denotes a raw type. If this type information is needed, our simplistic approach won't work. It is difficult to give a general solution for the more complicated cases, but replacing the class parameter with e.g. `TypeToken` (from either https://github.com/google/guava[Guava]footnote:[Guava: https://github.com/google/guava](((Guava))) or https://github.com/google/gson[Gson]footnote:[Gson: https://github.com/google/gson](((Gson))){zwsp}) might help.
 
 === Checked Exceptions
 
-Kotlin doesn't have the concept of "checked exceptions", but if a function that might throw such an exception is called from Java, the Java compiler expects that the exception is declared in the function signature. In order to avoid problems in such cases, you can give the Kotlin compiler a hint to add a checked exception to the function signature in the byte-code by annotating the function with `Throws(SomeCheckedException::class)`.
+Kotlin doesn't have the concept of "checked exceptions", but if a function that might throw such an exception is called from Java, the Java compiler expects that the exception is declared in the function signature. In order to avoid problems in such cases, you can give the Kotlin compiler a hint to add a checked exception to the function signature in the byte-code by annotating the function with `@Throws(SomeCheckedException::class)`.
 
 === Prevent Java Access
 
@@ -190,10 +190,7 @@ fun getStuffForJava(): CompletableFuture<String> =
     scope.future { getStuff() }
 ----
 
-
-
 === Conclusion
 
-Writing DSLs often requires the use of advanced language features, so it's no surprise that calling this code from Java can be challenging, and that the Kotlin compiler may need some pointers for good Java interoperability. If calling your DSL from Java is a requirement, you should consider it in your design from the beginning. In particular, writing tests not only in Kotlin but also in Java can help avoid problems down the road. Most interoperability issues are easy to fix, often the hard part is figuring out what's going wrong and knowing what language features you have at your disposal in these situations.
-
+Writing DSLs often requires the use of advanced language features, so it's no surprise that calling this code from Java can be challenging, and that the Kotlin compiler may need some pointers for good Java interoperability. If calling your DSL from Java is a requirement, you should consider it in your design from the beginning. In particular, writing tests not only in Kotlin but also in Java can help avoid problems down the road. Most interoperability problems are easy to fix, often the hard part is figuring out what's going wrong and knowing what language features are available to you in these situations.
 
