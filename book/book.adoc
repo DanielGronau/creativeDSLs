@@ -65,6 +65,4 @@ include::chapter-14_examples.adoc[]
 
 include::epilogue.adoc[]
 
-include::bibliography.adoc[]
-
 include::index.adoc[]

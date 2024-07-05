@@ -92,7 +92,7 @@ https://gradle.org/[Gradle]footnote:[Gradle: https://gradle.org](((Gradle))) is 
 
 However, the original Gradle implementation was written in Groovy(((Groovy))) - at the time probably the best choice for writing an expressive DSL in the Java ecosystem. Unfortunately, the Groovy language comes with its own set of problems. It is a scripted language with a weak type system, and as a result, IDE features such as autocompletion, content assistance, source navigation, quick documentation, and refactoring support are limited.
 
-To address these issues, the Gradle team decided to provide an alternative DSL based on Kotlin script (.kts). Obviously, the new DSL should look very similar to the old Groovy style to make the transition as smooth as possible. I think the Kotlin DSL was a resounding success in this regard. Here is a comparison, taken from the https://docs.gradle.org/current/userguide/migrating_from_groovy_to_kotlin_dsl.html[Gradle Userguide: Migrating build logic from Groovy to Kotlin]footnote:[Gradle Migration: https://docs.gradle.org/current/userguide/migrating_from_groovy_to_kotlin_dsl.html]:
+To address these issues, the Gradle team decided to provide an alternative DSL based on Kotlin script (.kts). Obviously, the new DSL should look very similar to the old Groovy style to make the transition as smooth as possible. I think the Kotlin DSL was a resounding success in this regard. Here is a comparison, taken from the https://docs.gradle.org/current/userguide/migrating_from_groovy_to_kotlin_dsl.html[Gradle User Guide: Migrating build logic from Groovy to Kotlin]footnote:[Gradle Migration: https://docs.gradle.org/current/userguide/migrating_from_groovy_to_kotlin_dsl.html]:
 
 [source,groovy]
 .Groovy
@@ -213,7 +213,7 @@ The library has already been mentioned in <<#quasi_lingual_dsls,Chapter 12>> as 
 
 === better-parse (((better-parse)))
 
-Better-parse is the parser-combinator library we used in <<#parser_library,Chapter 9>>. It features a succinct hybrid DSL, which gives you a lot of flexibility. Here is one of the example parsers of the project:
+Better-parse is the parser-combinator library we used in <<#parser_library,Chapter 9.2.2>>. It features a succinct hybrid DSL, which gives you a lot of flexibility. Here is one of the example parsers of the project:
 
 [source,kotlin]
 .https://github.com/h0tk3y/better-parse/blob/master/demo/demo-jvm/src/main/kotlin/com/example/BooleanExpression.kt
@@ -290,7 +290,7 @@ fun main(args: Array<String>) {
 
 The grammar is defined within an object as a sequence of token definitions and parsers that build upon each other. An interesting aspect of this DSL is that it relies heavily on property delegation. This allows the tokens and parsers to be stored in lists behind the scenes, making it much easier for the library to work with them.
 
-An interesting problem is how to handle recursive parser definitions. In the example in Chapter 9, a "part" could be either an "element" or a "group", but a group itself consists of parts. The library solves this in an elegant way by allowing to refer to parsers via their property reference:
+An interesting problem is how to handle recursive parser definitions. In the example in Chapter 9, a "molecular part" could be either an "element" or a "group", but a group itself consists of parts. The library solves this in an elegant way by allowing to refer to parsers via their property reference:
 
 [source,kotlin]
 ----
@@ -374,9 +374,39 @@ val validateEvent = Validation<Event> {
 }
 ----
 
-Even without knowing the library, you can probably tell what conditions will be checked and what output you can expect. The DSL has a very consistent structure and descriptive naming conventions. If a condition is not met, you can provide your own using the `hint` infix function, but you don't have to, as there are already sensible default messages available. Even though Konform-kt doesn't have any features we haven't already covered, there is a lot to learn from how the DSL presents itself to the user and what makes it pleasant to use.
+Even without knowing the library, you can probably tell what conditions will be checked and what output you can expect. The DSL has a very consistent structure and descriptive naming conventions. If a condition is not met, you can provide your own using the `hint` infix function, but you don't have to, as there are already sensible default messages available. Even though Konform-kt doesn't use any features we haven't already covered, there is a lot to learn from how the DSL presents itself to the user and what makes it pleasant to use.
+
+=== Arrow (((Arrow)))
+
+https://arrow-kt.io[Arrow]footnote:[Arrow: https://arrow-kt.io]  is a huge collection of features that promote functional programming in Kotlin, such as working with coroutines, error handling, immutable types, and much more. There is far too much content to cover here, but to give you a very basic example, here is how the library improves working with nullable types. Very often you see Kotlin code like this, which is hard to read due to various null checks:
+
+[source,kotlin]
+.https://arrow-kt.io/learn/typed-errors/nullable-and-option/
+----
+fun sendEmail(params: QueryParameters): SendResult? =
+  params.userId()?.let { userId ->
+    findUserById(userId)?.email?.let { email ->
+      sendEmail(email)
+    }
+  }
+----
+
+Arrow provides the `nullable` DSL, which avoids nesting, and simplifies null checking:
+
+[source,kotlin]
+.https://arrow-kt.io/learn/typed-errors/nullable-and-option/
+----
+fun sendEmail(params: QueryParameters): SendResult? = nullable {
+  val userId = ensureNotNull(params.userId())
+  val user = findUserById(userId).bind()
+  val email = user.email.bind()
+  sendEmail(email)
+}
+----
+
+I think you will agree that this code is much easier to read. But this is just an appetizer, there is much more to explore, both for your daily coding and as inspiration for writing idiomatic DSLs.
 
 === Conclusion
 
-Exploring well-written DSLs can be a great source of inspiration. Frankly, a significant number of Kotlin DSLs currently available can be considered functional, but lack an engaging and enjoyable user experience because they rely heavily on a limited set of language features and miss the opportunity for a more exploratory approach. The examples presented in this chapter are intended to inspire you to strive for more, for DSLs that are creative and fun to use.
+Exploring well-written DSLs can be a great source of inspiration. Frankly, a significant number of Kotlin DSLs currently available "get the job done" but lack an engaging and enjoyable user experience. Such DSLs often rely heavily on a limited set of language features and miss the opportunity for a more exploratory approach, resulting in a dull and uninspired feel. The examples presented in this chapter should inspire you to strive for more, for DSLs that are creative, intuitive, and fun to use.
 
