@@ -27,23 +27,13 @@
 {empty} +
 {empty} +
 {empty} +
-{empty} +
-{empty} +
-{empty} +
-{empty} +
-{empty} +
-{empty} +
 {empty} 
 
 Bibliographic Information of the German National Library: +
-The Deutsche Nationalbibliothek records this
-publication in the German National Bibliography; +
-Detailed bibliographical data are available on the Internet
-at http://dnb.dnb.de.
+The Deutsche Nationalbibliothek records this publication in the German National Bibliography; +
+Detailed bibliographical data are available on the Internet at http://dnb.dnb.de.
 
-Automated analysis of the work in order to information about patterns, trends and
-correlations in accordance with §44b UrhG ("text and data mining") is
-is prohibited.
+Automated analysis of the work in order to information about patterns, trends and correlations in accordance with §44b UrhG ("text and data mining") is prohibited.
 
 [%hardbreaks]
 (C) 2024 Daniel Gronau
@@ -53,4 +43,4 @@ Feedback: creativeDsls@proton.me
 Production and publisher:
 BoD - Books on Demand, Norderstedt
 
-ISBN: 978-3-XXXX-XXXX-X
+ISBN: 9783759759863

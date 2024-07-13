@@ -114,7 +114,7 @@ In the `copy()` method, the values of the current object are set as default valu
 ====
 While the `copy()` method is convenient when working with immutable data classes, it doesn't scale well for nested data classes: Imagine you need a copy of a company, with the email of the address of the CEO changed. That means you need nested `copy()` calls as well, going down level by level. This is lengthy, hard to read and error-prone.
 
-In functional programming, this problem is often solved with an "optics" package, which contains lenses and similar abstractions that allow to easily compose copy operations for different nesting levels. If you want to learn more about this topic, I suggest you have a look at https://arrow-kt.io/learn/immutable-data/intro[ArrowKt Optics]footnote:[ArrowKt Optics: https://arrow-kt.io/learn/immutable-data/intro](((Arrow-KT))).
+In functional programming, this problem is often solved with an "optics" package, which contains lenses and similar abstractions that allow to easily compose copy operations for different nesting levels. If you want to learn more about this topic, I suggest you have a look at https://arrow-kt.io/learn/immutable-data/intro[Arrow Optics]footnote:[Arrow Optics: https://arrow-kt.io/learn/immutable-data/intro](((Arrow))).
 ====
 
 === Trailing Lambda Arguments (((Trailing Lambda)))
@@ -679,7 +679,7 @@ Note the expression `T::class`, which shouldn't work, considering that type eras
 [WARNING]
 .Java Interoperability
 ====
-Functions with reified type parameters cannot be called from Java because it has no mechanism for inlining functions, and only inlining allows Kotlin to capture the generic type. This issue will be discussed in <<#reified_generics_bridge,Chapter 13>>.
+Functions with reified type parameters cannot be called from Java because it has no mechanism for inlining functions, and only inlining allows Kotlin to capture the generic type. This issue will be discussed in <<#reified_generics_bridge,Chapter 13.5.1>>.
 ====
 
 === Value Classes (((Value Classes))) (((@JvmInline)))
@@ -752,7 +752,7 @@ You can write entire DSLs using annotations, but more often annotations can supp
 
 Another useful application for annotations is code generation(((Code Generation))). For example, the AutoDSL library (((AutoDSL))) uses the information provided via annotations to construct the DSL classes for you.
 
-.Annotation Processors (((Annotation Processors))) (((KSP))) (((kapt))) (((Kotlin Symbol Processing API)))
+.Annotation Processors (((Annotation Processor))) (((KSP))) (((kapt))) (((Kotlin Symbol Processing API)))
 ****
 Annotation processors allow custom processor code to be executed during the build process according to the annotations present in the application code. Kotlin provides two annotation processors, the older https://kotlinlang.org/docs/kapt.html[kapt]footnote:[kapt: https://kotlinlang.org/docs/kapt.html], which is no longer actively developed, and the recommended https://kotlinlang.org/docs/ksp-overview.html[Kotlin Symbol Processing API]footnote:[KSP: https://kotlinlang.org/docs/ksp-overview.html] (KSP), which will be discussed in <<#annotation_processor,Chapter 12>>.
 ****

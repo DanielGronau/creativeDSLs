@@ -26,7 +26,7 @@ running-content:
   start-at: 5
 base:
   text_align: justify
-  font_color: 000000
+  font_color: 333333
   font_family: Noto Serif
   font_size: 9 #10.5
   # line_height_length is really just a vertical spacing variable; it's not actually the height of a line
@@ -59,10 +59,10 @@ role:
 vertical_rhythm: $base_line_height_length
 horizontal_rhythm: $base_line_height_length
 link:
-  font_color: 000000
+  font_color: 428BCA
 # codespan is currently used for monospaced phrases and table cells
 codespan:
-  font_color: 000000
+  font_color: B12146
   font_family: M+ 1mn
 button:
   content: "[\u2009%s\u2009]"
@@ -79,7 +79,7 @@ mark:
   background_color: FFFF00
   border_offset: 1
 menu:
-  caret_content: "\u00a0<font size=\"1.15em\" color=\"#000000\">\u203a</font> "
+  caret_content: "\u00a0<font size=\"1.15em\" color=\"#B12146\">\u203a</font> "
   font_style: bold
 heading:
   text_align: left
@@ -114,7 +114,7 @@ title_page:
   authors:
     margin_top: $base_font_size * 1.25
     font_size: $base_font_size_large
-    font_color: 000000
+    font_color: 181818
   revision:
     margin_top: $base_font_size * 1.25
 block:
@@ -127,7 +127,7 @@ caption:
   margin_inside: $vertical_rhythm / 3
   margin_outside: 0
 abstract:
-  font_color: 000000
+  font_color: 5C6266
   font_size: $role_lead_font_size
   line_height: 1.4
   font_style: italic
@@ -152,7 +152,7 @@ quote:
   padding: [$vertical_rhythm / 4, $horizontal_rhythm, $vertical_rhythm / 4, $horizontal_rhythm + $quote_border_left_width / 2]
   cite:
     font_size: $base_font_size_small
-    font_color: 000000
+    font_color: $role_subtitle_font_color
 verse:
   font_size: $quote_font_size
   border_color: $quote_border_color
@@ -236,7 +236,7 @@ toc:
   line_height: 1.4
   dot_leader:
     #content: ". "
-    font_color: 000000
+    font_color: A9A9A9
     #levels: 2 3
 footnotes:
   font_size: round($base_font_size * 0.75)

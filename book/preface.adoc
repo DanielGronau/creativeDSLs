@@ -19,9 +19,7 @@ Kotlin is a powerful language that is well suited for writing Domain Specific La
 
 This book aims to fill these gaps by providing a comprehensive guide to writing DSLs in Kotlin, with a focus on practical examples and real-world considerations. One of the main goals of this book is to go beyond toy examples and provide real-world insights into the process of writing DSLs in practice. This includes discussion of the design process, the requirements and constraints that apply, the tradeoffs that must be made, and the challenges that arise.
 
-To achieve this, the book progresses from common examples to more challenging and complex cases, ending with a discussion of real-world DSLs that have been successful in practice. In addition to providing practical guidance, it attempts to establish a comprehensive terminology for classifying DSLs, similar to the way the design pattern movement has established a common language for coding solutions.
-
-Overall, the book aims to provide a comprehensive and practical guide to designing and implementing DSLs using Kotlin.
+To achieve this, the book progresses from common examples to more challenging and complex cases, ending with a discussion of real-world DSLs that have been successful in practice. In addition to providing practical guidance, it attempts to establish a comprehensive terminology for classifying DSLs, similar to the way the design pattern movement has established a common language for coding solutions. Overall, the book aims to provide a comprehensive and practical guide to designing and implementing DSLs using Kotlin.
 
 === Who is this book not (yet) intended for?
 

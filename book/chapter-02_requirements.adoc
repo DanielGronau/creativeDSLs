@@ -13,7 +13,7 @@ The first question to answer is, of course, which domain to tackle. For small do
 
 In general, it's a good practice to organize your DSL in layers, so that the lower layers don't depend on the higher ones, and can therefore be used independently. For example, if you are designing a DSL for linear algebra, the part of the DSL that works with matrices might be independent of the rest of the system, allowing that part to be used in other contexts as well.
 
-If the application already uses other DSLs, you should consider whether using the new DSL in parallel would be confusing or might produce unexpected results. In some cases, it may be wise to mimic the syntax of an existing DSL in order to simplify the experience that users already have. A real-world example of this approach is the KotlinPoet(((Kotlin Poet))) library, which mimics its sister project JavaPoet(((JavaPoet))).
+If the application already uses other DSLs, you should consider whether using the new DSL in parallel would be confusing or might produce unexpected results. In some cases, it may be wise to mimic the syntax of an existing DSL in order to simplify the experience that users already have. A real-world example of this approach is the KotlinPoet(((KotlinPoet))) library, which mimics its sister project JavaPoet(((JavaPoet))).
 
 === Research (((Research)))
 

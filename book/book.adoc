@@ -10,7 +10,6 @@
 :numbered:
 :showtitle: Creative DSLs in Kotlin
 :revyear: 2024
-:revnumber: 1.0
 :icons: font
 :author: Daniel Gronau
 :srcdir: ../src/main/kotlin/creativeDsls
