@@ -231,7 +231,7 @@ class SensitiveData {
 
     var secretValue: Int = 42
         get() {
-            logger.info("Access to secret value $field at ${LocalDateTime.now()}")
+            logger.info("Access to secret value $field ")
             return field
         }
 }
@@ -257,7 +257,7 @@ fun Int.digits(base: Int = 10): List<Int> =
 val zero = 0.digits() // [0]
 val taxiCab = 1729.digits() // [1, 7, 2, 9]
 val taxiBin = 1729.digits(2) // [1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 1]
-val taxiHex = 1729.digits(16) //[6, 12, 1]
+val taxiHex = 1729.digits(16) // [6, 12, 1]
 ----
 
 From the user's point of view, the call with receiver looks exactly like a normal method call (or property access) on a receiver instance. This makes extension functions a great tool for adding DSL functionality to classes over which you have no control. A great example is the so-called "scope functions" `apply()`, `run()`, `let()`, and `also()` in the Kotlin API, which make it easier to use e.g. expression body syntax for functions or concise variable assignment.
@@ -619,7 +619,7 @@ You can't add amounts of different currencies together, because the definition o
 ****
 *Type-Level Programming* is a programming paradigm in which types themselves are used as values that can be manipulated and computed at compile time, rather than being used only to check the correctness of program syntax and logic. In other words, type-level programming involves using types to encode complex computations and algorithms that are evaluated by the compiler at compile time rather than at runtime. Type-level programming can be used to achieve a variety of goals, such as improving program performance and enforcing stronger type constraints.
 
-*Phantom Types* are a type-level programming technique in which a type is used to encode additional information about the data it represents without actually storing any data at runtime. Phantom types are types that have no values, but are used only for their type-level information. They can be used to enforce stronger type constraints, such as ensuring that only certain operations are performed on certain types of data. This can help reduce runtime errors and improve the safety of the program.
+*Phantom Types* are a type-level programming technique in which a type is used to encode additional information about the data it represents without actually storing any data at runtime. Phantom types are types that have no values, but are used only for their type-level information. They can be used to enforce stronger type constraints, such as ensuring that only certain operations are performed on certain types of data. This can help reduce runtime errors and improve the safety of the application.
 ****
 
 ==== Resolving Type Erasure Conflicts
@@ -783,18 +783,20 @@ dependencies {
 </dependencies>
 ----
 
-Depending on your use case, you might also consider alternatives like https://github.com/Kotlin/kotlinx.reflect.lite[kotlinx.reflect.lite].
+Depending on your use case, you might also consider alternatives like https://github.com/Kotlin/kotlinx.reflect.lite[kotlinx.reflect.lite]footnote:[kotlinx.reflect.lite: https://github.com/Kotlin/kotlinx.reflect.lite].
 
 === Experimental Features (((Experimental Features)))
 
 Kotlin allows you to try experimental features (via compiler argument or `@OptIn` annotation). Some of these features are quite stable and may be useful for DSL design, so it may be worth taking the risk of using them before they become an official part of the language.
 
-[#context_parameters]
-==== Context Parameters (((Context Parameters))) (((Context Receivers)))
+[#context_receivers_and_parameters]
+==== Context Receivers and Parameters (((Context Parameters))) (((Context Receivers)))
 
-https://github.com/Kotlin/KEEP/blob/context-parameters/proposals/context-parameters.md[Context Parameters]footnote:[Context Parameters: https://github.com/Kotlin/KEEP/blob/context-parameters/proposals/context-parameters.md]] - formerly known as "Context Receivers" - are an experimental feature introduced in Kotlin 1.6.2, and at the writing of this book, its beta phase is planned for Kotlin 2.2.
+https://github.com/Kotlin/KEEP/blob/master/proposals/context-receivers.md[Context receivers]footnote:[Context Receivers: https://github.com/Kotlin/KEEP/blob/master/proposals/context-receivers.md] are an experimental feature introduced in Kotlin 1.6.2.
+They are going be replaced by a very similar concept called
+https://github.com/Kotlin/KEEP/blob/context-parameters/proposals/context-parameters.md[context parameters]footnote:[Context Parameters: https://github.com/Kotlin/KEEP/blob/context-parameters/proposals/context-parameters.md], which is scheduled for a beta release in Kotlin 2.2. The main difference between the proposals is that context parameters are named, while context receivers are not. Since context parameters are under active development, we will focus here on the already established context receivers, but be aware that a migration will be required in the near future.
 
-The basic idea of Context Parameters is to get a class in scope that provides a certain service:
+The basic idea of context receiver is to get a class in scope that provides a certain service:
 
 [source,kotlin]
 ----
@@ -825,7 +827,7 @@ fun test() {
 
 [TIP]
 ====
-Using multiple context parameters is a great way to decouple unrelated aspects of the environment while maintaining a high degree of flexibility. Unfortunately, with multiple receivers, the `with()` calls must be nested, although this may change in the future. For now, if you find this impractical, you can use this function presented in the Kotlin Discussions forum:
+Using multiple context receivers is a great way to decouple unrelated aspects of the environment while maintaining a high degree of flexibility. Unfortunately, with multiple receivers, the `with()` calls must be nested, although this may change in the future. For now, if you find this impractical, you can use this function posted on the Kotlin Discussions forum:
 
 [source,kotlin]
 .https://discuss.kotlinlang.org/t/using-with-function-with-multiple-receivers/2062/6
@@ -841,9 +843,9 @@ inline fun <A, B, R> with(a: A, b: B, block: context(A, B) () -> R): R {
 ----
 ====
 
-Context parameters come into play when there's a need to include global information within a specific scope while maintaining the flexibility to accommodate different versions. By using a context parameter to provide DSL functionality, you gain control over the scope, you can influence the overall behavior of the DSL, and you can avoid potential naming conflicts.
+Context receivers come into play when there's a need to include global information within a specific scope while maintaining the flexibility to accommodate different versions. By using a context receiver to provide DSL functionality, you gain control over the scope, you can influence the overall behavior of the DSL, and you can avoid potential naming conflicts.
 
-You can opt in to context parameters by specifying the compiler argument `-Xcontext-receivers`.
+You can opt in to context receivers by specifying the compiler argument `-Xcontext-receivers`.
 
 [#contracts]
 ==== Contracts (((Contracts)))

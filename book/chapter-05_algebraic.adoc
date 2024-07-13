@@ -224,7 +224,7 @@ println(x) // Modular(n=2)
 
 While this solution works, its scalability is limited because the entire DSL is contained within a class. Although you could alleviate this by converting some functions to extension functions to streamline the class, the operators must remain within the class. This limitation is due to the fact that the operators are already extension functions and can only have one receiver, namely their first operand. Another challenge arises when the DSL requires several unrelated sources of information, forcing them to be combined into a single class. Essentially, these problems occur because the DSL is tightly coupled to its enclosing class.
 
-For those daring enough to delve into an experimental language feature, <<#context_parameters, Context Parameters>>(((Context Parameters))) were specifically designed to address scenarios like these by enabling a more flexible separation between the context scope and its consumers. Here is a rewritten version of the DSL above:
+For those daring enough to delve into an experimental language feature, <<#context_receivers_and_parameters, context receivers>>(((Context Receivers))) were specifically designed to address scenarios like these by enabling a more flexible separation between the context scope and its consumers. Here is a rewritten version of the DSL above:
 
 [source,kotlin]
 ----
@@ -313,7 +313,7 @@ val x = modulus(7) {
 println(x) // Modular(n=2)
 ----
 
-In my opinion, context parameters provide an elegant solution in situations where algebraic DSLs need additional information from the environment.
+In my opinion, context receivers provide an elegant solution in situations where algebraic DSLs need additional information from the environment.
 
 === Java Interoperability
 
