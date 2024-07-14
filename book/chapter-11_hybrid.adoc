@@ -25,7 +25,7 @@ Technically, writing a quasi-lingual DSL is not very different from writing othe
 [#chemical_equations_as_hybrid]
 === Case Study: Chemical Equations
 
-Writing a DSL for chemical equations is not an easy task because the notation is very concise and cannot be easily mimicked using Kotlin syntax. For our case study, we will try to recreate the string-based DSL from <<#chemical_equations_as_string,Chapter 9>> using a hybrid approach. We can use the same underlying model classes:
+Writing a DSL for chemical equations is not an easy task because the notation is very concise and cannot be easily mimicked using Kotlin syntax. For our case study, we will try to recreate the string-based DSL from <<#chemical_equations_as_string,Chapter 9.2>> using a hybrid approach. We can use the same underlying model classes:
 
 [source,kotlin]
 ----
@@ -211,7 +211,7 @@ So, how does our DSL look in action? Here are a few examples:
 
 [source,kotlin]
 ----
-//2H2 + O2 <-> 2H2O
+//2H2 + O2 -> 2H2O
 val makingWater =
     2*H[2] + O[2] `->` 2*(H[2]-O)
 

@@ -114,7 +114,7 @@ fun parseElement(string: String): ParseResult<Element> =
 
 fun findElement(string: String, charCount: Int): ParseResult<String> =
     givenThat(elements.contains("$string##".take(charCount))) {
-        Success("$string##".take(charCount), string.drop(charCount))
+        Success(string.take(charCount), string.drop(charCount))
     }
 
 fun parseGroup(string: String): ParseResult<Group> =

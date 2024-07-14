@@ -83,7 +83,7 @@ object AgeTransformer : Transformer<ZonedDateTime, Int>({ z ->
 })
 ----
 
-Now the only thing missing is the `Mapper` class, which has to figure out which fields to map and which transformers to use. As mentioned, this is neither pretty nor secure, but here goes:
+Now the only thing missing is the `Mapper` class, which has to figure out which fields to map and which transformers to use. As mentioned before, this code is neither pretty nor particularly failsafe, but here it is:
 
 [source,kotlin]
 ----
@@ -125,7 +125,7 @@ abstract class Mapper<S : Any, T : Any> {
 }
 ----
 
-Since it uses reflection, you need to include a dependency on the `kotlin-reflect` library, as described in <<#reflection,Chapter 4.14>>. Of course, the example could be improved in many ways, for example, sometimes you need multiple source fields to calculate a target field, and converting fields with generic types won't work.
+Since it uses reflection, you need to include a dependency on the `kotlin-reflect` library, as described in <<#reflection,Chapter 4.14>>. Of course, the example could be improved in many ways, for example, sometimes you need multiple source fields to calculate a target field, and converting fields with generic types doesn't work in the current version.
 
 .Convention over Code (((Convention over Code)))
 ****
@@ -138,7 +138,7 @@ For serious applications, I would suggest checking out https://mapstruct.org[Map
 
 Syntactically, annotation-based DSLs are quite limited: The structure of an annotation is fixed, and only a few data types are allowed as fields. Fortunately, one of these data types is `String`, and the last chapter showed how expressive string-based DSLs can be. It is therefore natural to overcome the limitations of the annotation-based approach by embedding string-based DSLs in annotations.
 
-Implementing such a DSL wouldn't provide much new insight, but the Spring Data JPA can serve as an example:
+Implementing such a DSL wouldn't provide much new insight, but Spring Data JPA can serve as an example:
 
 [source,kotlin]
 ----
