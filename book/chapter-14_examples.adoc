@@ -290,7 +290,7 @@ fun main(args: Array<String>) {
 
 The grammar is defined within an object as a sequence of token definitions and parsers that build upon each other. An interesting aspect of this DSL is that it relies heavily on property delegation. This allows the tokens and parsers to be stored in lists behind the scenes, making it much easier for the library to work with them.
 
-An interesting problem is how to handle recursive parser definitions. In the example in Chapter 9, a "molecular part" could be either an "element" or a "group", but a group itself consists of parts. The library solves this in an elegant way by allowing to refer to parsers via their property reference:
+An interesting problem is how to handle recursive parser definitions. In the example in Chapter 9.2.2, a "molecular part" could be either an "element" or a "group", but a group itself consists of parts. The library solves this in an elegant way by allowing to refer to parsers via their property reference:
 
 [source,kotlin]
 ----
@@ -404,7 +404,9 @@ fun sendEmail(params: QueryParameters): SendResult? = nullable {
 }
 ----
 
-I think you will agree that this code is much easier to read. But this is just an appetizer, there is much more to explore, both for your daily coding and as inspiration for writing idiomatic DSLs.
+I think you will agree that this code is much easier to read. The idea of "flattening" monadic computations comes from Haskell (as "do notation") and can also be found in Scala (as "comprehensions"). It is great that Arrow brings a similar feature to Kotlin - not only for nullable types, but also for `Either`, `Result` and `Option`.
+
+However, there is much more to explore in Arrow, both for your daily coding and as inspiration for writing idiomatic DSLs.
 
 === Conclusion
 

@@ -725,7 +725,9 @@ class MultiplicationVisitor(
     private fun KSClassDeclaration.getAnnotations(
         annotationClass: KClass<*>
     ): List<KSAnnotation> =
-        annotations.filter { it.shortName.getShortName() == annotationClass.simpleName }.toList()
+        annotations.filter {
+            it.shortName.getShortName() == annotationClass.simpleName
+        }.toList()
 }
 ----
 
