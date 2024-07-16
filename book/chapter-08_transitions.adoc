@@ -200,8 +200,9 @@ private fun build(queryDTO: QueryDTO): String = with(StringBuilder()) {
 
 Bundling all data into a DTO instance, as shown here, can significantly reduce the overhead of moving all data around, especially by taking advantage of the power of the `copy()` method. In the next section, we will explore an alternative implementation of the same DSL.
 
-==== The Chameleon Class Approach (((Chameleon Class)))
+==== The Chameleon Class Approach
 
+(((Chameleon Class)))
 While using a separate DTO class makes the separate class approach more convenient, it would be nicer if we didn't have to copy data in the first place. But what about all the guarantees the first solution provides, e.g. that you can't call `build()` or `JOIN()` in a `SELECT` clause? One way to do this is to use a technique I call the "chameleon class". The basic idea is to adapt the type of this class to the current state it represents, and change it accordingly when the state changes.
 
 .The Chameleon Class
@@ -412,8 +413,9 @@ Declaration-site variance is a way of specifying the variance of a generic type 
 
 Chameleon classes and the phantom type implementation are conceptually similar, and it depends on the problem at hand whether a class with all methods or a DTO with extension methods is preferable. If the DSL needs to be called from Java, keep in mind that only the chameleon approach preserves the DSL syntax. On the other hand, the phantom type approach doesn't have fixed APIs for the different states, only extension functions that operate on them, which means that new functionality can be added more easily than with the other techniques.
 
-=== Case Study: DSL for SQL queries using the Loan Pattern (((Loan Pattern)))
+=== Case Study: DSL for SQL queries using the Loan Pattern
 
+(((Loan Pattern)))
 So far, all examples have used a Builder Pattern syntax. This doesn't have to be the case. A DSL that uses the Loan Pattern style might look like this:
 
 [source,kotlin]
@@ -569,8 +571,9 @@ The `build(queryDTO)` function is identical to the Builder-style version of the 
 
 Admittedly, the code is more difficult to read and write, but it allows for more flexible syntax within the trailing lambda blocks, which feels more natural and structured compared to the Builder Pattern syntax for a wide range of problems. Using the same techniques as before, we can improve the code.
 
-==== The Chameleon Class Approach (((Chameleon Class)))
+==== The Chameleon Class Approach
 
+(((Chameleon Class)))
 To use a chameleon class, we must first turn the clause data classes into interfaces:
 
 [source,kotlin]

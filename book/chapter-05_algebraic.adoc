@@ -1,5 +1,6 @@
-== Algebraic DSLs (((Algebraic DSL)))
+== Algebraic DSLs
 
+(((Algebraic DSL)))
 > We could, of course, use any notation we want; do not laugh at notations; invent them, they are powerful. In fact, mathematics is, to a large extent, invention of better notations.
 -- Richard Feynman, The Feynman Lectures on Physics Vol 1
 

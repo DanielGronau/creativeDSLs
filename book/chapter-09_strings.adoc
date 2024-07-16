@@ -1,8 +1,9 @@
 :imagesdir: ./images
 
 [#string_parsing_dsls]
-== String-Parsing DSLs (((String Parsing DSLs)))
+== String-Parsing DSLs
 
+(((String Parsing DSLs)))
 > Words are, of course, the most powerful drug used by mankind.
 -- Rudyard Kipling
 
@@ -18,8 +19,9 @@ One drawback is that these DSLs are hidden from the scrutiny of the compiler: Th
 Kotlin, like many languages, supports regular expressions, which can be thought of as a kind of mini-parser. For small, isolated use cases, they can be very convenient. However, using them for larger problems can result in code that is very hard to maintain because this approach doesn't scale well. In my opinion, using regular expressions as full-blown "parsers" may be acceptable for prototypes and test environments, but not in production code.
 ====
 
-=== Case Study: Forsyth–Edwards Notation (((FEN)))
+=== Case Study: Forsyth–Edwards Notation
 
+(((FEN)))
 Before we dive into complicated problems requiring parsers, we will start with a simple example where we only need a few string functions. If you don't play chess, you've probably never heard of the https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation[Forsyth–Edwards Notation]footnote:[Wikipedia, FEN: https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation] (FEN):
 
 .Forsyth–Edwards Notation
@@ -246,8 +248,9 @@ val equation = Equation(
 println(equation) // 3Ba(HO)2 + 2H3PO4 -> 6H2O + Ba3(PO4)2
 ----
 
-==== Writing a Parser for Chemical Equations (((Parser)))
+==== Writing a Parser for Chemical Equations
 
+(((Parser)))
 If you have never worked with parsers before, it can be a bit confusing. Writing them yourself is not really difficult, but boring and tedious, so using a library will be the better choice most of the time. Nevertheless, I think it is instructive to see how a simple parser works, so a naive manual implementation will be presented first, before using a parser combinator library.
 
 First, we need some general code for a rudimentary parser. We start with a common interface `ParseResult`, as we also need to cover the case when parsing a certain element fails. Real-world implementations would include useful information in this `Failure` class, but for our use case we will leave it empty. We then need a `Success` class to hold the current successful parsing result, along with the current location we are working on. For the location, we simply use the remaining string - more performance-oriented implementations typically just use the index of the input string. All in all, these classes have a lot in common with Java's `Optional` class:

@@ -19,8 +19,9 @@ As mentioned in the preface, this book assumes that the reader has a basic knowl
 This chapter gives a brief overview of language features that may be relevant to writing DSLs. After reading this chapter, you should have a better understanding of how some common DSL "tricks" work.
 
 [#backtick_identifiers]
-=== Backtick Identifiers (((Backtick Notation)))
+=== Backtick Identifiers
 
+(((Backtick Notation)))
 Kotlin allows almost arbitrary identifiers as long as they are enclosed in backticks. The main reason for introducing this feature was to allow the use of identifiers that are keywords in Kotlin but not in Java, such as `fun` or `when`. For DSLs, we can use them when we need descriptive identifiers that don't follow the usual syntactic rules.
 
 Backtick identifiers start and end with a backtick `{backtick}` and can contain almost any character. Note that the backticks themselves are not part of the identifier, just delimiters. A typical use case for backticks are DSLs for test libraries. While Java limits you to underscores and camel case, Kotlin allows very descriptive names for test functions by using the backtick syntax:
@@ -45,8 +46,10 @@ fun `<>`() {
 
 This is especially useful when simulating an operator with an infix function, see the section <<infix_notation, Infix Notation for Functions>> for details.
 
-=== Named Arguments (((Named Arguments))) and Default Values (((Default Values)))
+=== Named Arguments and Default Values
 
+(((Named Arguments)))
+(((Default Values)))
 Java relies on the order of the parameters when calling a method or constructor, which can quickly become confusing. In contrast, Kotlin allows you to refer to arguments by name, which is much more readable and doesn't require you to remember the order of the parameters:
 
 [source,kotlin]
@@ -117,8 +120,9 @@ While the `copy()` method is convenient when working with immutable data classes
 In functional programming, this problem is often solved with an "optics" package, which contains lenses and similar abstractions that allow to easily compose copy operations for different nesting levels. If you want to learn more about this topic, I suggest you have a look at https://arrow-kt.io/learn/immutable-data/intro[Arrow Optics]footnote:[Arrow Optics: https://arrow-kt.io/learn/immutable-data/intro](((Arrow))).
 ====
 
-=== Trailing Lambda Arguments (((Trailing Lambda)))
+=== Trailing Lambda Arguments
 
+(((Trailing Lambda)))
 If a method expects an argument of a function type, you can use the usual curly bracketed lambda syntax when calling it. For example, you can merge a list of strings using the `fold()` method like this:
 
 [source,kotlin]
@@ -157,8 +161,9 @@ html {
 }
 ----
 
-=== Varargs (((Varargs)))
+=== Varargs
 
+(((Varargs)))
 Varargs (from "variable arguments") are a useful feature in both Java and Kotlin, allowing methods to take a variable number of arguments. However, Kotlin has made several improvements to varargs that make them safer and more convenient to use.
 
 One of the most important improvements in Kotlin is that the syntax for varargs is now unambiguous. In Java, it was sometimes difficult to tell whether an array was intended to be a single argument to a vararg, or whether its elements should be used as individual arguments. Kotlin addresses this problem by introducing the unary "spread operator" `*`(((Spread Operator))), which indicates that the elements of an array (rather than the array itself) should be used as arguments to a vararg.
@@ -205,8 +210,9 @@ varargAndLambda("Hi!", 1, 2, 3) {
 
 As the code snippet shows, no named arguments are required in this case.
 
-=== Property-Syntax (((Properties)))
+=== Property-Syntax
 
+(((Properties)))
 Kotlin allows you to control how properties are read and written. This makes it easy to hide DSL functionality. An easy example is checking preconditions before setting a value:
 
 [source,kotlin]
@@ -240,8 +246,10 @@ class SensitiveData {
 There are many other things you can do with properties, such as caching, lazy evaluation, delegation to other properties, or input sanitization. Later in the <<extensions_and_receivers, Extensions and Receivers>> section, we'll discuss another use of the property syntax.
 
 [#extensions_and_receivers]
-=== Extensions (((Extensions))) and Receivers (((Receivers)))
+=== Extensions and Receivers
 
+(((Extensions)))
+(((Receivers)))
 One of Kotlin's most important features for DSL design are extension functions, lambdas, and properties, which allow you to add functionality to existing classes - even final ones - without touching them. These extensions are standalone constructs that operate on a _receiver_, which is the target class they are extending. The function body is placed in the scope of the receiver, so you can access its public fields, methods, etc., and you can also refer to the receiver itself with `this`. Here is what an extension function looks like:
 
 [source,kotlin]
@@ -276,8 +284,9 @@ Extension methods, originally introduced in C#, found their way into Kotlin as "
 ****
 
 [#type_narrowing]
-==== Type Narrowing (((Type Narrowing)))
+==== Type Narrowing
 
+(((Type Narrowing)))
 Interestingly, generic extension functions have a feature that normal instance methods don't have: They can bind generic parameters to a particular type, thus limiting the range of possible recipients. Here is an example for calculating the product of numbers as an extension function for a list:
 
 [source,kotlin]
@@ -290,8 +299,9 @@ val p = listOf(1.0, 2.0, 3.0).product()  // p == 6.0
 The call to `Double::times` is only possible because the receiver is not just any list, but specifically a `List<Double>`, and this additional type information is also passed to the function body. This feature of extension methods can be used in DSLs to perform compile-time checks.
 
 [#loan_pattern]
-==== Loan Pattern (((Loan Pattern)))
+==== Loan Pattern
 
+(((Loan Pattern)))
 .What is the Loan Pattern?
 ****
 The Loan Pattern is a design pattern in object-oriented programming that involves encapsulating the use of a resource (such as a database connection or file handle) within a limited scope or block of code. The pattern is designed to ensure that the resource is properly acquired, used, and released without the risk of resource leakage or conflicts with other code that may be accessing the same resource.
@@ -329,8 +339,9 @@ val usingTheLoanPattern: String = sb {
 Building DSLs using this pattern is very common, as it has several advantages over the classic builder pattern.
 
 [#dsl_marker]
-==== The @DslMarker annotation (((@DslMarker)))
+==== The @DslMarker annotation
 
+(((@DslMarker)))
 When you nest multiple extension functions, overlapping scopes can be a problem: things visible in the outer code blocks are also visible in the inner ones. For example, in a DSL for HTML generation, you might write:
 
 [source,kotlin]
@@ -360,8 +371,9 @@ annotation class HtmlMarker
 
 If the receiver classes of the lambda arguments of the `head()` and `body()` functions are annotated with `@HtmlMarker`, the above example would no longer compile.
 
-==== Extension properties (((Extension Property)))
+==== Extension properties
 
+(((Extension Property)))
 You can not only define extension functions and lambdas, but also extension properties. Generally, they aren't used nearly as much as extension functions, but they can help to beautify DSLs, as they don't require to write empty parentheses. In the following example, we want to create a custom `Amount` class by adding extension properties for the different currencies to `Double`:
 
 [source,kotlin]
@@ -397,8 +409,9 @@ println(sf3("x")) // xxx
 
 If we had written `curry` as a function, we would have to write `val sf3 = ::someFunction.curry()(3)` instead, which looks very confusing.
 
-=== Operator Overloading (((Operator Overloading)))
+=== Operator Overloading
 
+(((Operator Overloading)))
 Kotlin allows operator overloading, but is conservative in the sense that it only allows a fixed set of operators.
 
 [NOTE]
@@ -409,8 +422,9 @@ The boolean operators `&&` and `||`, the access operators `.`, `?.` and `!!`, th
 
 Some overloading functions require specific return types. The type `R` is used in the following tables to indicate that there are no such restrictions.
 
-==== Unary Operators (((Unary Operator)))
+==== Unary Operators
 
+(((Unary Operator)))
 [cols="1a,2a,3a"]
 |===
 |Operator |Overwriting Function | Remarks
@@ -424,8 +438,9 @@ Some overloading functions require specific return types. The type `R` is used i
 | `a--` | `fun A.dec(): A`| Assigns the result to `a` and returns the original value
 |===
 
-==== Binary Arithmetic Operators (((Binary Operator)))
+==== Binary Arithmetic Operators
 
+(((Binary Operator)))
 [cols="1a,2a,3a"]
 |===
 |Operator |Overwriting Function | Remarks
@@ -454,8 +469,10 @@ If you don't want the normal binary form, but only the assignment, you can defin
 
 Again, `a` must be mutable, `B` must be a subtype of `A`. Also, the return type of the function must be `Unit`. Having both the binary and assignment versions of an operator in scope results in an ambiguity error.
 
-==== Range (((Range Operator))) and In Operators (((In Operator)))
+==== Range and In Operators
 
+(((Range Operator)))
+(((In Operator)))
 [cols="1a,2a,2a"]
 |===
 |Operator |Overwriting Function | Remarks
@@ -467,8 +484,10 @@ Again, `a` must be mutable, `B` must be a subtype of `A`. Also, the return type 
 
 The `..<` operator was introduced as a replacement for the `until` infix function.
 
-==== Index Access (((Index Access Operator))) and Invoke Operators (((Invoke Operator)))
+==== Index Access and Invoke Operators
 
+(((Index Access Operator)))
+(((Invoke Operator)))
 [cols="1a,2a,2a"]
 |===
 |Operator |Overwriting Function | Remarks
@@ -484,8 +503,10 @@ The `..<` operator was introduced as a replacement for the `until` infix functio
 
 Note that the index access operator `[]` requires at least one element, while the invoke operator `()` can be also used without arguments.
 
-==== Equality (((Equality Operator))) and Comparison Operators (((Comparison Operator)))
+==== Equality and Comparison Operators
 
+(((Equality Operator)))
+(((Comparison Operator)))
 [cols="1a,2a,2a"]
 |===
 |Operator |Overwriting Function | Remarks
@@ -508,8 +529,9 @@ At some point, however, overloading operators can become confusing or even count
 One solution is to use meaningful infix functions (((Infix Notation))) with expressive names, rather than relying solely on overloaded operators. While this may be less concise, it can make code easier to understand and less prone to confusion. Ultimately, the goal should be to create a DSL that is intuitive and easy to use without sacrificing clarity or consistency.
 
 [#infix_notation]
-=== Infix Notation for Functions (((Infix Notation)))
+=== Infix Notation for Functions
 
+(((Infix Notation)))
 Infix notation allows function names to be used like binary operators. Well-known examples in the Kotlin API include `to` for creating pairs, and `until` and `downTo` for creating ranges.
 
 The corresponding function must be an extension function with one argument, the receiver becomes the left side and the argument becomes the right side of the operator. Note that you can still use the normal function call syntax. Here is an example of checking preconditions:
@@ -554,8 +576,11 @@ println(result) // [1 -> x, 2 -> y, 3 -> z]
 Without `infix`, we would have to write `(numbers to strings).zipWith { i, c -> "$i -> $c" }` instead, which looks quite cluttered.
 
 [#functional_interfaces]
-=== Functional Interfaces (((Functional Interfaces))) (((SAM))) (((Single Abstract Method)))
+=== Functional Interfaces
 
+(((Functional Interfaces)))
+(((SAM)))
+(((Single Abstract Method)))
 Imagine you have an interface for checking strings, with a single abstract function, and you need an anonymous implementation:
 
 [source,kotlin]
@@ -583,8 +608,9 @@ val shortStringCheck = StringCheck { s -> s.length < 10 }
 
 I think you will agree that this syntax looks much better, making it useful for DSLs. However, the lambda-like syntax is just syntactic sugar: Under the hood, the compiler translates it into an implementation equivalent to the first example.
 
-=== Generics (((Generics)))
+=== Generics
 
+(((Generics)))
 Generics are a useful abstraction over concrete types in all sorts of contexts, including DLS design. A specific use case is the implementation of compile-time checks. Here is a simple example that models currencies (similar to the code shown for extension properties):
 
 [source,kotlin]
@@ -624,6 +650,7 @@ You can't add amounts of different currencies together, because the definition o
 
 ==== Resolving Type Erasure Conflicts
 
+(((Type Erasure)))
 Because of type erasure, two different generic functions can end up with the same signature in the JVM. Consider the following example:
 
 [source,kotlin]
@@ -654,8 +681,9 @@ println(average(listOf(7.0, 8.0, 9.0))) // 8.0
 ----
 
 [#reified_generics]
-==== Reified Generics (((Generics))) (((Reified Generics)))
+==== Reified Generics
 
+(((Reified Generics)))
 Kotlin offers an interesting feature called "reified generics" that helps to overcome Java's type erasure for generics on the JVM in some situations. Type erasure is a JVM technique that allows Java to check generics at compile time, while discarding type information at runtime. In contrast, reified generics in Kotlin allow type information to be preserved at runtime. This means that developers can perform type-safe operations at runtime without having to resort to workarounds or unsafe casts.
 
 [source,kotlin]
@@ -682,8 +710,10 @@ Note the expression `T::class`, which shouldn't work, considering that type eras
 Functions with reified type parameters cannot be called from Java because it has no mechanism for inlining functions, and only inlining allows Kotlin to capture the generic type. This issue will be discussed in <<#reified_generics_bridge,Chapter 13.5.1>>.
 ====
 
-=== Value Classes (((Value Classes))) (((@JvmInline)))
+=== Value Classes
 
+(((Value Classes)))
+(((@JvmInline)))
 Value classes are a feature introduced in Kotlin 1.5 that allows developers to create lightweight, efficient classes that represent simple values. Value classes are designed to be used for values that are commonly used and require little to no additional functionality beyond what is already provided by the underlying data type.
 
 In Kotlin, a value class is defined using the "value" modifier and must have a single primary constructor with exactly one parameter. The parameter must be of a non-nullable type, such as `Int`, `Long`, or `String`. Value classes cannot extend other classes, and they cannot be extended by other classes.
@@ -713,8 +743,9 @@ val marathonInMiles = Kilometers(42.195).toMiles() // Miles(value=26.219973)
 ----
 
 [#anonymous_objects]
-=== Anonymous Objects (((Anonymous Objects)))
+=== Anonymous Objects
 
+(((Anonymous Objects)))
 While anonymous objects have no name, they still have their own type, which is also unnamed. Here is a somewhat silly example to illustrate this point:
 
 [source,kotlin]
@@ -746,8 +777,9 @@ val nsOtherCall = env.measureTime { otherCall(x) }
 The necessary setup information for the measurement phase is stored inside an anonymous object in the `env` variable.
 
 [#annotations]
-=== Annotations (((Annotations)))
+=== Annotations
 
+(((Annotations)))
 You can write entire DSLs using annotations, but more often annotations can support DSLs by describing how certain fields or classes should be handled. They are especially powerful if your DSL has a certain default behavior, but needs to take some edge cases or exceptions into account, such as "do not persist this property".
 
 Another useful application for annotations is code generation(((Code Generation))). For example, the AutoDSL library (((AutoDSL))) uses the information provided via annotations to construct the DSL classes for you.
@@ -760,8 +792,10 @@ Annotation processors allow custom processor code to be executed during the buil
 Finally, Kotlin includes annotations to support Java access. DSL code is often more difficult to call from Java, so we'll discuss this topic in <<#java_interoperability,Chapter 13>>.
 
 [#reflection]
-=== Reflection (((Reflection))) (((Kotlin-Reflect)))
+=== Reflection
 
+(((Reflection)))
+(((Kotlin-Reflect)))
 Sometimes you need to inspect or deconstruct classes, call unknown methods, react to annotations, etc., which can be done using reflection. If you need more than the most basic reflection in Kotlin, you need to import a separate dependency:
 
 [source,kotlin]
@@ -785,13 +819,16 @@ dependencies {
 
 Depending on your use case, you might also consider alternatives like https://github.com/Kotlin/kotlinx.reflect.lite[kotlinx.reflect.lite]footnote:[kotlinx.reflect.lite: https://github.com/Kotlin/kotlinx.reflect.lite].
 
-=== Experimental Features (((Experimental Features)))
+=== Experimental Features
 
+(((Experimental Features)))
 Kotlin allows you to try experimental features (via compiler argument or `@OptIn` annotation). Some of these features are quite stable and may be useful for DSL design, so it may be worth taking the risk of using them before they become an official part of the language.
 
 [#context_receivers_and_parameters]
-==== Context Receivers and Parameters (((Context Parameters))) (((Context Receivers)))
+==== Context Receivers and Parameters
 
+(((Context Parameters)))
+(((Context Receivers)))
 https://github.com/Kotlin/KEEP/blob/master/proposals/context-receivers.md[Context receivers]footnote:[Context Receivers: https://github.com/Kotlin/KEEP/blob/master/proposals/context-receivers.md] are an experimental feature introduced in Kotlin 1.6.2.
 They are going be replaced by a very similar concept called
 https://github.com/Kotlin/KEEP/blob/context-parameters/proposals/context-parameters.md[context parameters]footnote:[Context Parameters: https://github.com/Kotlin/KEEP/blob/context-parameters/proposals/context-parameters.md], which is scheduled for a beta release in Kotlin 2.2. The main difference between the proposals is that context parameters are named, while context receivers are not. Since context parameters are under active development, we will focus here on the already established context receivers, but be aware that a migration will be required in the near future.
@@ -848,8 +885,9 @@ Context receivers come into play when there's a need to include global informati
 You can opt in to context receivers by specifying the compiler argument `-Xcontext-receivers`.
 
 [#contracts]
-==== Contracts (((Contracts)))
+==== Contracts
 
+(((Contracts)))
 https://github.com/Kotlin/KEEP/blob/master/proposals/kotlin-contracts.md[Kotlin Contracts]footnote:[Kotlin Contracts: https://github.com/Kotlin/KEEP/blob/master/proposals/kotlin-contracts.md] are a way to give the compiler additional information about the result of functions, allowing it to perform smart casts it couldn't do with just static code analysis.
 
 Here is an example taken from the documentation:

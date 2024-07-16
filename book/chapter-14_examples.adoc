@@ -5,8 +5,9 @@
 
 In this chapter, we will look at some interesting and successful DSLs, characterize them, look at interesting details, and maybe even suggest some improvements. I encourage you to take a closer look at these projects and learn how they build coherent DSLs with sometimes seemingly "impossible" features.
 
-=== KotlinPoet (((KotlinPoet)))
+=== KotlinPoet
 
+(((KotlinPoet)))
 https://square.github.io/kotlinpoet/[KotlinPoet]footnote:[KotlinPoet: https://square.github.io/kotlinpoet] is a source code generator for Kotlin, and the sister project to JavaPoet. We used it in Chapter 12 to generate sources for operations on physical quantities, for example.
 
 The library closely follows the syntax of JavaPoet, which is written in Java, and I think this was the right decision. The builder pattern works quite well for this purpose. This is the introductory example on the KotlinPoet homepage:
@@ -86,8 +87,9 @@ val exampleFile = file("", "HelloWorld") {
 
 I think the Loan Pattern style is easier to read because it shows the nested structures more clearly. As mentioned above, there were good reasons to stick with the builder pattern approach, but it would be nice to have the option to use something closer to my suggestion.
 
-=== Gradle .kts (((Gradle)))
+=== Gradle .kts
 
+(((Gradle)))
 https://gradle.org/[Gradle]footnote:[Gradle: https://gradle.org](((Gradle))) is an amazing build system. Unlike descriptive approaches like the XML-based https://maven.apache.org[Apache Maven]footnote:[Apache Maven: https://maven.apache.org](((Apache Maven))), the build process is "programmable", which gives the user a lot of flexibility.
 
 However, the original Gradle implementation was written in Groovy(((Groovy))) - at the time probably the best choice for writing an expressive DSL in the Java ecosystem. Unfortunately, the Groovy language comes with its own set of problems. It is a scripted language with a weak type system, and as a result, IDE features such as autocompletion, content assistance, source navigation, quick documentation, and refactoring support are limited.
@@ -132,8 +134,9 @@ The Kotlin script DSL itself mainly uses the Loan pattern. There are two notatio
 
 In my opinion, Gradle is a good example of how Kotlin DSLs can help modernize an already established and successful solution without causing major disruptions.
 
-=== Kotest (((Kotest)))
+=== Kotest
 
+(((Kotest)))
 https://kotest.io/[Kotest]footnote:[Kotest: https://kotest.io] is a widely used testing framework for Kotlin, and it is interesting to compare it with the most popular Java testing framework, which is https://junit.org/junit5/[JUnit]footnote:[JUnit: https://junit.org/junit5](((JUnit))).
 
 First of all, Kotest provides a plethora of different https://kotest.io/docs/framework/testing-styles.html[testing styles]footnote:[Kotest - Testing Styles: https://kotest.io/docs/framework/testing-styles.html] (called "specs"), and is much less opinionated in this regard than JUnit. For the sake of brevity, I'll use `StringSpec` for the following examples:
@@ -189,8 +192,9 @@ val exception = shouldThrow<IllegalAccessException> {
 exception.message should startWith("Something went wrong")
 ----
 
-=== MockK (((MockK)))
+=== MockK
 
+(((MockK)))
 Mocking, spying, stubbing, and argument capture are essential for writing concise and expressive unit tests. In Java, libraries such as https://site.mockito.org/[Mockito]footnote:[Mockito: https://site.mockito.org/] are very popular, but face some challenges when dealing with Kotlin language features such as objects, top-level functions, and coroutines.
 
 https://mockk.io/[MockK] is an amazing mocking framework for Kotlin, and features a very intuitive hybrid DSL. Here is a very simple example from the documentation:
@@ -211,8 +215,9 @@ confirmVerified(car)
 
 The library has already been mentioned in <<#quasi_lingual_dsls,Chapter 12>> as an example of a quasi-lingual DSL(((Quasi-Lingual DSLs))), and blends well with quasi-lingual testing frameworks such as Kotest.
 
-=== better-parse (((better-parse)))
+=== better-parse
 
+(((better-parse)))
 Better-parse is the parser-combinator library we used in <<#parser_library,Chapter 9.2.2>>. It features a succinct hybrid DSL, which gives you a lot of flexibility. Here is one of the example parsers of the project:
 
 [source,kotlin]
@@ -312,8 +317,9 @@ val equationGrammar = object : Grammar<Equation>() {
 
 Calling `parser(this::part)` allows you to "break the cycle". I suspect that this is one reason - besides performance considerations - why the DSL uses an object as its context, rather than the more common trailing lambda syntax. While there are certainly ways to make a recursive definition work in Loan Pattern DSLs, this is clearly a more straightforward solution. This is a good example of why creativity and out-of-the-box thinking are so important when writing DSLs.
 
-=== Konform-kt (((Konform-kt)))
+=== Konform-kt
 
+(((Konform-kt)))
 https://github.com/konform-kt/konform[Konform-kt]footnote:[Konform-kt: https://github.com/konform-kt/konform] is a library for data validation. The resulting validation object contains a list of issues of the given data structure, allowing each problem to be precisely located.
 
 The DSL relies heavily on the Loan Pattern, allows different types of nesting to "drill down" into the data structure, and provides many predefined constraints. Here is an example from the documentation:
@@ -376,8 +382,9 @@ val validateEvent = Validation<Event> {
 
 Even without knowing the library, you can probably tell what conditions will be checked and what output you can expect. The DSL has a very consistent structure and descriptive naming conventions. If a condition is not met, you can provide your own using the `hint` infix function, but you don't have to, as there are already sensible default messages available. Even though Konform-kt doesn't use any features we haven't already covered, there is a lot to learn from how the DSL presents itself to the user and what makes it pleasant to use.
 
-=== Arrow (((Arrow)))
+=== Arrow
 
+(((Arrow)))
 https://arrow-kt.io[Arrow]footnote:[Arrow: https://arrow-kt.io]  is a huge collection of features that promote functional programming in Kotlin, such as working with coroutines, error handling, immutable types, and much more. There is far too much content to cover here, but to give you a very basic example, here is how the library improves working with nullable types. Very often you see Kotlin code like this, which is hard to read due to various null checks:
 
 [source,kotlin]

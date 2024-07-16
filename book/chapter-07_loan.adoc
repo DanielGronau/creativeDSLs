@@ -1,5 +1,6 @@
-== Loan Pattern DSLs (((Loan Pattern DSL)))
+== Loan Pattern DSLs
 
+(((Loan Pattern DSL)))
 > Neither a borrower nor a lender be, +
 For loan oft loses both itself and friend, +
 And borrowing dulls the edge of husbandry.
@@ -204,8 +205,9 @@ class HttpRequestBuilder(var uri: URI) {
 
 Retrofitting HttpRequestBuilder with a Loan Pattern DSL proved to be a relatively simple task, but the resulting DSL is convenient and idiomatic. By customizing existing libraries in this way, especially those written in Java, it becomes easier to meet user needs and integrate them more seamlessly into the Kotlin ecosystem.
 
-=== Case Study: HttpRequest with AutoDSL (((AutoDSL)))
+=== Case Study: HttpRequest with AutoDSL
 
+(((AutoDSL)))
 Since this type of DSL is very common, and its structure is quite predictable, it shouldn't be surprising that there are libraries for automatically deriving such DSLs. At this point we will discuss the https://github.com/F43nd1r/autodsl[AutoDSL]footnote:[AutoDSL: https://github.com/F43nd1r/autodsl] library, which has to be set up as an annotation processor (either via kapt (((kapt))) or (((KSP))) (((Kotlin Symbol Processing API))) KSP). Please follow the description on the GitHub project page.
 
 WARNING: Please make sure you are using the correct GitHub project. There is an older library called "AutoDsl" which was the inspiration for this project. Unfortunately, it is no longer maintained and does not work with Kotlin 1.4 or newer.
@@ -278,8 +280,9 @@ val request = httpRequestBuilder {
 
 Granted, the code isn't quite as convenient and concise as the manually written DSL, but it comes close, and definitely looks nicer and more intuitive than a traditional builder. AutoDSL also keeps track of mandatory fields like `uri` and throws an `IllegalStateException` if they are not set.
 
-=== Builder Type Inference (((Builder Type Inference)))
+=== Builder Type Inference
 
+(((Builder Type Inference)))
 In some cases, the compiler can improve its type inference by inspecting the method calls inside the trailing lambda block. As of Kotlin 1.7.0, this feature is enabled by default, but in older versions you can turn it on using the `-Xenable-builder-inference` compiler option. There are no real drawbacks to using this feature, but if you want to look into the details, you can check out https://kotlinlang.org/docs/using-builders-with-builder-inference.html[Kotlin Documentation - Using builders with builder type inference]footnote:[Kotlin Documentation, Using builders with builder type inference: https://kotlinlang.org/docs/using-builders-with-builder-inference.html].
 
 === Conclusion

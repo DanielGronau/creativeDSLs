@@ -1,7 +1,8 @@
 :imagesdir: ./images
 
-== Code Generation for DSLs (((Code Generation)))
+== Code Generation for DSLs
 
+(((Code Generation)))
 > Do not cite the Deep Magic to me, witch! I was there when it was written.
 -- C. S. Lewis, The Lion, the Witch and the Wardrobe
 
@@ -315,8 +316,11 @@ println("${energy.kJ} kiloJoule")
 
 The example code is written in such a way that you manually generate the code via the `main()` method when the DSL has changed. This is a simple approach if you know that code changes won't happen very often, but it can quickly become cumbersome if changes become more frequent, and is not feasible if you don't know in advance what code needs to be generated. In the next section, we will discuss using an annotation processor instead.
 
-=== Writing an annotation processor using KSP (((Annotation Processor))) (((KSP))) (((Kotlin Symbol Processing API)))
+=== Writing an annotation processor using KSP
 
+(((Annotation Processor)))
+(((KSP)))
+(((Kotlin Symbol Processing API)))
 There are two APIs for annotation processors in Kotlin. The older one is called `kapt`, which is no longer actively developed, but is still used for many projects. The more modern API is `KSP`, which stands for https://kotlinlang.org/docs/ksp-overview.html[Kotlin Symbol Processing]footnote:[Kotlin Symbol Processing: https://kotlinlang.org/docs/ksp-overview.html].
 
 Before deciding to write an annotation processor, it's important to understand how it works and what its limitations are. You will need at least two modules: One module containing annotations, related interfaces, etc. that you can use in your client code to specify your requirements to the annotation processor, and one module containing the annotation processor itself that is integrated into the build process to do things like code generation, reporting, or to provide tooling support. Often, a third module is added for testing purposes, because not only do you want to have unit tests for the processor classes, but you also need to verify that the processor works as intended when building client code.
@@ -754,7 +758,7 @@ dependencies {
 
 If the module is in a repository, it can be referenced with group, artifact, and version just like any other dependency. If it is part of the same multi-module project, it can be referenced as `ksp(project(":moduleName"))` instead. After this change, the processor will be invoked for each build and generate the necessary files.
 
-=== Case Study: Generating Data Class Patterns ===
+=== Case Study: Generating Data Class Patterns
 
 In the last chapter, we developed a small pattern matching DSL, but it lacked the ability to create pattern functions for data classes. In this case study, we will only discuss the annotation and the KSP visitor class, as the remaining parts are very similar to the previous one.
 

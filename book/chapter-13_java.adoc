@@ -1,6 +1,7 @@
 [#java_interoperability]
-== Java Interoperability (((Java Interoperability)))
+== Java Interoperability
 
+(((Java Interoperability)))
 > Translation is the art of failure.
 -- Umberto Eco
 
@@ -8,8 +9,10 @@ Using a Kotlin DSL from Java can be challenging. While some Kotlin features, suc
 
 This chapter discusses Java interoperability from a purely DSL design perspective, presenting the relevant built-in features and useful techniques for solving DSL-specific problems. Note that retrofitting an existing DSL for Java interoperability is more expensive than designing for it from the beginning.
 
-=== Renaming Identifiers (((@JvmName))) (((@JvmStatic)))
+=== Renaming Identifiers
 
+(((@JvmName)))
+(((@JvmStatic)))
 When writing DSLs, it is common to use unusual names that may not be allowed in Java, either because they use forbidden characters or because they match a Java keyword. In this case, the `@JvmName` annotation can help. Of course, sometimes additional annotations may be needed, such as `@JvmStatic` to expose object members as static class members in Java:
 
 [source,kotlin]
@@ -39,8 +42,10 @@ public class CallStrangeNames {
 }
 ----
 
-==== Value Classes (((Value Classes))) and Mangling (((Mangling)))
+==== Value Classes and Mangling
 
+(((Value Classes)))
+(((Name Mangling)))
 In Kotlin, value classes are represented by their underlying type in JVM bytecode. However, this approach can lead to naming conflicts, such as when there are multiple methods with the same name and value class parameters with the same underlying type. To avoid this problem, Kotlin uses a technique called "name mangling".
 
 During compilation, the compiler renames the affected methods using a hashing algorithm that takes into account the package name, class name, and method name. This creates a unique name for each method, which prevents naming conflicts in the bytecode.
@@ -64,8 +69,9 @@ fun display(x: Miles) { println("${x.value} miles") }
 
 From Java, you can call the example methods by their JVM names and with `double` arguments, e.g. `displayKm(23.0);` and `displayMiles(42.3);`.
 
-=== Package Level Definitions of Functions and Variables (((@file:JvmName)))
+=== Package Level Definitions of Functions and Variables
 
+(((@file:JvmName)))
 Java does not allow you to define functions and variables outside of classes, so Kotlin puts them as static functions and variables in an artificial class. The default name of this class is derived from the filename, including the `kt` ending, and follows the upper-camel-case naming convention for classes. Consider the following example:
 
 [source,kotlin]
@@ -93,8 +99,9 @@ fun someFunction() {
 
 It is even possible to map the contents of multiple Kotlin files to the same Java class, but then an additional `@file:JvmMultifileClass` annotation is needed in every file.
 
-=== Generate Overloaded Methods (((@JvmOverloads)))
+=== Generate Overloaded Methods
 
+(((@JvmOverloads)))
 Java doesn't have default arguments, they are "simulated" by having several overloaded methods. The Kotlin compiler can generate such overloaded methods when requested via the `@JvmOverloads` annotation. Consider the following Kotlin function:
 
 [source,kotlin]
@@ -125,8 +132,9 @@ As you can see, you can either call the method with all arguments, or you can le
 
 You can also annotate constructors with `@JvmOverloads`.
 
-=== Accessing Fields (((@JvmField)))
+=== Accessing Fields
 
+(((@JvmField)))
 In Kotlin, fields are exposed as properties, and even if it looks like you are accessing a field with a call like `somePerson.name`, behind the scenes you are accessing a getter or setter of this property. Of course, you can use these getters and setters from Java as well, e.g. by using `somePerson.getName()`, but if you want to allow direct field access, you need to use the `@JvmField` annotation, e.g. like this:
 
 [source,kotlin]
@@ -136,8 +144,10 @@ data class Person(@JvmField val name: String, @JvmField val age: Int)
 
 Now you can call the fields directly, as in Kotlin.
 
-=== Generics (((@JvmSuppressWildcards))) (((@JvmWildcards)))
+=== Generics
 
+(((@JvmSuppressWildcards)))
+(((@JvmWildcards)))
 A common problem is that due to its declaration-side variance, Kotlin often generates generic signatures with wildcards like `List<? extends String>` on the JVM. Such types can be awkward to use from the Java side, can prevent the use of certain Java libraries (such as https://dagger.dev[Dagger]footnote:[Dagger: https://dagger.dev]), or even lead to cryptic compile-time errors. The solution is to annotate the offending type with `@JvmSuppressWildcards`, so that you get the type signature like `List<String>` on the JVM.
 
 In some cases, you may have the opposite problem, where it would be more convenient to have wildcards on the JVM when the Kotlin compiler doesn't produce them. In this case, you can use the `@JvmWildcards` annotation instead.
@@ -167,10 +177,12 @@ This approach will work for many use cases, but it should be noted that a reifie
 
 === Checked Exceptions
 
+(((Checked Exceptions)))
 Kotlin doesn't have the concept of "checked exceptions", but if a function that might throw such an exception is called from Java, the Java compiler expects that the exception is declared in the function signature. In order to avoid problems in such cases, you can give the Kotlin compiler a hint to add a checked exception to the function signature in the byte-code by annotating the function with `@Throws(SomeCheckedException::class)`.
 
 === Prevent Java Access
 
+(((@JvmSynthetic)))
 Using some parts of your DSL from Java can be cumbersome, unintuitive, or even lead to unsafe behavior. If you find yourself in a situation where certain parts of your DSL should only be accessible from Kotlin, you can use the `@JvmSynthetic` annotation on files, functions, fields, and property getters and setters.
 
 For example, handling coroutine calls from Java is possible, but requires knowledge of the underlying architectural concepts, such as continuations. It's usually a better solution to provide dedicated functions for Java access, e.g. by wrapping the coroutine in a `CompletableFuture`, which is much easier to handle in Java:

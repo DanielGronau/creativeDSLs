@@ -14,22 +14,26 @@ The intent for writing a DSL is to make a particular domain more accessible, eas
 
 Domain-specific languages are often used to model business logic in specific domains, such as financial transactions for a financial company. They can also be useful for communicating at the boundaries of a system, including tasks such as database access, serialization, Web connectivity, and UI design. In addition, DSLs can be used to perform calculations or simulations. They are also often used for testing and logging, code generation, and even for writing DSLs themselves. In all of these cases, DSLs provide a specialized language tailored to the needs of a particular domain, allowing developers to more easily express concepts and perform tasks in a natural and intuitive way.
 
-=== Internal and External DSLs (((Internal DSL))) (((External DSL)))
+=== Internal and External DSLs
 
+(((Internal DSL)))
+(((External DSL)))
 This book discusses DSLs that are embedded within Kotlin, and are therefore limited to the language's existing expressions. These are _internal DSLs_ (or "embedded DSLs"). A major advantage is that these DSLs don't need any special treatment, no extra steps like reading and parsing files, so they fit seamlessly with the rest of the code.
 
 A disadvantage of internal DSLs is that they are limited by the syntax inherited from the host language. Kotlin allows great freedom in DSL design, especially compared to Java. However, it is still possible that the language is not expressive enough to design the DSL you need. In such cases, _external DSLs_ are an option: They have their own rules and syntax, and require lexers, parsers, etc. This results in a higher overhead compared to internal DSLs. However, writing external DSLs has recently become much easier with new libraries, frameworks, and improved tools.
 
 An edge case are internal DSLs that are realized entirely inside strings, the way e.g. regular expressions work: Although they are technically internal DSLs, they feel and behave more like external DSLs because the "embedding" in the language is very shallow.
 
-=== Code Generation for Internal DSLs (((Code Generation)))
+=== Code Generation for Internal DSLs
 
+(((Code Generation)))
 One challenge in designing a DSL is the risk of combinatorial explosion, where the number of possible combinations of elements or operations in the DSL becomes too large to manage effectively. For example, in a DSL for representing physical quantities, there may be a large number of possible results when multiplying or dividing different quantities. In order to avoid illegal conversions and provide a pleasing syntax, it may be necessary to write a significant amount of boilerplate code to handle all possible combinations. In such cases, code generation can be a useful tool to automate the creation of this boilerplate code, making it easier to manage the complexity of the DSL while keeping the DSL expressive and maintainable.
 
 There are also libraries that create DSLs for you. If you need a well-known style of DSL, all you have to do is describe what you need (e.g., by annotating your business classes accordingly), and the library will generate the DSL code for you. An example of this approach is https://github.com/F43nd1r/autodsl[AutoDSL for Kotlin]footnote:[AutoDSL: https://github.com/F43nd1r/autodsl](((AutoDSL))).
 
-=== Common use cases for DSLs (((Use Cases)))
+=== Common use cases for DSLs
 
+(((Use Cases)))
 While it is difficult to clearly distinguish between the different types of use cases, a general classification is still helpful. In particular, each DSL category has use cases that it can model better than others. Some common types of use cases for DSLs include:
 
 * *Implementation Support*
@@ -59,8 +63,9 @@ While it is difficult to clearly distinguish between the different types of use 
 
 Each of these use cases has its own unique challenges and requirements, and different categories of DSLs may be better suited to modeling certain types of use cases than others.
 
-=== DSL Design Principles (((Design Principles)))
+=== DSL Design Principles
 
+(((Design Principles)))
 There are a few general principles an internal DSL should follow:
 
 * *Conciseness:*(((Conciseness))) The DSL syntax should be succinct and expressive.
