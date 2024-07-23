@@ -3,7 +3,7 @@
 > There are two fatal errors that keep great projects from coming to life: +
 {nbsp}{nbsp}{nbsp}{nbsp}1. Not finishing +
 {nbsp}{nbsp}{nbsp}{nbsp}2. Not starting
--- Buddha Gautama
+> -- Buddha Gautama
 
 === What is a DSL?
 

@@ -2,7 +2,7 @@
 == Epilogue
 
 > The covers of this book are too far apart.
--- Ambrose Bierce
+> -- Ambrose Bierce
 
 Congratulations on completing Creative DSLs in Kotlin! Throughout this book, you have explored the many ways in which Kotlin's design makes it an excellent choice for building DSLs. You have learned about the different types of DSLs and how Kotlin's language features can be used to create expressive and intuitive APIs.
 

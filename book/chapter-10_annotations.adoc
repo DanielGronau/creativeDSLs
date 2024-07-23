@@ -1,9 +1,9 @@
 == Annotation-based DSLs
 
-(((Annotations)))
 > I have discovered a truly marvelous proof of this, which however the margin is not large enough to contain.
--- Pierre de Fermat
+> -- Pierre de Fermat
 
+(((Annotations)))
 Annotations can be used to bind specified actions or behaviors to classes, methods, fields, etc. Typical examples include dependency injection frameworks (such as Spring or Dagger), serializers to formats such as XML or JSON (such as Gson, Jackson, or JAXB), or authorization and access-control (such as Spring Security). In Java, https://projectlombok.org[Project Lombok]footnote:lombok[Project Lombok: https://projectlombok.org](((Project Lombok))) aims to reduce the boilerplate of the language in many ways, and uses annotations to do so.
 
 As mentioned in <<#annotations,Chapter 4.13>>, you may want to look into annotation processors if you need to integrate your DSL into the build process in some way.
@@ -100,15 +100,11 @@ abstract class Mapper<S : Any, T : Any> {
         val targetConstructor = targetType.primaryConstructor!!
 
         val targetArgs = targetConstructor.parameters.map { targetParam ->
-
             val ann = annotations.find { it.target == targetParam.name }
-
             val sourceParam = ann?.source ?: targetParam.name
-
             val sourceValue = s::class.memberProperties.find {
                 it.name == sourceParam
             }!!.getter.call(s)
-
             ann?.transformer?.isSubclassOf(Function1::class)
                 .takeIf { it == true }
                 ?.let {
@@ -139,7 +135,7 @@ For serious applications, I would suggest checking out https://mapstruct.org[Map
 
 Syntactically, annotation-based DSLs are quite limited: The structure of an annotation is fixed, and only a few data types are allowed as fields. Fortunately, one of these data types is `String`, and the last chapter showed how expressive string-based DSLs can be. It is therefore natural to overcome the limitations of the annotation-based approach by embedding string-based DSLs in annotations.
 
-Implementing such a DSL wouldn't provide much new insight, but Spring Data JPA can serve as an example:
+We wouldn't gain much insight from implementing such a DSL, but Spring Data JPA can serve as an example:
 
 [source,kotlin]
 ----

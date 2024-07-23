@@ -2,7 +2,7 @@
 == Relevant Language Features
 
 > I suppose it is tempting, if the only tool you have is a hammer, to treat everything as if it were a nail.
--- Abraham Maslow, Toward a Psychology of Being
+> -- Abraham Maslow, Toward a Psychology of Being
 
 Kotlin is a modern and beautiful programming language that offers several key features not found in Java. Here are some of the most notable features that set Kotlin apart:
 
@@ -201,7 +201,10 @@ At first glance, having the ability to put varargs wherever you want doesn't see
 
 [source,kotlin]
 ----
-fun varargAndLambda(someString: String, vararg numbers: Int, block: () -> Unit) { ... }
+fun varargAndLambda(
+    someString: String,
+    vararg numbers: Int, block: () -> Unit
+) { ... }
 
 varargAndLambda("Hi!", 1, 2, 3) {
     ...
@@ -573,7 +576,7 @@ val result = numbers to strings zipWith { i, c -> "$i -> $c" }
 println(result) // [1 -> x, 2 -> y, 3 -> z]
 ----
 
-Without `infix`, we would have to write `(numbers to strings).zipWith { i, c -> "$i -> $c" }` instead, which looks quite cluttered.
+Without `infix`, we would have to write `(numbers to strings).zipWith { i, c -> "$i -> $c" }` instead.
 
 [#functional_interfaces]
 === Functional Interfaces
@@ -603,7 +606,7 @@ fun interface StringCheck {
     fun check(s: String): Boolean
 }
 
-val shortStringCheck = StringCheck { s -> s.length < 10 }
+val stringCheck = StringCheck { s -> s.length < 10 }
 ----
 
 I think you will agree that this syntax looks much better, making it useful for DSLs. However, the lambda-like syntax is just syntactic sugar: Under the hood, the compiler translates it into an implementation equivalent to the first example.
@@ -664,7 +667,7 @@ fun average(list: List<Double>): Double =
     list.sum() / list.size
 ----
 
-The compiler complains `The following declarations have the same JVM signature (average(Ljava/util/List;)D)`. In Java, the only solution is to rename the functions. In Kotlin, we can keep the same names in the code, and just rename them in the JVM:
+The compiler complains: `The following declarations have the same JVM signature (average(Ljava/util/List;)D)`. In Java, the only solution is to rename the functions. In Kotlin, we can keep the same names in the code, and just rename them in the JVM:
 
 [source,kotlin]
 ----
@@ -789,7 +792,7 @@ Another useful application for annotations is code generation(((Code Generation)
 Annotation processors allow custom processor code to be executed during the build process according to the annotations present in the application code. Kotlin provides two annotation processors, the older https://kotlinlang.org/docs/kapt.html[kapt]footnote:[kapt: https://kotlinlang.org/docs/kapt.html], which is no longer actively developed, and the recommended https://kotlinlang.org/docs/ksp-overview.html[Kotlin Symbol Processing API]footnote:[KSP: https://kotlinlang.org/docs/ksp-overview.html] (KSP), which will be discussed in <<#annotation_processor,Chapter 12>>.
 ****
 
-Finally, Kotlin includes annotations to support Java access. DSL code is often more difficult to call from Java, so we'll discuss this topic in <<#java_interoperability,Chapter 13>>.
+Kotlin also includes annotations to support Java access. DSL code is often more difficult to call from Java, so we'll discuss this topic in  <<#java_interoperability,Chapter 13>>.
 
 [#reflection]
 === Reflection
@@ -882,7 +885,7 @@ inline fun <A, B, R> with(a: A, b: B, block: context(A, B) () -> R): R {
 
 Context receivers come into play when there's a need to include global information within a specific scope while maintaining the flexibility to accommodate different versions. By using a context receiver to provide DSL functionality, you gain control over the scope, you can influence the overall behavior of the DSL, and you can avoid potential naming conflicts.
 
-You can opt in to context receivers by specifying the compiler argument `-Xcontext-receivers`.
+You can enable context receivers by using the `-Xcontext-receivers` compiler argument.
 
 [#contracts]
 ==== Contracts
@@ -940,7 +943,7 @@ fun sendMessage(cd: ContactData, msg: String) =
 
 At the moment, contracts are still quite limited, but in some situations you can use them to protect the DSL user from boilerplate checks, casts, or explicit specification of generics.
 
-You can opt in to experimental contracts using
+You can enable contracts using:
 
 * the compiler argument `-Xopt-in=kotlin.contracts.ExperimentalContracts` or
 * the annotation `@OptIn(ExperimentalContracts::class)`.

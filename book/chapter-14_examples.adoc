@@ -1,7 +1,7 @@
 == Real-World DSL Examples
 
 > Few things are harder to put up with than the annoyance of a good example.
--- Mark Twain
+> -- Mark Twain
 
 In this chapter, we will look at some interesting and successful DSLs, characterize them, look at interesting details, and maybe even suggest some improvements. I encourage you to take a closer look at these projects and learn how they build coherent DSLs with sometimes seemingly "impossible" features.
 

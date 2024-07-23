@@ -2,10 +2,10 @@
 
 == Code Generation for DSLs
 
-(((Code Generation)))
 > Do not cite the Deep Magic to me, witch! I was there when it was written.
--- C. S. Lewis, The Lion, the Witch and the Wardrobe
+> -- C. S. Lewis, The Lion, the Witch and the Wardrobe
 
+(((Code Generation)))
 Sometimes you are prototyping a DSL, and you find a nice, expressive syntax, but it turns out that it would take a lot of boilerplate code to make it work. A common reason is combinatorial explosion, or you need many classes that follow the same pattern (e.g., tuple classes or fixed-length vectors). In such cases, you might consider using code generation.
 
 A popular library for generating Kotlin code is https://square.github.io/kotlinpoet[KotlinPoet]footnote:kotlinpoet[KotlinPoet: https://square.github.io/kotlinpoet](((KotlinPoet))). If you are also working with Java, you may also want to check out its sister project https://github.com/square/javapoet[JavaPoet]footnote:[JavaPoet: https://github.com/square/javapoet](((JavaPoet))). There is even some interoperability between them.
@@ -882,7 +882,7 @@ It should be mentioned that our annotation processor is not perfect, e.g. it can
 
 === Conclusion
 
-The decision to use code generation requires careful consideration because of the effort required. However, this technique allows you to implement DSLs that would just be too much overhead without it. And with libraries like https://square.github.io/kotlinpoet[KotlinPoet]footnote:kotlinpoet[], it is quite intuitive to generate the code you want. Kotlin-Poet is itself a nice example of a real-world DSL, and will be explored as such in the final chapter.
+The decision to use code generation requires careful consideration because of the effort required. However, this technique allows you to implement DSLs that would just be too much overhead without it. And with libraries like https://square.github.io/kotlinpoet[KotlinPoet]footnote:kotlinpoet[], it is quite intuitive to generate the code you want. KotlinPoet is itself a nice example of a real-world DSL, and will be explored as such in the final chapter.
 
 Using code generation in conjunction with annotation processors like KSP can produce flexible, powerful, and well-integrated DSLs that wouldn't otherwise be possible.
 
@@ -902,7 +902,7 @@ Using code generation in conjunction with annotation processors like KSP can pro
 * Automates the process of writing boilerplate code
 * Very flexible and customizable
 * Often the only practical way to handle combinatorial explosion
-* Intuitive libraries such as https://square.github.io/kotlinpoet[Kotlin-Poet] are available
+* Intuitive libraries such as https://square.github.io/kotlinpoet[KotlinPoet]footnote:kotlinpoet[] are available
 
 *Cons*
 

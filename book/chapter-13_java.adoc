@@ -1,11 +1,11 @@
 [#java_interoperability]
 == Java Interoperability
 
-(((Java Interoperability)))
 > Translation is the art of failure.
--- Umberto Eco
+> -- Umberto Eco
 
-Using a Kotlin DSL from Java can be challenging. While some Kotlin features, such as operator overloading, simply aren't available, there are ways to make other features more accessible from Java, and to create a DSL that is useful and convenient in both languages. Fortunately, Kotlin has a number of built-in features to improve its interoperability with Java, which are described in https://kotlinlang.org/docs/java-to-kotlin-interop.html[Kotlin Documentation: Calling Kotlin from Java]footnote:[Kotlin Documentation, Calling Kotlin from Java: https://kotlinlang.org/docs/java-to-kotlin-interop.html].
+(((Java Interoperability)))
+Using a Kotlin DSL from Java can be challenging. While some Kotlin features, such as operator overloading, simply aren't available, there are ways to make other features more accessible from Java, and to create a DSL that is useful and convenient in both languages. Fortunately, Kotlin has a number of built-in features to improve its interoperability with Java, which are described in the https://kotlinlang.org/docs/java-to-kotlin-interop.html[Kotlin Documentation: Calling Kotlin from Java]footnote:[Kotlin Documentation, Calling Kotlin from Java: https://kotlinlang.org/docs/java-to-kotlin-interop.html].
 
 This chapter discusses Java interoperability from a purely DSL design perspective, presenting the relevant built-in features and useful techniques for solving DSL-specific problems. Note that retrofitting an existing DSL for Java interoperability is more expensive than designing for it from the beginning.
 

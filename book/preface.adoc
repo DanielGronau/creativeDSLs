@@ -3,7 +3,7 @@
 == Preface
 
 > A beginning is the time for taking the most delicate care that the balances are correct.
--- Frank Herbert, Dune
+> -- Frank Herbert, Dune
 
 === Why another book about DSLs in Kotlin?
 
@@ -12,7 +12,7 @@ Kotlin is a powerful language that is well suited for writing Domain Specific La
 * They often focus on oversimplified examples that do not provide a clear understanding of how to write DSLs in practice
 * They present solutions in a vacuum, without explaining the design process, the requirements and constraints that apply, or the tradeoffs that were made
 * They do not attempt to categorize the different types of DSLs or compare their relative strengths and weaknesses.
-* They don't take into account that Kotlin and Java code often coexist, and ignore the resulting interoperability issues that arise when a Kotlin DSL needs to be called from Java
+* They don't take into account that Kotlin and Java code often coexist, and they ignore the resulting interoperability issues that arise when a Kotlin DSL needs to be called from Java
 
 This book aims to fill these gaps by providing a comprehensive guide to writing DSLs in Kotlin, with a focus on practical examples and real-world considerations. One of the main goals of this book is to go beyond toy examples and provide real-world insights into the process of writing DSLs in practice. This includes discussion of the design process, the requirements and constraints that apply, the tradeoffs that must be made, and the challenges that arise.
 
@@ -34,7 +34,7 @@ _Chapter 4, Relevant Language Features_, takes a closer look at the Kotlin langu
 
 _Chapter 5, Algebraic DSLs_, introduces the first category of DSLs, which support number-like behavior using operator overloading and infix functions. This is a fairly straightforward type of DSL, but mastering it will be useful in many other contexts.
 
-_Chapter 6, Builder Pattern DSLs_, covers the well-known builder pattern that you probably already know from Java, and shows some variations that attempt to make builders safer to use.
+_Chapter 6, Builder Pattern DSLs and Method Chaining_, covers the well-known builder pattern that you probably already know from Java, and shows some variations that attempt to make builders safer to use.
 
 _Chapter 7, Loan Pattern DSLs_, is about using extension functions and the Loan Pattern to solve similar problems as the Builder Pattern DSL, but in a more idiomatic and convenient way.
 
@@ -48,7 +48,7 @@ _Chapter 11, Hybrid DSLs_, explains how to address scenarios where one of the pr
 
 _Chapter 12, Code Generation for DSLs_, discusses the benefits of code generation when manual DSL writing involves excessive boilerplate. At first, this task may seem daunting, but the example demonstrates that it is not something to be afraid of.
 
-_Chapter 13, Java interoperability_, provides an overview of potential issues when utilizing Kotlin DSLs within Java code, and offers practical solutions.
+_Chapter 13, Java Interoperability_, provides an overview of potential issues when utilizing Kotlin DSLs within Java code, and offers practical solutions.
 
 _Chapter 14, Real-World DSL Examples_, explores established and tested DSLs for valuable insight. In my view, small-scale examples do not provide sufficient guidance for quality DSL design. It is crucial to observe how DSLs tackle real-world problems, make compromises, and still provide a superior user experience.
 
@@ -65,7 +65,7 @@ This book uses a few typographical conventions to structure its content.
 Quotes look like this:
 
 > To be, or not to be: that is the question
--- Shakespeare, Hamlet, Act 3 Scene 1
+> -- Shakespeare, Hamlet, Act 3, Scene 1
 
 Inlined code snippets are shown like this: `val answer = 42`
 

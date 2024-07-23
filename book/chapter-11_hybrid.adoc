@@ -3,10 +3,10 @@
 [#hybrid_dsls]
 == Hybrid DSLs
 
-(((Hybrid DSLs)))
 > In diversity, there is beauty and strength.
--- Maya Angelou
+> -- Maya Angelou
 
+(((Hybrid DSLs)))
 In many cases, it is difficult to categorize a DSL because it uses a mix of different techniques: Some parts might resemble a builder, others might look like an algebraic DSL, and one place uses annotations. That's what I call a "hybrid DSL".
 
 If most of a DSL can be written in a certain style, it is usually a good idea to stick to that style to ensure a consistent look and feel. So I wouldn't advocate mixing Builder and Loan Pattern styles, but sticking to one. But there is nothing wrong with designing a DSL that combines different approaches, if it gets the job done and manages to provide a coherent language.
@@ -115,13 +115,13 @@ The next task is to assemble molecules from either elements or groups. We can us
 [source,kotlin]
 ----
 operator fun Part.minus(that: Part) =
-    Molecule(1,listOf(this, that))
+    Molecule(1, listOf(this, that))
 
 operator fun Molecule.minus(that: Part) =
     copy(parts = parts + that)
 
 operator fun Element.minus(that: Part) =
-    Group(listOf(this, that),1)
+    Group(listOf(this, that), 1)
 
 operator fun Group.minus(that: Part) =
     copy(parts = parts + that)
@@ -148,16 +148,16 @@ Next, we need a way to group the left and right sides of an equation into a list
 
 [source,kotlin]
 ----
-operator fun Molecule.plus(that: Molecule):List<Molecule> =
+operator fun Molecule.plus(that: Molecule) :List<Molecule> =
     listOf(this, that)
 
-operator fun Molecule.plus(that: Part):List<Molecule> =
+operator fun Molecule.plus(that: Part) :List<Molecule> =
     listOf(this, that.toMolecule())
 
-operator fun Part.plus(that: Molecule):List<Molecule> =
+operator fun Part.plus(that: Molecule) :List<Molecule> =
     listOf(this.toMolecule(), that)
 
-operator fun List<Molecule>.plus(that: Part):List<Molecule> =
+operator fun List<Molecule>.plus(that: Part) :List<Molecule> =
     this + that.toMolecule()
 ----
 
@@ -322,7 +322,7 @@ val result = match(p) {
 }
 ----
 
-That's not too bad, even if the `+' prefix looks a bit odd at first. The problem is that the choice of overridable operators in Kotlin is quite limited. That's why the unary plus has become something of a standard for such use cases, and is also used that way in the https://kotlinlang.org/docs/type-safe-builders.html[Kotlin documentation]footnote:[Kotlin Documentation, Type Safe Builders: https://kotlinlang.org/docs/type-safe-builders.html].
+That's not too bad, even if the `+` prefix looks a bit odd at first. The problem is that the choice of overridable operators in Kotlin is quite limited. That's why the unary plus has become something of a standard for such use cases, and is also used that way in the https://kotlinlang.org/docs/type-safe-builders.html[Kotlin documentation]footnote:[Kotlin Documentation, Type Safe Builders: https://kotlinlang.org/docs/type-safe-builders.html].
 
 The core of the DSL is quite small. First, we have the pattern type, which is just a test function, so we can use a type alias instead of introducing a new interface. The `MatchResult` is just an interface that wraps a given value. The `Matcher` class provides a context for keeping track of the result, defines the `then` and `otherwise` methods, and introduces the unary plus as an alias for the `eq` pattern (which will be defined later). Finally, the `match()` function ties everything together and acts as an entry point for the DSL:
 
@@ -361,25 +361,21 @@ Note that the `body` parameter of the `match()` method requires a `MatchResult` 
 
 The unary plus as a synonym for the `eq` pattern is defined directly in `Matcher` to avoid name conflicts and unexpected behavior outside of `match` blocks. It's good practice to keep the scope of potentially dangerous or confusing DSL elements as small as possible.
 
-Of course, there are still patterns missing for the left sides of the `then' infix functions. Most of these are fairly easy to write:
+Of course, there are still patterns missing for the left sides of the `then` infix functions. Most of these are fairly easy to write:
 
 [source,kotlin]
 ----
 // matches everything
-fun <P> any(): Pattern<P> =
-    { true }
+fun <P> any(): Pattern<P> = { true }
 
 // matches nothing
-fun <P> none(): Pattern<P> =
-    { false }
+fun <P> none(): Pattern<P> = { false }
 
 // matches null values
-fun <P> isNull(): Pattern<P> =
-    { it == null }
+fun <P> isNull(): Pattern<P> = { it == null }
 
 // negates a pattern
-operator fun <P> Pattern<P>.not(): Pattern<P> =
-    { !this@not(it) }
+operator fun <P> Pattern<P>.not(): Pattern<P> = { !this@not(it) }
 
 // conjunction of patterns
 infix fun <P> Pattern<P>.and(that: Pattern<P>): Pattern<P> =
@@ -390,20 +386,17 @@ infix fun <P> Pattern<P>.or(that: Pattern<P>): Pattern<P> =
     { this@or(it) || that(it) }
 
 // equality to a value
-fun <P> eq(value: P): Pattern<P> =
-    { it == value }
+fun <P> eq(value: P): Pattern<P> = { it == value }
 
 // equality to one of the values
-fun <P> oneOf(vararg values: P): Pattern<P> =
-    { it in values }
+fun <P> oneOf(vararg values: P): Pattern<P> = { it in values }
 
 // type check
 fun <P> isA(kClass: KClass<*>): Pattern<P> =
     { kClass.isInstance(it) }
 
 // instance equality
-fun <P> isSame(value: P): Pattern<P> =
-    { it === value }
+fun <P> isSame(value: P): Pattern<P> = { it === value }
 ----
 
 Comparing values requires some type checking to ensure that the value is comparable.  That's why we need <<chapter-04_features.adoc#reified_generics, reified generics>> in this case:
@@ -494,7 +487,7 @@ Especially for data classes with many arguments, defining `any()` as the default
 
 While writing such pattern classes is not difficult, it can quickly become tedious. The next chapter discusses how to generate such boilerplate code.
 
-Of course, you can write many more patterns, but the DSL is already functional as it is. Despite the complexity of the topic, it wasn't too difficult to come up with a fairly usable DSL that demonstrates the power and expressiveness of Kotlin.
+Despite the complexity of the topic, it wasn't too difficult to come up with a fairly usable hybrid DSL by using a combination of language features that complement each other.
 
 === Conclusion
 

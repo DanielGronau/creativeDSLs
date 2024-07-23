@@ -25,8 +25,6 @@
 {empty} +
 {empty} +
 {empty} +
-{empty} +
-{empty} +
 {empty} 
 
 Bibliographic Information of the German National Library: +
@@ -34,6 +32,8 @@ The Deutsche Nationalbibliothek records this publication in the German National 
 Detailed bibliographical data are available on the Internet at http://dnb.dnb.de.
 
 Automated analysis of the work in order to information about patterns, trends and correlations in accordance with §44b UrhG ("text and data mining") is prohibited.
+
+All trademarks, logos and brand names are the property of their respective owners. All company, product and service names used in this book are for identification purposes only. Use of these names, trademarks and brands does not imply endorsement.
 
 [%hardbreaks]
 (C) 2024 Daniel Gronau

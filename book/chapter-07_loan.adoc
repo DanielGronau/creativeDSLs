@@ -1,11 +1,12 @@
 == Loan Pattern DSLs
 
-(((Loan Pattern DSL)))
+
 > Neither a borrower nor a lender be, +
 For loan oft loses both itself and friend, +
 And borrowing dulls the edge of husbandry.
--- Shakespeare, Hamlet, Act 1, Scene 3
+> -- Shakespeare, Hamlet, Act 1, Scene 3
 
+(((Loan Pattern DSL)))
 This pattern is known by several different names, one of which is "builder pattern". This can be particularly confusing because it is similar to, and often used instead of, the classic builder pattern discussed in the last chapter. Another commonly used term is "lambdas with receivers"(((Lambda with Receiver))), but I would argue that this describes an implementation detail rather than the underlying idea. To avoid confusion, and to provide a more accurate description of the underlying mechanism, it will be referred to here as the "Loan Pattern DSL".
 
 The Loan Pattern DSL uses a mutable builder class that exposes its members through the Loan Pattern introduced in <<#loan_pattern, Chapter 4.6.2>>. This approach leverages the power of extension methods and trailing lambda syntax in Kotlin. It is particularly useful for creating deeply nested structures. In such cases, the code can quickly become cluttered and hard to read when using the classic builder pattern. It can also be easier to enforce constraints and ensure type safety with this approach compared to using builders. Sometimes the greater flexibility of Loan Pattern DSLs allows other DSL techniques to be incorporated, while the builder approach is often too rigid for such improvements. That's why it's often used as a scaffolding for hybrid DSLs, as will be discussed in <<#hybrid_dsls,Chapter 11>>.
